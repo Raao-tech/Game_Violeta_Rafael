@@ -29,7 +29,9 @@ Player* player_create(Id id, char* name) {
   Player* newPlayer = NULL;
 
   /* Error control */
-  if (id == NO_ID || !name) return NULL;
+  if (id == NO_ID || !name) {
+    return NULL;
+  }
 
   newPlayer = (Player*)calloc(1, sizeof(Player));
   if (newPlayer == NULL) {

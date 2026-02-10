@@ -12,6 +12,7 @@
 
 #include "game.h"
 
+
 typedef struct _Object Object;
 
 /**
@@ -37,40 +38,3 @@ const char* obj_get_name(Object* obj);
 Status obj_print(Object* obj);
 
 #endif
-
-
-/**
- * @brief It destroys a player, freeing its allocated memory
- * @author Violeta y Rafa
- *
- * @param player a pointer to the player
- * @return OK, if everything goes well, or ERROR if there was some mistake
- */
-Status player_destroy(Player* player);
-
-/**
- * @brief It destroys a player, freeing its allocated memory
- * @author Violeta y Rafa
- *
- * @param player a pointer to the player
- * @return OK, if everything goes well, or ERROR if there was some mistake
- */
-Status player_set_name(Player* player, char* name);
-
-/**
- * @brief It destroys a player, freeing its allocated memory
- * @author Violeta y Rafa
- *
- * @param player a pointer to the player
- * @return a string with the name of the player
- */
-const char* player_get_name(Player* player);
-
-/**
- * @brief It destroys a player, freeing its allocated memory
- * @author Violeta y Rafa
- *
- * @param player a pointer to the player
- * @return OK, if everything goes well, or ERROR if there was some mistake
- */
-Status player_print(Player* player);
