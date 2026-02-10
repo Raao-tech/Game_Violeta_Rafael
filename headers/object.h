@@ -12,8 +12,8 @@
 
 #include "game.h"
 
-
 typedef struct _Object Object;
+
 
 /**
  * @brief It creates a new object, allocating memory and initializing it
@@ -25,16 +25,41 @@ typedef struct _Object Object;
  */
 Object* obj_create(Id id, char* name);
 
-
+/**
+ * @brief It destroys an object, freeing the allocated memory
+ * @author Violeta y Rafa
+ *
+ * @param obj a pointer to the object
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
 Status obj_destroy(Object* obj);
 
-
+/**
+ * @brief It sets the name of an object
+ * @author Violeta y Rafa
+ *
+ * @param obj a pointer to the object
+ * @param name the name of the object
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
 Status obj_set_name(Object* obj, char* name);
 
-
+/**
+ * @brief It gets the name of an object
+ * @author Violeta y Rafa
+ *
+ * @param obj a pointer to the object
+ * @return a string with the name of the object
+ */
 const char* obj_get_name(Object* obj);
 
-
+/**
+ * @brief It prints the object information
+ * @author Violeta y Rafa
+ *
+ * @param obj a pointer to the object
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
 Status obj_print(Object* obj);
 
 #endif

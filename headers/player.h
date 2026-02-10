@@ -5,6 +5,7 @@
 
 typedef struct _Player Player;
 
+
 /**
  * @brief It creates a new player, allocating memory and initializing it
  * @author Violeta y Rafa
@@ -16,7 +17,7 @@ typedef struct _Player Player;
 Player* player_create(Id id, char* name);
 
 /**
- * @brief It destroys a player, freeing its allocated memory
+ * @brief It destroys a player, freeing the allocated memory
  * @author Violeta y Rafa
  *
  * @param player a pointer to the player
@@ -25,16 +26,17 @@ Player* player_create(Id id, char* name);
 Status player_destroy(Player* player);
 
 /**
- * @brief It destroys a player, freeing its allocated memory
+ * @brief It sets the name of a player
  * @author Violeta y Rafa
  *
  * @param player a pointer to the player
+ * @param name the name of the player
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
 Status player_set_name(Player* player, char* name);
 
 /**
- * @brief It destroys a player, freeing its allocated memory
+ * @brief It gets the name of a player
  * @author Violeta y Rafa
  *
  * @param player a pointer to the player
@@ -43,7 +45,7 @@ Status player_set_name(Player* player, char* name);
 const char* player_get_name(Player* player);
 
 /**
- * @brief It destroys a player, freeing its allocated memory
+ * @brief It prints the player information
  * @author Violeta y Rafa
  *
  * @param player a pointer to the player
