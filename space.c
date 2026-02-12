@@ -26,7 +26,7 @@ struct _Space {
   Id south;                 /*!< Id of the space at the south */
   Id east;                  /*!< Id of the space at the east */
   Id west;                  /*!< Id of the space at the west */
-  Bool object;              /*!< Whether the space has an object or not */
+  Id obj_id;              /*!< Whether the space has an object or not */
 };
 
 /** space_create allocates memory for a new space
@@ -36,7 +36,9 @@ Space* space_create(Id id) {
   Space* newSpace = NULL;
 
   /* Error control */
-  if (id == NO_ID) return NULL;
+  if (id == NO_ID) {
+    return NULL;
+  }
 
   newSpace = (Space*)calloc(1, sizeof(Space));
   if (newSpace == NULL) {
@@ -48,9 +50,9 @@ Space* space_create(Id id) {
   newSpace->name[0] = '\0';
   newSpace->north = NO_ID;
   newSpace->south = NO_ID;
-  newSpace->east = NO_ID;
-  newSpace->west = NO_ID;
-  newSpace->object = FALSE;
+  newSpace->east =  NO_ID;
+  newSpace->west =  NO_ID;
+  newSpace->obj_id = NO_ID;
 
   return newSpace;
 }
@@ -88,6 +90,8 @@ const char* space_get_name(Space* space) {
   }
   return space->name;
 }
+
+/* functions to neitghboors */
 
 Status space_set_north(Space* space, Id id) {
   if (!space || id == NO_ID) {
@@ -149,20 +153,24 @@ Id space_get_west(Space* space) {
   return space->west;
 }
 
-Status space_set_object(Space* space, Bool value) {
+
+/* functions to objetc */
+Status space_set_object(Space* space, Id id) {
   if (!space) {
     return ERROR;
   }
-  space->object = value;
+  space->obj_id = id;
   return OK;
 }
 
-Bool space_get_object(Space* space) {
+Id space_get_object(Space* space) {
   if (!space) {
     return FALSE;
   }
-  return space->object;
+  return space->obj_id;
 }
+
+
 
 Status space_print(Space* space) {
   Id idaux = NO_ID;

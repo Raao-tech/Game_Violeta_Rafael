@@ -14,7 +14,7 @@ typedef struct _Player Player;
  * @param name the name for the new player
  * @return a new player, initialized
  */
-Player* player_create(Id id, char* name);
+Player* player_create(Id id);
 
 /**
  * @brief It destroys a player, freeing the allocated memory
@@ -36,6 +36,28 @@ Status player_destroy(Player* player);
 Status player_set_name(Player* player, char* name);
 
 /**
+ * @brief It sets the id of the obcjet of the player
+ * @author Violeta y Rafa
+ *
+ * @param player a pointer to the player
+ * @param id_obj a Id of the object of the player
+ * @return OK, if object is on the player, or ERROR if there  was not  some object
+ */
+Status player_set_Obj(Player* player,  Id id_obj) ;
+
+
+/**
+ * @brief It sets location of player
+ * @author Violeta y Rafa
+ *
+ * @param player a pointer to the player
+ * @param id_space a space's id of location of player
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
+Status player_set_location (Player* player, Id id_space);
+
+
+/**
  * @brief It gets the name of a player
  * @author Violeta y Rafa
  *
@@ -43,6 +65,7 @@ Status player_set_name(Player* player, char* name);
  * @return a string with the name of the player
  */
 const char* player_get_name(Player* player);
+
 
 /**
  * @brief It prints the player information
@@ -52,5 +75,6 @@ const char* player_get_name(Player* player);
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
 Status player_print(Player* player);
+
 
 #endif

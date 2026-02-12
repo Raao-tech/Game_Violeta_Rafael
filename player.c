@@ -22,14 +22,17 @@
 struct _Player {
   Id id;                    /*!< Id number of the object, it must be unique */
   char name[WORD_SIZE + 1]; /*!< Name of the object */
+  Id  id_space_location;
+  Id  id_object_take;
+
 };
 
 
-Player* player_create(Id id, char* name) {
+Player* player_create(Id id) {
   Player* newPlayer = NULL;
 
   /* Error control */
-  if (id == NO_ID || !name) {
+  if (id == NO_ID) {
     return NULL;
   }
 
@@ -40,11 +43,14 @@ Player* player_create(Id id, char* name) {
 
   /* Initialization of an empty player*/
   newPlayer->id = id;
-  strcpy(newPlayer->name, name);
+  newPlayer->id_space_location = NO_ID;
+  newPlayer->id_object_take = NO_ID;
+  newPlayer->name[0] = '\0';
 
   return newPlayer;
 }
 
+/* functions to sets properties and assets of the player */
 Status player_destroy(Player* player) {
   if (!player) {
     return ERROR;
@@ -54,6 +60,23 @@ Status player_destroy(Player* player) {
   return OK;
 }
 
+Status player_set_obj(Player* player,  Id id_obj) {
+  if(player == NULL || id_obj == NO_ID ){
+    return ERROR;
+  }
+
+  player->id_object_take = id_obj;
+  return OK;
+}
+
+Status player_set_location (Player* player, Id id_space){
+  if(player == NULL || id_space == NO_ID ){
+    return ERROR;
+  }
+
+  player->id_space_location = id_space;
+  return OK;
+}
 
 Status player_set_name(Player* player, char* name) {
   if (!player || !name) {
@@ -66,11 +89,27 @@ Status player_set_name(Player* player, char* name) {
   return OK;
 }
 
+/* functions to know properties and assets of the player */
+
 const char* player_get_name(Player* player) {
   if (!player) {
     return NULL;
   }
   return player->name;
+}
+
+const Id player_get_location(Player* player) {
+  if(player == NULL){
+    return  NULL;
+  }
+  return player->id_space_location;
+}
+
+const Id player_get_obj(Player* player) {
+  if(player == NULL){
+    return  NULL;
+  }
+  return player->id_object_take;
 }
 
 Status player_print(Player* player) {

@@ -14,13 +14,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/**
-   Private functions
-*/
-
-
-
-
 
 /**
    Game interface implementation
@@ -29,13 +22,17 @@
 Status game_create(Game *game) {
   int i;
 
+  if(game == NULL ){
+    return  ERROR;
+  }
+
   for (i = 0; i < MAX_SPACES; i++) {
     game->spaces[i] = NULL;
   }
 
   game->n_spaces = 0;
-  game->player_location = NO_ID;
-  game->object_location = NO_ID;
+  game->player = player_create(NO_ID);
+  game->objects = obj_create(NO_ID, NULL);
   game->last_cmd = command_create();
   game->finished = FALSE;
 
@@ -44,12 +41,21 @@ Status game_create(Game *game) {
 
 Status game_destroy(Game *game) {
   int i = 0;
+  if(game == NULL || game->objects == NULL || game->player == NULL)  {
+    return NULL;
+  }
 
   for (i = 0; i < game->n_spaces; i++) {
     space_destroy(game->spaces[i]);
   }
 
-  command_destroy(game->last_cmd);
+  if((player_destroy(game->player) == ERROR)  ||  (obj_destroy(game->objects) == ERROR)){
+    return ERROR;
+  }
+
+  if(command_destroy(game->last_cmd) == ERROR){
+    return ERROR;
+  }
 
   return OK;
 }
@@ -83,14 +89,19 @@ Status game_set_player_location(Game *game, Id id) {
     return ERROR;
   }
 
-  game->player_location = id;
+ return player_set_location(game->player, id);
 
-  return OK;
 }
 
-Id game_get_object_location(Game *game) { return game->object_location; }
+Id game_get_object_location(Game *game) { 
+  if(game == NULL){
+    return NO_ID;
+  }
 
-Status game_set_object_location(Game *game, Id id) {
+return player_get() ; 
+}
+
+/* Status game_set_object_location(Game *game, Id id) {
   if (id == NO_ID) {
     return ERROR;
   }
@@ -98,8 +109,15 @@ Status game_set_object_location(Game *game, Id id) {
   game->object_location = id;
   space_set_object(game_get_space(game, id), TRUE);
 }
+ */
 
-Command* game_get_last_command(Game *game) { return game->last_cmd; }
+Command* game_get_last_command(Game *game) { 
+  if(game == NULL){
+    return NO_CMD;
+  }
+
+  return game->last_cmd; 
+}
 
 Status game_set_last_command(Game *game, Command *command) {
   game->last_cmd = command;

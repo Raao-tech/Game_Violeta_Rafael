@@ -51,4 +51,4 @@ space.o: space.c
 .PHONY: clean play debug
 
 clean:
-	rm -f *.o $(TARGET)
+	rm -f *.o *.gch $(TARGET)
