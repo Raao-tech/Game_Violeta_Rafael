@@ -43,7 +43,8 @@ Status player_set_name(Player* player, char* name);
  * @param id_obj a Id of the object of the player
  * @return OK, if object is on the player, or ERROR if there  was not  some object
  */
-Status player_set_Obj(Player* player,  Id id_obj) ;
+Status player_set_obj (Player* player,  Id id_obj);
+
 
 
 /**
@@ -65,6 +66,24 @@ Status player_set_location (Player* player, Id id_space);
  * @return a string with the name of the player
  */
 const char* player_get_name(Player* player);
+
+/**
+ * @brief It gets the id of location of the player
+ * @author Violeta y Rafa
+ *
+ * @param player a pointer to the player
+ * @return a const id of the space of the player
+ */
+const Id player_get_location(Player* player);
+
+/**
+ * @brief It gets the id of object of a player
+ * @author Violeta y Rafa
+ *
+ * @param player a pointer to the player
+ * @return a id of the object on the player
+ */
+const Id player_get_obj(Player* player);
 
 
 /**

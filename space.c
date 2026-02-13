@@ -56,7 +56,6 @@ Space* space_create(Id id) {
 
   return newSpace;
 }
-
 Status space_destroy(Space* space) {
   if (!space) {
     return ERROR;
@@ -72,7 +71,6 @@ Id space_get_id(Space* space) {
   }
   return space->id;
 }
-
 Status space_set_name(Space* space, char* name) {
   if (!space || !name) {
     return ERROR;
@@ -83,7 +81,6 @@ Status space_set_name(Space* space, char* name) {
   }
   return OK;
 }
-
 const char* space_get_name(Space* space) {
   if (!space) {
     return NULL;
@@ -91,8 +88,7 @@ const char* space_get_name(Space* space) {
   return space->name;
 }
 
-/* functions to neitghboors */
-
+/* functions to sets to neitghboors */
 Status space_set_north(Space* space, Id id) {
   if (!space || id == NO_ID) {
     return ERROR;
@@ -100,14 +96,6 @@ Status space_set_north(Space* space, Id id) {
   space->north = id;
   return OK;
 }
-
-Id space_get_north(Space* space) {
-  if (!space) {
-    return NO_ID;
-  }
-  return space->north;
-}
-
 Status space_set_south(Space* space, Id id) {
   if (!space || id == NO_ID) {
     return ERROR;
@@ -115,14 +103,6 @@ Status space_set_south(Space* space, Id id) {
   space->south = id;
   return OK;
 }
-
-Id space_get_south(Space* space) {
-  if (!space) {
-    return NO_ID;
-  }
-  return space->south;
-}
-
 Status space_set_east(Space* space, Id id) {
   if (!space || id == NO_ID) {
     return ERROR;
@@ -130,14 +110,6 @@ Status space_set_east(Space* space, Id id) {
   space->east = id;
   return OK;
 }
-
-Id space_get_east(Space* space) {
-  if (!space) {
-    return NO_ID;
-  }
-  return space->east;
-}
-
 Status space_set_west(Space* space, Id id) {
   if (!space || id == NO_ID) {
     return ERROR;
@@ -146,6 +118,25 @@ Status space_set_west(Space* space, Id id) {
   return OK;
 }
 
+/* functions to gets to neitghboors */
+Id space_get_north(Space* space) {
+  if (!space) {
+    return NO_ID;
+  }
+  return space->north;
+}
+Id space_get_south(Space* space) {
+  if (!space) {
+    return NO_ID;
+  }
+  return space->south;
+}
+Id space_get_east(Space* space) {
+  if (!space) {
+    return NO_ID;
+  }
+  return space->east;
+}
 Id space_get_west(Space* space) {
   if (!space) {
     return NO_ID;

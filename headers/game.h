@@ -20,43 +20,43 @@
 #define MAX_SPACES 100
 
 typedef struct _Game {
-  Player* player;
-  Object* objects;
-  Space *spaces[MAX_SPACES];
+  Player*	player;
+  Object*	objects;
+  Space*	spaces[MAX_SPACES];
+  Command *	last_cmd;  
   
-  int   n_spaces;
-  Command *last_cmd;
-  Bool finished;
+  int		n_spaces;
+  Bool		finished;
 } Game;
 
-
+/* functions to create or destroy game */
 Status game_create(Game *game);
+Status game_destroy(Game *game);
 
 Status game_create_from_file(Game *game, char *filename);
 
-Status game_destroy(Game *game);
-
-Space *game_get_space(Game *game, Id id);
-
-Id game_get_player_location(Game *game);
-
+/* functions to stes properties of games */
 Status game_set_player_location(Game *game, Id id);
-
-Id game_get_object_location(Game *game);
-
 Status game_set_object_location(Game *game, Id id);
-
-Command* game_get_last_command(Game *game);
-
 Status game_set_last_command(Game *game, Command *command);
-
-Bool game_get_finished(Game *game);
-
 Status game_set_finished(Game *game, Bool finished);
 
-Status game_add_space(Game *game, Space *space);
-
+/* functions to gets properties of games */
+Space *game_get_space(Game *game, Id id);
+Command* game_get_last_command(Game *game);
+Id game_get_player_location(Game *game);
+Id game_get_object_location(Game *game);
 Id game_get_space_id_at(Game *game, int position);
+/**
+ * @brief It gets value boolean (TRUE) if game finish or (FALSE) while game do not finish yet
+ * @author Violeta y Rafa
+ *
+ * @param game a pointer to the game
+ * @return a value boolean, (TRUE) if game finish  or there was a problem; (FALSE) while game do not finish yet;
+ */
+Bool game_get_finished(Game *game);
+
+Status game_add_space(Game *game, Space *space);
 
 void game_print(Game *game);
 

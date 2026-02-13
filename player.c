@@ -51,7 +51,7 @@ Player* player_create(Id id) {
 }
 
 /* functions to sets properties and assets of the player */
-Status player_destroy(Player* player) {
+Status player_destroy (Player* player) {
   if (!player) {
     return ERROR;
   }
@@ -60,7 +60,7 @@ Status player_destroy(Player* player) {
   return OK;
 }
 
-Status player_set_obj(Player* player,  Id id_obj) {
+Status player_set_obj (Player* player,  Id id_obj) {
   if(player == NULL || id_obj == NO_ID ){
     return ERROR;
   }
@@ -78,7 +78,7 @@ Status player_set_location (Player* player, Id id_space){
   return OK;
 }
 
-Status player_set_name(Player* player, char* name) {
+Status player_set_name (Player* player, char* name) {
   if (!player || !name) {
     return ERROR;
   }
@@ -89,8 +89,8 @@ Status player_set_name(Player* player, char* name) {
   return OK;
 }
 
-/* functions to know properties and assets of the player */
 
+/* functions to know properties and assets of the player */
 const char* player_get_name(Player* player) {
   if (!player) {
     return NULL;
