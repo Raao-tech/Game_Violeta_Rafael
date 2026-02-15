@@ -36,7 +36,7 @@ Player* player_create(Id id) {
     return NULL;
   }
 
-  newPlayer = (Player*)calloc(1, sizeof(Player));
+  newPlayer = (Player*)malloc(sizeof(Player));
   if (newPlayer == NULL) {
     return NULL;
   }
@@ -91,21 +91,21 @@ Status player_set_name (Player* player, char* name) {
 
 
 /* functions to know properties and assets of the player */
-const char* player_get_name(Player* player) {
+char* player_get_name(Player* player) {
   if (!player) {
     return NULL;
   }
   return player->name;
 }
 
-const Id player_get_location(Player* player) {
+Id player_get_location(Player* player) {
   if(player == NULL){
     return  NULL;
   }
   return player->id_space_location;
 }
 
-const Id player_get_obj(Player* player) {
+Id player_get_obj(Player* player) {
   if(player == NULL){
     return  NULL;
   }

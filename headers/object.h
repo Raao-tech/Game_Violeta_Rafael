@@ -10,7 +10,12 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include "game.h"
+#include "command.h"
+#include "space.h"
+#include "types.h"
+#include "player.h"
+
+
 
 typedef struct _Object Object;
 
@@ -51,7 +56,7 @@ Status obj_set_name(Object* obj, char* name);
  * @param obj a pointer to the object
  * @return a string with the name of the object
  */
-const char* obj_get_name(Object* obj);
+char* obj_get_name(Object* obj);
 
 /**
  * @brief It prints the object information

@@ -1,7 +1,10 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "game.h"
+#include "command.h"
+#include "space.h"
+#include "types.h"
+#include "object.h"
 
 typedef struct _Player Player;
 
@@ -65,16 +68,16 @@ Status player_set_location (Player* player, Id id_space);
  * @param player a pointer to the player
  * @return a string with the name of the player
  */
-const char* player_get_name(Player* player);
+char* player_get_name(Player* player);
 
 /**
  * @brief It gets the id of location of the player
  * @author Violeta y Rafa
  *
  * @param player a pointer to the player
- * @return a const id of the space of the player
+ * @return a id of the space of the player
  */
-const Id player_get_location(Player* player);
+Id player_get_location(Player* player);
 
 /**
  * @brief It gets the id of object of a player
@@ -83,7 +86,7 @@ const Id player_get_location(Player* player);
  * @param player a pointer to the player
  * @return a id of the object on the player
  */
-const Id player_get_obj(Player* player);
+Id player_get_obj(Player* player);
 
 
 /**

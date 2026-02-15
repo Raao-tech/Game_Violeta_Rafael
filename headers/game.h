@@ -24,7 +24,7 @@ typedef struct _Game {
   Object*	objects;
   Space*	spaces[MAX_SPACES];
   Command *	last_cmd;  
-  
+
   int		n_spaces;
   Bool		finished;
 } Game;
@@ -42,7 +42,7 @@ Status game_set_last_command(Game *game, Command *command);
 Status game_set_finished(Game *game, Bool finished);
 
 /* functions to gets properties of games */
-Space *game_get_space(Game *game, Id id);
+Space*	game_get_space(Game *game, Id id);
 Command* game_get_last_command(Game *game);
 Id game_get_player_location(Game *game);
 Id game_get_object_location(Game *game);

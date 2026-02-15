@@ -75,13 +75,13 @@ Status obj_set_id(Object* obj, Id id) {
 }
 
 /* functios to gets info */
-const char* obj_get_name(Object* obj) {
+char* obj_get_name(Object* obj) {
   if (!obj) {
     return NULL;
   }
   return obj->name;
 }
-const int   obj_get_id(Object* obj){
+int   obj_get_id(Object* obj){
 
   if(obj == NULL){
     return  NO_ID;
@@ -93,7 +93,7 @@ const int   obj_get_id(Object* obj){
 /* functios to prints */
 Status obj_print_name(Object* obj) {
   /* Error Control */
-  if (!obj || obj->name == NULL) {
+  if (!obj || obj->name[0] == '\0') {
     return ERROR;
   }
 

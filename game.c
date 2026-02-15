@@ -31,8 +31,8 @@ Status game_create(Game *game) {
   }
 
   game->n_spaces = 0;
-  game->player = player_create(NO_ID);
-  game->objects = obj_create(NO_ID, NULL);
+  game->player = NULL;
+  game->objects = NULL;
   game->last_cmd = command_create();
   game->finished = FALSE;
 
@@ -41,7 +41,7 @@ Status game_create(Game *game) {
 Status game_destroy(Game *game) {
   int i = 0;
   if(game == NULL)  {
-    return NULL;
+    return ERROR;
   }
 
   for (i = 0; i < game->n_spaces; i++) {
@@ -61,11 +61,21 @@ Status game_destroy(Game *game) {
 
 
 /* Functions to sets properties of the game */
+Status game_create_player(Game *game, Id id_player){
+  if (game == NULL){
+    return ERROR;
+  }
+
+  game->player = player_create(id_player);
+
+  return  OK;
+  
+}
 Status game_set_object_location(Game *game, Id id) {
   if (id == NO_ID) {
     return ERROR;
   }
-
+  space_set_object(game->spaces, id);
   return space_set_object(game->spaces, id);
 }
 Status game_set_player_location(Game *game, Id id) {
