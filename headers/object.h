@@ -58,6 +58,13 @@ Status obj_set_name(Object* obj, char* name);
  */
 char* obj_get_name(Object* obj);
 
+int   obj_get_id(Object* obj);
+
+Status obj_print_name(Object* obj);
+
+Status obj_print_id(Object* obj);
+
+
 /**
  * @brief It prints the object information
  * @author Violeta y Rafa
@@ -66,5 +73,10 @@ char* obj_get_name(Object* obj);
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
 Status obj_print(Object* obj);
+
+
+
+
+
 
 #endif
