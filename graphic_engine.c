@@ -130,7 +130,7 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game) {
       screen_area_puts(ge->map, str);
     }
 
-    if (game_get_object_location(game) == id_left)
+    if (game_get_object_location(game) == id_rigth)
       obj = '+';
     else
       obj = ' ';
@@ -146,7 +146,7 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game) {
       screen_area_puts(ge->map, str);
     }
 
-    if (game_get_object_location(game) == id_rigth)
+    if (game_get_object_location(game) == id_left)
       obj = '+';
     else
       obj = ' ';

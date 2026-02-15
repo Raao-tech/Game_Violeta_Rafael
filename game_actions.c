@@ -26,6 +26,12 @@ void game_actions_next(Game *game);
 
 void game_actions_back(Game *game);
 
+
+void game_actions_left(Game *game);
+void game_actions_right(Game *game);
+void game_actions_take(Game *game);
+void game_actions_drop(Game *game);
+
 /**
    Game actions implementation
 */
@@ -38,8 +44,8 @@ Status game_actions_update(Game *game, Command *command)
 
   cmd = command_get_code(command);
 
-  switch (cmd)
-  {
+  switch (cmd){
+
   case UNKNOWN:
     game_actions_unknown(game);
     break;
@@ -51,10 +57,26 @@ Status game_actions_update(Game *game, Command *command)
   case NEXT:
     game_actions_next(game);
     break;
-
+  
+  case LEFT:
+    game_actions_left(game);
+    break;
+  case RIGHT:
+    game_actions_right(game);
+    break;
+  
   case BACK:
     game_actions_back(game);
     break;
+
+  case TAKE:
+    game_actions_take(game);
+    break;
+  case DROP:
+    game_actions_drop(game);
+    break;
+      
+  
 
   default:
     break;
@@ -145,6 +167,37 @@ void game_actions_right(Game *game)
 
   if (current_id != NO_ID){
     game_set_player_location(game, current_id);
+  }
+
+  return;
+}
+void game_actions_take(Game *game){
+
+  Id space_id = NO_ID;
+
+  space_id = game_get_player_location(game);
+
+  if (NO_ID == space_id){
+    return;
+  }
+
+  game_player_take(game, game_get_object_location(game));
+  return;
+}
+
+void game_actions_drop(Game *game){
+
+  Id space_id = NO_ID;
+
+  space_id = game_get_player_location(game);
+
+  if (NO_ID == space_id){
+    return;
+  }
+
+
+  if(game_player_drop(game) == ERROR){
+    return;
   }
 
   return;
