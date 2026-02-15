@@ -36,6 +36,8 @@ Status game_destroy(Game *game);
 Status game_create_from_file(Game *game, char *filename);
 
 /* functions to stes properties of games */
+Status game_create_player(Game *game, Id id_player);
+Status game_create_object(Game *game, Id id_obj, char* name);
 Status game_set_player_location(Game *game, Id id);
 Status game_set_object_location(Game *game, Id id);
 Status game_set_last_command(Game *game, Command *command);

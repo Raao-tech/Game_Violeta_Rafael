@@ -19,46 +19,6 @@
    Game interface implementation
 */
 
-Status game_create(Game *game) {
-  int i;
-
-  if(game == NULL ){
-    return  ERROR;
-  }
-
-  for (i = 0; i < MAX_SPACES; i++) {
-    game->spaces[i] = NULL;
-  }
-
-  game->n_spaces = 0;
-  game->player = NULL;
-  game->objects = NULL;
-  game->last_cmd = command_create();
-  game->finished = FALSE;
-
-  return OK;
-}
-Status game_destroy(Game *game) {
-  int i = 0;
-  if(game == NULL)  {
-    return ERROR;
-  }
-
-  for (i = 0; i < game->n_spaces; i++) {
-    space_destroy(game->spaces[i]);
-  }
-
-  if((player_destroy(game->player) == ERROR)  ||  (obj_destroy(game->objects) == ERROR)){
-    return ERROR;
-  }
-
-  if(command_destroy(game->last_cmd) == ERROR){
-    return ERROR;
-  }
-
-  return OK;
-}
-
 
 /* Functions to sets properties of the game */
 Status game_create_player(Game *game, Id id_player){
@@ -71,6 +31,17 @@ Status game_create_player(Game *game, Id id_player){
   return  OK;
   
 }
+Status game_create_object(Game *game, Id id_obj, char* name){
+  if (game == NULL){
+    return ERROR;
+  }
+
+  game->objects = obj_create(id_obj, name);
+
+  return  OK;
+  
+}
+
 Status game_set_object_location(Game *game, Id id) {
   if (id == NO_ID) {
     return ERROR;
@@ -141,6 +112,48 @@ Bool game_get_finished(Game *game) {
   }
   
   return game->finished; 
+}
+
+
+/* Functions to create the game */
+Status game_create(Game *game) {
+  int i;
+
+  if(game == NULL ){
+    return  ERROR;
+  }
+
+  for (i = 0; i < MAX_SPACES; i++) {
+    game->spaces[i] = NULL;
+  }
+
+  game->n_spaces = 0;
+  game->player = NULL;
+  game->objects = NULL;
+  game->last_cmd = command_create();
+  game->finished = FALSE;
+
+  return OK;
+}
+Status game_destroy(Game *game) {
+  int i = 0;
+  if(game == NULL)  {
+    return ERROR;
+  }
+
+  for (i = 0; i < game->n_spaces; i++) {
+    space_destroy(game->spaces[i]);
+  }
+
+  if((player_destroy(game->player) == ERROR)  ||  (obj_destroy(game->objects) == ERROR)){
+    return ERROR;
+  }
+
+  if(command_destroy(game->last_cmd) == ERROR){
+    return ERROR;
+  }
+
+  return OK;
 }
 
 void game_print(Game *game) {

@@ -21,7 +21,7 @@
 void game_actions_unknown(Game *game);
 
 void game_actions_exit(Game *game);
-
+    
 void game_actions_next(Game *game);
 
 void game_actions_back(Game *game);
@@ -67,9 +67,9 @@ Status game_actions_update(Game *game, Command *command)
    Calls implementation for each action
 */
 
-void game_actions_unknown(Game *game) {}
+void game_actions_unknown(Game *game) {(void*)game;}
 
-void game_actions_exit(Game *game) {}
+void game_actions_exit(Game *game) { (void*)game;}
 
 void game_actions_next(Game *game)
 {
@@ -77,8 +77,7 @@ void game_actions_next(Game *game)
   Id space_id = NO_ID;
 
   space_id = game_get_player_location(game);
-  if (space_id == NO_ID)
-  {
+  if (space_id == NO_ID){
     return;
   }
 
@@ -98,14 +97,53 @@ void game_actions_back(Game *game)
 
   space_id = game_get_player_location(game);
 
-  if (NO_ID == space_id)
-  {
+  if (NO_ID == space_id){
     return;
   }
 
   current_id = space_get_north(game_get_space(game, space_id));
-  if (current_id != NO_ID)
-  {
+
+  if (current_id != NO_ID){
+    player_set_location(game->player, current_id);
+  }
+
+  return;
+}
+
+void game_actions_left(Game *game)
+{
+  Id current_id = NO_ID;
+  Id space_id = NO_ID;
+
+  space_id = game_get_player_location(game);
+
+  if (NO_ID == space_id){
+    return;
+  }
+
+  current_id = space_get_west(game_get_space(game, space_id));
+
+  if (current_id != NO_ID){
+    game_set_player_location(game, current_id);
+  }
+
+  return;
+}
+
+void game_actions_right(Game *game)
+{
+  Id current_id = NO_ID;
+  Id space_id = NO_ID;
+
+  space_id = game_get_player_location(game);
+
+  if (NO_ID == space_id){
+    return;
+  }
+
+  current_id = space_get_east(game_get_space(game, space_id));
+
+  if (current_id != NO_ID){
     game_set_player_location(game, current_id);
   }
 

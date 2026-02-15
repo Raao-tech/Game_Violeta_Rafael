@@ -100,14 +100,14 @@ char* player_get_name(Player* player) {
 
 Id player_get_location(Player* player) {
   if(player == NULL){
-    return  NULL;
+    return  NO_ID;
   }
   return player->id_space_location;
 }
 
 Id player_get_obj(Player* player) {
   if(player == NULL){
-    return  NULL;
+    return  NO_ID;
   }
   return player->id_object_take;
 }

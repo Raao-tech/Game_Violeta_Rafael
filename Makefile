@@ -15,7 +15,7 @@ play: $(TARGET)
 debug: $(TARGET)
 	$(PREFLAG) ./$(TARGET)	$(BD)
 
-castle: $(DEPENDS)
+all: $(DEPENDS)
 	$(CC) $(FLAGS) $^ -L. -lscreen -o $(TARGET)
 
 command.o: command.c
