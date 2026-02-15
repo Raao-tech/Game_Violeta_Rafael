@@ -1,8 +1,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "command.h"
-#include "space.h"
+
+
 #include "types.h"
 #include "object.h"
 

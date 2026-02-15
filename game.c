@@ -75,8 +75,8 @@ Status game_set_object_location(Game *game, Id id) {
   if (id == NO_ID) {
     return ERROR;
   }
-  space_set_object(game->spaces, id);
-  return space_set_object(game->spaces, id);
+  space_set_object(game->spaces[0], id);
+  return space_set_object(game->spaces[0], id);
 }
 Status game_set_player_location(Game *game, Id id) {
   if (id == NO_ID) {
@@ -114,23 +114,23 @@ Space *game_get_space(Game *game, Id id) {
 
   return NULL;
 }
-const Id game_get_player_location(Game *game) { 
+Id game_get_player_location(Game *game) { 
   if(!game){
     return  NO_ID;
   } 
 
   return  player_get_location(game->player);
 }
-const Id game_get_object_location(Game *game) { 
+Id game_get_object_location(Game *game) { 
   if(game == NULL){
     return NO_ID;
   }
 
-  return space_get_object(game->spaces); 
+  return space_get_object(game->spaces[0]); 
 }
 Command* game_get_last_command(Game *game) { 
   if(game == NULL){
-    return NO_CMD;
+    return NULL;
   }
 
   return game->last_cmd; 
@@ -153,7 +153,7 @@ void game_print(Game *game) {
     space_print(game->spaces[i]);
   }
 
-  printf("=> Object location: %d\n", (int)space_get_object(game->spaces));
+  printf("=> Object location: %d\n", (int)space_get_object(game->spaces[0]));
   printf("=> Player location: %d\n", (int)player_get_location(game->player));
 }
 
