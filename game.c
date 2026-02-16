@@ -190,7 +190,10 @@ Bool game_get_finished(Game *game) {
   
   return game->finished; 
 }
-
+Id game_get_object_id(Game *game) {
+  if (!game || !game->objects) return NO_ID;
+  return obj_get_id(game->objects);
+}
 
 /* Functions to create the game */
 Status game_create(Game *game) {

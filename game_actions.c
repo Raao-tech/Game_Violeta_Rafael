@@ -182,11 +182,14 @@ void game_actions_take(Game *game){
   if (NO_ID == space_id){
     return;
   }
-  if( (obj_id = game_get_object_location(game)) == NO_ID){
+  obj_id = game_get_object_id(game);
+  if (obj_id == NO_ID) {
     return;
   }
 
-  game_player_take(game, obj_id);
+  if (game_player_take(game, obj_id) == ERROR) {
+    return;
+  }
   return;
 }
 

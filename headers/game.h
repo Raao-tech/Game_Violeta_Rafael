@@ -48,6 +48,7 @@ Space*	game_get_space(Game *game, Id id);
 Command* game_get_last_command(Game *game);
 Id game_get_player_location(Game *game);
 Id game_get_object_location(Game *game);
+Id game_get_object_id(Game *game);
 Id game_get_space_id_at(Game *game, int position);
 
 
