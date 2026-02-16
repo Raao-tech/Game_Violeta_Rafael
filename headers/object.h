@@ -22,7 +22,7 @@ typedef struct _Object Object;
  * @author Violeta y Rafa
  *
  * @param id the identification number for the new object
- * @param name the name for the new object
+ * @param name a string with the name for the new object
  * @return a new object, initialized
  */
 Object *obj_create(Id id, char *name);
@@ -55,10 +55,31 @@ Status obj_set_name(Object *obj, char *name);
  */
 char *obj_get_name(Object *obj);
 
+/**
+ * @brief It gets the id of an object
+ * @author Violeta y Rafa
+ *
+ * @param obj a pointer to the object
+ * @return the id of object
+ */
 Id obj_get_id(Object *obj);
 
+/**
+ * @brief It prints the object name
+ * @author Violeta y Rafa
+ *
+ * @param obj a pointer to the object
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
 Status obj_print_name(Object *obj);
 
+/**
+ * @brief It prints the object id
+ * @author Violeta y Rafa
+ *
+ * @param obj a pointer to the object
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
 Status obj_print_id(Object *obj);
 
 /**
