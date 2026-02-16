@@ -148,13 +148,13 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game)
 
     if (id_rigth != NO_ID)
     {
-      sprintf(str, "        v");
+      sprintf(str, "  +_____________");
       screen_area_puts(ge->map, str);
-      sprintf(str, "  +____________");
+      sprintf(str, " >  |");
       screen_area_puts(ge->map, str);
-      sprintf(str, "  =         %2d|", (int)id_rigth);
+      sprintf(str, "    |        %2d|", (int)id_rigth);
       screen_area_puts(ge->map, str);
-      sprintf(str, "  =     %c     |", obj);
+      sprintf(str, "    |     %c     |", obj);
       screen_area_puts(ge->map, str);
     }
 
@@ -165,13 +165,13 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game)
 
     if (id_left != NO_ID)
     {
-      sprintf(str, "        v");
+      sprintf(str, "   ____________+");
       screen_area_puts(ge->map, str);
-      sprintf(str, "  ____________+");
+      sprintf(str, "< |       ");
       screen_area_puts(ge->map, str);
-      sprintf(str, "  |%2d         -", (int)id_left);
+      sprintf(str, "  |%2d         |", (int)id_left);
       screen_area_puts(ge->map, str);
-      sprintf(str, "  |     %c     -", obj);
+      sprintf(str, "  |     %c     |", obj);
       screen_area_puts(ge->map, str);
     }
   }
