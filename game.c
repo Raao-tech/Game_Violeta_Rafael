@@ -30,6 +30,7 @@ Status game_create_player(Game *game, Id id_player)
 
   return OK;
 }
+
 Status game_create_object(Game *game, Id id_obj, char *name)
 {
   if (game == NULL)
@@ -77,6 +78,7 @@ Status game_set_object_location(Game *game, Id space_id)
   /* object on dest space*/
   return space_set_object(dest, oid);
 }
+
 Status game_set_player_location(Game *game, Id id)
 {
   if (id == NO_ID)
@@ -84,14 +86,16 @@ Status game_set_player_location(Game *game, Id id)
     return ERROR;
   }
 
-  return player_set_location(game->player, id);
+  return player_set_space(game->player, id);
 }
+
 Status game_set_last_command(Game *game, Command *command)
 {
   game->last_cmd = command;
 
   return OK;
 }
+
 Status game_set_finished(Game *game, Bool finished)
 {
   game->finished = finished;
@@ -119,6 +123,7 @@ Space *game_get_space(Game *game, Id id)
 
   return NULL;
 }
+
 Id game_get_player_location(Game *game)
 {
   if (!game)
@@ -126,8 +131,9 @@ Id game_get_player_location(Game *game)
     return NO_ID;
   }
 
-  return player_get_location(game->player);
+  return player_get_space(game->player);
 }
+
 Status game_player_take(Game *game, Id id_obj)
 {
   Space *space_on = NULL;
@@ -139,7 +145,7 @@ Status game_player_take(Game *game, Id id_obj)
   if (player_get_obj(game->player) != NO_ID)
     return ERROR;
 
-  location_player = player_get_location(game->player);
+  location_player = player_get_space(game->player);
   if (location_player == NO_ID)
     return ERROR;
 
@@ -154,6 +160,7 @@ Status game_player_take(Game *game, Id id_obj)
   space_set_object(space_on, NO_ID);
   return player_set_obj(game->player, id_obj);
 }
+
 Status game_player_drop(Game *game)
 {
 
@@ -167,7 +174,7 @@ Status game_player_drop(Game *game)
   }
 
   obj_on_id = player_get_obj(game->player);
-  space_id = player_get_location(game->player);
+  space_id = player_get_space(game->player);
 
   if (obj_on_id == NO_ID || space_id == NO_ID)
   {
@@ -182,6 +189,7 @@ Status game_player_drop(Game *game)
 
   return space_set_object(space_on, obj_on_id);
 }
+
 Id game_get_object_location(Game *game)
 {
   int i;
@@ -199,6 +207,7 @@ Id game_get_object_location(Game *game)
 
   return NO_ID;
 }
+
 Command *game_get_last_command(Game *game)
 {
   if (game == NULL)
@@ -208,6 +217,7 @@ Command *game_get_last_command(Game *game)
 
   return game->last_cmd;
 }
+
 Bool game_get_finished(Game *game)
 {
   if (game == NULL)
@@ -217,6 +227,7 @@ Bool game_get_finished(Game *game)
 
   return game->finished;
 }
+
 Id game_get_object_id(Game *game)
 {
   if (!game || !game->objects)
@@ -254,6 +265,7 @@ Status game_create(Game *game)
 
   return OK;
 }
+
 Status game_destroy(Game *game)
 {
   int i = 0;
@@ -293,7 +305,7 @@ void game_print(Game *game)
   }
 
   printf("=> Object location: %d\n", (int)space_get_object(game->spaces[0]));
-  printf("=> Player location: %d\n", (int)player_get_location(game->player));
+  printf("=> Player location: %d\n", (int)player_get_space(game->player));
 }
 
 /*

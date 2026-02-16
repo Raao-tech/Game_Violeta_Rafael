@@ -75,7 +75,7 @@ Status player_set_obj(Player *player, Id id_obj)
   return OK;
 }
 
-Status player_set_location(Player *player, Id id_space)
+Status player_set_space(Player *player, Id id_space)
 {
   if (player == NULL || id_space == NO_ID)
   {
@@ -110,7 +110,7 @@ char *player_get_name(Player *player)
   return player->name;
 }
 
-Id player_get_location(Player *player)
+Id player_get_space(Player *player)
 {
   if (player == NULL)
   {

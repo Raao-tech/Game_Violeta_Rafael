@@ -18,6 +18,7 @@
    Private functions
 */
 
+
 void game_actions_unknown(Game *game);
 
 void game_actions_exit(Game *game);
@@ -89,7 +90,7 @@ Status game_actions_update(Game *game, Command *command)
 
 void game_actions_unknown(Game *game) { (void)game; }
 
-void game_actions_exit(Game *game) { (void)game; }
+void game_actions_exit(Game *game) {(void)game; }
 
 void game_actions_next(Game *game)
 {

@@ -102,6 +102,7 @@ Status game_load_object(Game *game, Id id_object, char *name)
   /*set location of the object*/
   return game_set_object_location(game, game_get_space_id_at(game, 0));
 }
+
 Status game_create_from_file(Game *game, char *filename)
 {
   if (game_create(game) == ERROR)

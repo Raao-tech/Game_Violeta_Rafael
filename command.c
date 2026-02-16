@@ -116,6 +116,8 @@ Status command_get_user_input(Command *command)
     }
     return command_set_code(command, cmd);
   }
+  
   else
     return command_set_code(command, EXIT);
+
 }
