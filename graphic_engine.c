@@ -120,20 +120,18 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game)
     else
       obj_act = ' ';
 
-      
     if (game_get_object_location(game) == id_left)
       obj_left = '+';
     else
       obj_left = ' ';
- 
+
     if (game_get_object_location(game) == id_rigth)
       obj_left = '+';
     else
       obj_left = ' ';
 
-
-        //CASO IZQUEIRDA DERECHA Y ACTUAL
-    if (id_act != NO_ID &&  id_left != NO_ID &&  id_rigth != NO_ID )
+    // RIGHT AND ACTUAL AND LEFT
+    if (id_act != NO_ID && id_left != NO_ID && id_rigth != NO_ID)
     {
       sprintf(str, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
       screen_area_puts(ge->map, str);
@@ -141,7 +139,7 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game)
       screen_area_puts(ge->map, str);
       sprintf(str, " +------------+            +------------+             +------------+ ");
       screen_area_puts(ge->map, str);
-      sprintf(str, " |         %2d|       <    | >8D     %2d|    >        |         %2d| ", (int)id_act, (int)id_left,  (int)id_rigth);
+      sprintf(str, " |         %2d|       <    | >8D     %2d|    >        |         %2d| ", (int)id_act, (int)id_left, (int)id_rigth);
       screen_area_puts(ge->map, str);
       sprintf(str, " |      %c    |       <    |     %c     |     >       |      %c    | ", obj_right, obj_act, obj_left);
       screen_area_puts(ge->map, str);
@@ -153,14 +151,16 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game)
       sprintf(str, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
       screen_area_puts(ge->map, str);
 
-      //CASO IZQUIERDA Y ACTUAL
-    }else if(id_act != NO_ID  && id_rigth != NO_ID){
+      // RIGTH AND ACTUAL
+    }
+    else if (id_act != NO_ID && id_rigth != NO_ID)
+    {
       sprintf(str, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
       screen_area_puts(ge->map, str);
       sprintf(str, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
       sprintf(str, " +------------+            +------------+++++++++++++++++++++++++++++");
       screen_area_puts(ge->map, str);
-      sprintf(str, " |         %2d|       <    | >8D     %2d|++++++++++++++++++++++++++++",  (int)id_rigth, (int)id_act);
+      sprintf(str, " |         %2d|       <    | >8D     %2d|++++++++++++++++++++++++++++", (int)id_rigth, (int)id_act);
       screen_area_puts(ge->map, str);
       sprintf(str, "|             |        <   |            |++++++++++++++++++++++++++++");
       screen_area_puts(ge->map, str);
@@ -170,14 +170,16 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game)
       sprintf(str, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
       screen_area_puts(ge->map, str);
       sprintf(str, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
-      //CASO DERECHA Y ACTUAL
-    }else if(id_act != NO_ID  && id_left != NO_ID){
+      // CASO DERECHA Y ACTUAL
+    }
+    else if (id_act != NO_ID && id_left != NO_ID)
+    {
       sprintf(str, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
       screen_area_puts(ge->map, str);
       sprintf(str, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
       sprintf(str, "++++++++++++++++++++++++++++------------+              +------------+");
       screen_area_puts(ge->map, str);
-      sprintf(str, "+++++++++++++++++++++++++++| >8D     %2d|       >      |         %2d |", (int)id_act,  (int)id_left);
+      sprintf(str, "+++++++++++++++++++++++++++| >8D     %2d|       >      |         %2d |", (int)id_act, (int)id_left);
       screen_area_puts(ge->map, str);
       sprintf(str, "+++++++++++++++++++++++++++|     %c      |       >      |      %c      |", obj_act, obj_left);
       screen_area_puts(ge->map, str);
@@ -188,7 +190,9 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game)
       sprintf(str, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
       screen_area_puts(ge->map, str);
       sprintf(str, "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ");
-    }else if(id_act != NO_ID){
+    }
+    else if (id_act != NO_ID)
+    {
       sprintf(str, "++++++++++++++++++++++++++++-------------++++++++++++++++++++++++++++");
       screen_area_puts(ge->map, str);
       sprintf(str, "+++++++++++++++++++++++++++| >8D       %2d|+++++++++++++++++++++++++++", (int)id_act);
@@ -201,8 +205,6 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game)
       screen_area_puts(ge->map, str);
       sprintf(str, "++++++++++++++++++++++++++++-------------++++++++++++++++++++++++++++");
       screen_area_puts(ge->map, str);
-      
-       
     }
 
     if (game_get_object_location(game) == id_next)
@@ -223,8 +225,6 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game)
       sprintf(str, "+++++++++++++++++++++++++++++-----------+++++++++++++++++++++++++++++");
       screen_area_puts(ge->map, str);
     }
-
-
   }
 
   /* Paint in the description area */
@@ -243,11 +243,13 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game)
 
   /* List all spaces loaded */
   int n = game_get_n_spaces(game);
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < n; i++)
+  {
     Id sid = game_get_space_id_at(game, i);
     Space *sp = game_get_space(game, sid);
 
-    if (!sp) continue;
+    if (!sp)
+      continue;
 
     sprintf(str, "[%ld]%s%s",
             (long)sid,

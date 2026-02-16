@@ -236,11 +236,13 @@ Id game_get_object_id(Game *game)
 }
 int game_get_n_spaces(Game *game)
 {
-  if(!game) {return -1;}
+  if (!game)
+  {
+    return -1;
+  }
 
-  return  game->n_spaces;
+  return game->n_spaces;
 }
-
 
 /* Functions to create the game */
 Status game_create(Game *game)
