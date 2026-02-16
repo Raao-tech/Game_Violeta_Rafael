@@ -114,30 +114,26 @@ Id game_get_player_location(Game *game) {
 
   return  player_get_location(game->player);
 }
-Status game_player_take(Game *game, Id id_obj){
+Status game_player_take(Game *game, Id id_obj) {
+  Space *space_on = NULL;
+  Id location_player = NO_ID;
 
-  Space* space_on = NULL;
-  Id  location_player = NO_ID;
+  if (!game || id_obj == NO_ID) return ERROR;
 
-  if(game == NULL || id_obj == NO_ID){
-    return ERROR;
-  }
+  /* si ya lleva algo, no puede tomar */
+  if (player_get_obj(game->player) != NO_ID) return ERROR;
 
   location_player = player_get_location(game->player);
-
-  if(location_player == NO_ID){
-    return ERROR;
-  }
+  if (location_player == NO_ID) return ERROR;
 
   space_on = game_get_space(game, location_player);
+  if (!space_on) return ERROR;
 
-  if(space_on == NULL){
-    return ERROR;
-  }
+  /* solo si el objeto está en esta sala */
+  if (space_get_object(space_on) != id_obj) return ERROR;
 
   space_set_object(space_on, NO_ID);
-  
-  return player_set_obj(game->player,id_obj);
+  return player_set_obj(game->player, id_obj);
 }
 Status game_player_drop(Game *game){
 
