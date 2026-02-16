@@ -42,12 +42,34 @@ Status game_create_object(Game *game, Id id_obj, char* name){
   
 }
 
-Status game_set_object_location(Game *game, Id id) {
-  if (id == NO_ID) {
+Status game_set_object_location(Game *game, Id space_id) {
+  int i;
+  Space *dest = NULL;
+  Id oid = NO_ID;
+
+  if (!game || space_id == NO_ID || !game->objects) {
     return ERROR;
   }
-  space_set_object(game->spaces[0], id);
-  return space_set_object(game->spaces[0], id);
+
+  dest = game_get_space(game, space_id);
+  if (!dest) {
+    return ERROR;
+  }
+
+  oid = obj_get_id(game->objects);
+  if (oid == NO_ID) {
+    return ERROR;
+  }
+
+  /* Remove the object of anysite  */
+  for (i = 0; i < game->n_spaces; i++) {
+    if (space_get_object(game->spaces[i]) == oid) {
+      space_set_object(game->spaces[i], NO_ID);
+    }
+  }
+
+  /* object on dest space*/
+  return space_set_object(dest, oid);
 }
 Status game_set_player_location(Game *game, Id id) {
   if (id == NO_ID) {
@@ -113,6 +135,8 @@ Status game_player_take(Game *game, Id id_obj){
     return ERROR;
   }
 
+  space_set_object(space_on, NO_ID);
+  
   return player_set_obj(game->player,id_obj);
 }
 Status game_player_drop(Game *game){
@@ -135,10 +159,9 @@ Status game_player_drop(Game *game){
   if( (space_on = game_get_space(game, space_id)) == NULL){
     return ERROR;
   }
+  player_set_obj(game->player, NO_ID);
 
   return  space_set_object(space_on, obj_on_id);
-
-  return ERROR;
 }
 Id game_get_object_location(Game *game) { 
   int i;

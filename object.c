@@ -81,7 +81,7 @@ char* obj_get_name(Object* obj) {
   }
   return obj->name;
 }
-int   obj_get_id(Object* obj){
+Id   obj_get_id(Object* obj){
 
   if(obj == NULL){
     return  NO_ID;

@@ -126,7 +126,7 @@ void game_actions_back(Game *game)
   current_id = space_get_north(game_get_space(game, space_id));
 
   if (current_id != NO_ID){
-    player_set_location(game->player, current_id);
+    game_set_player_location(game, current_id);
   }
 
   return;
@@ -143,7 +143,7 @@ void game_actions_left(Game *game)
     return;
   }
 
-  current_id = space_get_west(game_get_space(game, space_id));
+  current_id = space_get_east(game_get_space(game, space_id));
 
   if (current_id != NO_ID){
     game_set_player_location(game, current_id);
@@ -163,7 +163,7 @@ void game_actions_right(Game *game)
     return;
   }
 
-  current_id = space_get_east(game_get_space(game, space_id));
+  current_id = space_get_west(game_get_space(game, space_id));
 
   if (current_id != NO_ID){
     game_set_player_location(game, current_id);
@@ -174,14 +174,19 @@ void game_actions_right(Game *game)
 void game_actions_take(Game *game){
 
   Id space_id = NO_ID;
+  Id obj_id = NO_ID;
+
 
   space_id = game_get_player_location(game);
 
   if (NO_ID == space_id){
     return;
   }
+  if( (obj_id = game_get_object_location(game)) == NO_ID){
+    return;
+  }
 
-  game_player_take(game, game_get_object_location(game));
+  game_player_take(game, obj_id);
   return;
 }
 

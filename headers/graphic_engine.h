@@ -37,7 +37,7 @@ void graphic_engine_destroy(Graphic_engine *ge);
  * @author Profesores PPROG
  * 
  * @param ge pointer to the graphic engine
- * @param ge pointer to game
+ * @param game pointer to game
  */
 void graphic_engine_paint_game(Graphic_engine *ge, Game *game);
 

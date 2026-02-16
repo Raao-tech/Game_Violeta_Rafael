@@ -5,7 +5,7 @@
 #include <string.h>
 
 #define ID_PLAYER 1
-#define ID_OBJECT 1
+#define ID_OBJECT 11
 #define NAME_OBJC "TNT"
 
 Status game_load_spaces(Game *game, char *filename) {

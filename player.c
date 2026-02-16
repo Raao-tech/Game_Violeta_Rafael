@@ -61,7 +61,7 @@ Status player_destroy (Player* player) {
 }
 
 Status player_set_obj (Player* player,  Id id_obj) {
-  if(player == NULL || id_obj == NO_ID ){
+  if(player == NULL ){
     return ERROR;
   }
 

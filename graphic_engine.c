@@ -140,7 +140,7 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game) {
       screen_area_puts(ge->map, str);
       sprintf(str, "  +____________");
       screen_area_puts(ge->map, str);
-      sprintf(str, "  =         %2d|", (int)id_next);
+      sprintf(str, "  =         %2d|", (int)id_rigth);
       screen_area_puts(ge->map, str);
       sprintf(str, "  =     %c     |", obj);
       screen_area_puts(ge->map, str);
@@ -156,7 +156,7 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game) {
       screen_area_puts(ge->map, str);
       sprintf(str, "  ____________+");
       screen_area_puts(ge->map, str);
-      sprintf(str, "  |%2d         -", (int)id_next);
+      sprintf(str, "  |%2d         -", (int)id_left);
       screen_area_puts(ge->map, str);
       sprintf(str, "  |     %c     -", obj);
       screen_area_puts(ge->map, str);

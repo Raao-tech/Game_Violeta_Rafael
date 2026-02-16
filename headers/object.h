@@ -58,7 +58,7 @@ Status obj_set_name(Object* obj, char* name);
  */
 char* obj_get_name(Object* obj);
 
-int   obj_get_id(Object* obj);
+Id   obj_get_id(Object* obj);
 
 Status obj_print_name(Object* obj);
 
