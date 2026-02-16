@@ -114,7 +114,7 @@ Status obj_print_name(Object *obj)
     return ERROR;
   }
 
-  /* 1. Print the id and the name of the object */
+  /* Prints the name of the object */
   fprintf(stdout, "--> Object of Name : %s\n", obj->name);
 
   return OK;
@@ -127,7 +127,7 @@ Status obj_print_id(Object *obj)
     return ERROR;
   }
 
-  /* 1. Print the id and the name of the object */
+  /* Prints the id of the object */
   fprintf(stdout, "--> Object of ID : %ld\n", obj->id);
 
   return OK;
@@ -140,7 +140,7 @@ Status obj_print(Object *obj)
     return ERROR;
   }
 
-  /* 1. Print the id and the name of the object */
+  /* Print the id and the name of the object */
   fprintf(stdout, "--> Object (Id: %ld; Name: %s)\n", obj->id, obj->name);
 
   return OK;
