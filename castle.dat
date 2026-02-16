@@ -1,11 +1,12 @@
 #s:11|Entry|-1|-1|12|-1
-#s:12|Corridor|11|-1|13|-1
-#s:13|Diner|12|-1|-1|121
-#s:121|Dungeon|-1|12|-1|-1
+#s:12|Corridor|11|-1|13|121
+#s:13|Dinning Room|12|131|14|-1
 #s:14|Kitchen|13|-1|15|-1
-#s:15|Interior Courtyard|14|-1|16|-1
+#s:15|Courtyard|14|-1|16|-1
 #s:16|Garden|15|-1|-1|-1
-#s:131|Bedroom|-1|131|-1|13
-#s:131|Bathroom|-1|-1|-1|131
+#s:121|Daungeon|-1|12|-1|-1
+#s:131|Bedroom|-1|132|-1|13
+#s:132|Bathroom|-1|-1|-1|131
+
 
 

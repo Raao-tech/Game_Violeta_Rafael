@@ -223,6 +223,13 @@ Id game_get_object_id(Game *game)
     return NO_ID;
   return obj_get_id(game->objects);
 }
+int game_get_n_spaces(Game *game)
+{
+  if(!game) {return -1;}
+
+  return  game->n_spaces;
+}
+
 
 /* Functions to create the game */
 Status game_create(Game *game)

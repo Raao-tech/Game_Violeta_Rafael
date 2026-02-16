@@ -51,6 +51,8 @@ Id game_get_player_location(Game *game);
 Id game_get_object_location(Game *game);
 Id game_get_object_id(Game *game);
 Id game_get_space_id_at(Game *game, int position);
+int game_get_n_spaces(Game *game);
+
 
 /* functions to actions of the player */
 Status game_player_take(Game *game, Id id_obj);
