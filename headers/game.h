@@ -83,61 +83,110 @@ Status game_create_player(Game *game, Id id_player);
 Status game_create_object(Game *game, Id id_obj, char *name);
 
 /**
- * @brief 
+ * @brief Sets the location of a player
  * @author Violeta y Rafa
  *
  * @param game a pointer to game
- * @param id the palyer's ID
+ * @param id the ID of the space where we want to set the player
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
 Status game_set_player_location(Game *game, Id id);
 
 /**
- * @brief 
+ * @brief Sets the location of an object
  * @author Violeta y Rafa
  *
  * @param game a pointer to game
- * @param id_obj the object's ID
+ * @param space_id the ID of the space where we want to set the object
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
 Status game_set_object_location(Game *game, Id space_id);
 
 /**
- * @brief It verifies that there's an object and saves it inside the player
+ * @brief Sets the game's last command
  * @author Violeta y Rafa
  *
  * @param game a pointer to game
- * @param id_obj the object's ID
+ * @param command a pointer to command
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
 Status game_set_last_command(Game *game, Command *command);
 
 /**
- * @brief It verifies that there's an object and saves it inside the player
+ * @brief Sets game as finished (TRUE) or not finished (FALSE)
  * @author Violeta y Rafa
  *
  * @param game a pointer to game
- * @param id_obj the object's ID
+ * @param finished the boolean value (TRUE or FALSE)
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
 Status game_set_finished(Game *game, Bool finished);
 
 
 
-
-/* functions to gets properties of games */
+/**
+ * @brief Gets a space from its ID
+ * @author Violeta y Rafa
+ *
+ * @param game a pointer to game
+ * @param id the ID of the space we want to get
+ * @return the space we get
+ */
 Space *game_get_space(Game *game, Id id);
 
+/**
+ * @brief Gets the last command
+ * @author Violeta y Rafa
+ *
+ * @param game a pointer to game
+ * @return the last command
+ */
 Command *game_get_last_command(Game *game);
 
+/**
+ * @brief Gets the location of a player
+ * @author Violeta y Rafa
+ *
+ * @param game a pointer to game
+ * @return the ID of the space the player is located in
+ */
 Id game_get_player_location(Game *game);
 
+/**
+ * @brief Gets the location of an object
+ * @author Violeta y Rafa
+ *
+ * @param game a pointer to game
+ * @return the ID of the space the object is located in
+ */
 Id game_get_object_location(Game *game);
 
+/**
+ * @brief Gets the ID of an object
+ * @author Violeta y Rafa
+ *
+ * @param game a pointer to game
+ * @return the ID of the object
+ */
 Id game_get_object_id(Game *game);
 
-
+/**
+ * @brief Gets the ID of a space from its position in the array
+ * @author Violeta y Rafa
+ *
+ * @param game a pointer to game
+ * @param position the position of the space in the array
+ * @return the ID of the space
+ */
 Id game_get_space_id_at(Game *game, int position);
+
+/**
+ * @brief Gets the number of spaces in the array
+ * @author Violeta y Rafa
+ *
+ * @param game a pointer to game
+ * @return the number of spaces in the spaces array
+ */
 int game_get_n_spaces(Game *game);
 
 
