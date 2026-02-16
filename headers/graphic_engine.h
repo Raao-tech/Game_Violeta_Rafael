@@ -15,14 +15,13 @@
 
 typedef struct _Graphic_engine Graphic_engine;
 
-
 /**
  * @brief It creates a graphic engine, allocating memory and initializing it
  * @author Profesores PPROG
  *
  * @return a graphic engine, initialized
  */
-Graphic_engine* graphic_engine_create();
+Graphic_engine *graphic_engine_create();
 
 /**
  * @brief It destroys a graphic engine, freeing the allocated memory
@@ -35,7 +34,7 @@ void graphic_engine_destroy(Graphic_engine *ge);
 /**
  * @brief It paints the game's graphics
  * @author Profesores PPROG
- * 
+ *
  * @param ge pointer to the graphic engine
  * @param game pointer to game
  */

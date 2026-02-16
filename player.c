@@ -19,25 +19,27 @@
  *
  * This struct stores all the information of a player.
  */
-struct _Player {
+struct _Player
+{
   Id id;                    /*!< Id number of the object, it must be unique */
   char name[WORD_SIZE + 1]; /*!< Name of the object */
-  Id  id_space_location;
-  Id  id_object_take;
-
+  Id id_space_location;
+  Id id_object_take;
 };
 
-
-Player* player_create(Id id) {
-  Player* newPlayer = NULL;
+Player *player_create(Id id)
+{
+  Player *newPlayer = NULL;
 
   /* Error control */
-  if (id == NO_ID) {
+  if (id == NO_ID)
+  {
     return NULL;
   }
 
-  newPlayer = (Player*)malloc(sizeof(Player));
-  if (newPlayer == NULL) {
+  newPlayer = (Player *)malloc(sizeof(Player));
+  if (newPlayer == NULL)
+  {
     return NULL;
   }
 
@@ -51,8 +53,10 @@ Player* player_create(Id id) {
 }
 
 /* functions to sets properties and assets of the player */
-Status player_destroy (Player* player) {
-  if (!player) {
+Status player_destroy(Player *player)
+{
+  if (!player)
+  {
     return ERROR;
   }
 
@@ -60,8 +64,10 @@ Status player_destroy (Player* player) {
   return OK;
 }
 
-Status player_set_obj (Player* player,  Id id_obj) {
-  if(player == NULL ){
+Status player_set_obj(Player *player, Id id_obj)
+{
+  if (player == NULL)
+  {
     return ERROR;
   }
 
@@ -69,8 +75,10 @@ Status player_set_obj (Player* player,  Id id_obj) {
   return OK;
 }
 
-Status player_set_location (Player* player, Id id_space){
-  if(player == NULL || id_space == NO_ID ){
+Status player_set_location(Player *player, Id id_space)
+{
+  if (player == NULL || id_space == NO_ID)
+  {
     return ERROR;
   }
 
@@ -78,43 +86,53 @@ Status player_set_location (Player* player, Id id_space){
   return OK;
 }
 
-Status player_set_name (Player* player, char* name) {
-  if (!player || !name) {
+Status player_set_name(Player *player, char *name)
+{
+  if (!player || !name)
+  {
     return ERROR;
   }
 
-  if (!strcpy(player->name, name)) {
+  if (!strcpy(player->name, name))
+  {
     return ERROR;
   }
   return OK;
 }
 
-
 /* functions to know properties and assets of the player */
-char* player_get_name(Player* player) {
-  if (!player) {
+char *player_get_name(Player *player)
+{
+  if (!player)
+  {
     return NULL;
   }
   return player->name;
 }
 
-Id player_get_location(Player* player) {
-  if(player == NULL){
-    return  NO_ID;
+Id player_get_location(Player *player)
+{
+  if (player == NULL)
+  {
+    return NO_ID;
   }
   return player->id_space_location;
 }
 
-Id player_get_obj(Player* player) {
-  if(player == NULL){
-    return  NO_ID;
+Id player_get_obj(Player *player)
+{
+  if (player == NULL)
+  {
+    return NO_ID;
   }
   return player->id_object_take;
 }
 
-Status player_print(Player* player) {
+Status player_print(Player *player)
+{
   /* Error Control */
-  if (!player || player->id == NO_ID) {
+  if (!player || player->id == NO_ID)
+  {
     return ERROR;
   }
 

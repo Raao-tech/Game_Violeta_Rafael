@@ -8,7 +8,8 @@
 #define ID_OBJECT 11
 #define NAME_OBJC "TNT"
 
-Status game_load_spaces(Game *game, char *filename) {
+Status game_load_spaces(Game *game, char *filename)
+{
   FILE *file = NULL;
   char line[WORD_SIZE] = "";
   char name[WORD_SIZE] = "";
@@ -17,17 +18,21 @@ Status game_load_spaces(Game *game, char *filename) {
   Space *space = NULL;
   Status status = OK;
 
-  if (!filename) {
+  if (!filename)
+  {
     return ERROR;
   }
 
   file = fopen(filename, "r");
-  if (file == NULL) {
+  if (file == NULL)
+  {
     return ERROR;
   }
 
-  while (fgets(line, WORD_SIZE, file)) {
-    if (strncmp("#s:", line, 3) == 0) {
+  while (fgets(line, WORD_SIZE, file))
+  {
+    if (strncmp("#s:", line, 3) == 0)
+    {
       toks = strtok(line + 3, "|");
       id = atol(toks);
       toks = strtok(NULL, "|");
@@ -44,7 +49,8 @@ Status game_load_spaces(Game *game, char *filename) {
       printf("Leido: s:%ld|%s|%ld|%ld|%ld|%ld\n", id, name, north, east, south, west);
 #endif
       space = space_create(id);
-      if (space != NULL) {
+      if (space != NULL)
+      {
         space_set_name(space, name);
         space_set_north(space, north);
         space_set_east(space, east);
@@ -55,7 +61,8 @@ Status game_load_spaces(Game *game, char *filename) {
     }
   }
 
-  if (ferror(file)) {
+  if (ferror(file))
+  {
     status = ERROR;
   }
 
@@ -64,13 +71,15 @@ Status game_load_spaces(Game *game, char *filename) {
   return status;
 }
 
-
-Status game_load_player(Game *game, Id  id_player){
-  if(game == NULL || id_player == NO_ID){
+Status game_load_player(Game *game, Id id_player)
+{
+  if (game == NULL || id_player == NO_ID)
+  {
     return ERROR;
   }
 
-  if(game_create_player(game,id_player) == ERROR){
+  if (game_create_player(game, id_player) == ERROR)
+  {
     return ERROR;
   }
 
@@ -78,41 +87,42 @@ Status game_load_player(Game *game, Id  id_player){
   return game_set_player_location(game, game_get_space_id_at(game, 0));
 }
 
-Status game_load_object(Game *game, Id  id_object, char *name){
-  if(game == NULL || id_object == NO_ID || name == NULL){
+Status game_load_object(Game *game, Id id_object, char *name)
+{
+  if (game == NULL || id_object == NO_ID || name == NULL)
+  {
     return ERROR;
   }
 
-  if(game_create_object(game,id_object, name) == ERROR){
+  if (game_create_object(game, id_object, name) == ERROR)
+  {
     return ERROR;
   }
 
   /*set location of the object*/
-  return game_set_object_location(game, game_get_space_id_at(game, 0)); 
+  return game_set_object_location(game, game_get_space_id_at(game, 0));
 }
-Status game_create_from_file(Game *game, char *filename) {
-  if (game_create(game) == ERROR) {
+Status game_create_from_file(Game *game, char *filename)
+{
+  if (game_create(game) == ERROR)
+  {
     return ERROR;
   }
 
-  if(game_load_spaces(game, filename) == ERROR){
+  if (game_load_spaces(game, filename) == ERROR)
+  {
     return ERROR;
   }
 
-  if (game_load_player(game, ID_PLAYER) == ERROR) {
+  if (game_load_player(game, ID_PLAYER) == ERROR)
+  {
     return ERROR;
   }
 
-
-  if (game_load_object(game, ID_OBJECT, NAME_OBJC) == ERROR) {
+  if (game_load_object(game, ID_OBJECT, NAME_OBJC) == ERROR)
+  {
     return ERROR;
   }
-
 
   return OK;
 }
-
-
-
-
-

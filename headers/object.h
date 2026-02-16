@@ -15,10 +15,7 @@
 #include "types.h"
 #include "player.h"
 
-
-
 typedef struct _Object Object;
-
 
 /**
  * @brief It creates a new object, allocating memory and initializing it
@@ -28,7 +25,7 @@ typedef struct _Object Object;
  * @param name the name for the new object
  * @return a new object, initialized
  */
-Object* obj_create(Id id, char* name);
+Object *obj_create(Id id, char *name);
 
 /**
  * @brief It destroys an object, freeing the allocated memory
@@ -37,7 +34,7 @@ Object* obj_create(Id id, char* name);
  * @param obj a pointer to the object
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status obj_destroy(Object* obj);
+Status obj_destroy(Object *obj);
 
 /**
  * @brief It sets the name of an object
@@ -47,7 +44,7 @@ Status obj_destroy(Object* obj);
  * @param name the name of the object
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status obj_set_name(Object* obj, char* name);
+Status obj_set_name(Object *obj, char *name);
 
 /**
  * @brief It gets the name of an object
@@ -56,14 +53,13 @@ Status obj_set_name(Object* obj, char* name);
  * @param obj a pointer to the object
  * @return a string with the name of the object
  */
-char* obj_get_name(Object* obj);
+char *obj_get_name(Object *obj);
 
-Id   obj_get_id(Object* obj);
+Id obj_get_id(Object *obj);
 
-Status obj_print_name(Object* obj);
+Status obj_print_name(Object *obj);
 
-Status obj_print_id(Object* obj);
-
+Status obj_print_id(Object *obj);
 
 /**
  * @brief It prints the object information
@@ -72,11 +68,6 @@ Status obj_print_id(Object* obj);
  * @param obj a pointer to the object
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status obj_print(Object* obj);
-
-
-
-
-
+Status obj_print(Object *obj);
 
 #endif

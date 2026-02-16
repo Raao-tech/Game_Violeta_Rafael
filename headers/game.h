@@ -19,14 +19,15 @@
 
 #define MAX_SPACES 100
 
-typedef struct _Game {
-  Player*	player;
-  Object*	objects;
-  Space*	spaces[MAX_SPACES];
-  Command *	last_cmd;  
+typedef struct _Game
+{
+  Player *player;
+  Object *objects;
+  Space *spaces[MAX_SPACES];
+  Command *last_cmd;
 
-  int		n_spaces;
-  Bool		finished;
+  int n_spaces;
+  Bool finished;
 } Game;
 
 /* functions to create or destroy game */
@@ -37,20 +38,19 @@ Status game_create_from_file(Game *game, char *filename);
 
 /* functions to stes properties of games */
 Status game_create_player(Game *game, Id id_player);
-Status game_create_object(Game *game, Id id_obj, char* name);
+Status game_create_object(Game *game, Id id_obj, char *name);
 Status game_set_player_location(Game *game, Id id);
 Status game_set_object_location(Game *game, Id space_id);
 Status game_set_last_command(Game *game, Command *command);
 Status game_set_finished(Game *game, Bool finished);
 
 /* functions to gets properties of games */
-Space*	game_get_space(Game *game, Id id);
-Command* game_get_last_command(Game *game);
+Space *game_get_space(Game *game, Id id);
+Command *game_get_last_command(Game *game);
 Id game_get_player_location(Game *game);
 Id game_get_object_location(Game *game);
 Id game_get_object_id(Game *game);
 Id game_get_space_id_at(Game *game, int position);
-
 
 /* functions to actions of the player */
 Status game_player_take(Game *game, Id id_obj);

@@ -16,16 +16,31 @@
 #define N_CMDT 2
 #define N_CMD 9
 
-typedef enum { CMDS, CMDL } CommandType;
+typedef enum
+{
+    CMDS,
+    CMDL
+} CommandType;
 
-typedef enum { NO_CMD = -1, UNKNOWN, EXIT, NEXT, LEFT, RIGHT,BACK, TAKE, DROP} CommandCode;
+typedef enum
+{
+    NO_CMD = -1,
+    UNKNOWN,
+    EXIT,
+    NEXT,
+    LEFT,
+    RIGHT,
+    BACK,
+    TAKE,
+    DROP
+} CommandCode;
 
 typedef struct _Command Command;
 
-Command* command_create();
-Status command_destroy(Command* command);
-Status command_set_code(Command* command, CommandCode code);
-CommandCode command_get_code(Command* command);
-Status command_get_user_input(Command* command);
+Command *command_create();
+Status command_destroy(Command *command);
+Status command_set_code(Command *command, CommandCode code);
+CommandCode command_get_code(Command *command);
+Status command_get_user_input(Command *command);
 
 #endif

@@ -17,27 +17,30 @@
 
 #define CMD_LENGHT 30
 
-char *cmd_to_str[N_CMD][N_CMDT] = {{"", "No command"}, {"", "Unknown"}, {"e", "Exit"}, {"n", "Next"}, {"l", "Left"}, {"r", "Right"}, {"b", "Back"},  {"t", "Take"}, {"d", "Drop"}};
+char *cmd_to_str[N_CMD][N_CMDT] = {{"", "No command"}, {"", "Unknown"}, {"e", "Exit"}, {"n", "Next"}, {"l", "Left"}, {"r", "Right"}, {"b", "Back"}, {"t", "Take"}, {"d", "Drop"}};
 
 /**
  * @brief Command
  *
  * This struct stores all the information related to a command.
  */
-struct _Command {
+struct _Command
+{
   CommandCode code; /*!< Name of the command */
 };
 
 /** space_create allocates memory for a new space
  *  and initializes its members
  */
-Command *command_create(){
+Command *command_create()
+{
 
   Command *newCommand = NULL;
 
   newCommand = (Command *)calloc(1, sizeof(Command));
 
-  if (newCommand == NULL){
+  if (newCommand == NULL)
+  {
     return NULL;
   }
 
@@ -49,7 +52,8 @@ Command *command_create(){
 
 Status command_destroy(Command *command)
 {
-  if (!command){
+  if (!command)
+  {
     return ERROR;
   }
 
@@ -69,7 +73,6 @@ Status command_set_code(Command *command, CommandCode code)
 
   return OK;
 }
-
 
 CommandCode command_get_code(Command *command)
 {

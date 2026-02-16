@@ -19,22 +19,26 @@
  *
  * This struct stores all the information of a obj.
  */
-struct _Object {
+struct _Object
+{
   Id id;                    /*!< Id number of the object, it must be unique */
   char name[WORD_SIZE + 1]; /*!< Name of the object */
 };
 
 /* Functions to create or destroy */
-Object* obj_create(Id id, char* name) {
-  Object* newObj = NULL;
+Object *obj_create(Id id, char *name)
+{
+  Object *newObj = NULL;
 
   /* Error control */
-  if (id == NO_ID || name == NULL) {
+  if (id == NO_ID || name == NULL)
+  {
     return NULL;
   }
 
-  newObj = (Object*)calloc(1, sizeof(Object));
-  if (newObj == NULL) {
+  newObj = (Object *)calloc(1, sizeof(Object));
+  if (newObj == NULL)
+  {
     return NULL;
   }
 
@@ -45,8 +49,10 @@ Object* obj_create(Id id, char* name) {
   return newObj;
 }
 
-Status obj_destroy(Object* obj) {
-  if (obj == NULL) {
+Status obj_destroy(Object *obj)
+{
+  if (obj == NULL)
+  {
     return ERROR;
   }
 
@@ -55,18 +61,23 @@ Status obj_destroy(Object* obj) {
 }
 
 /* Functions set properties*/
-Status obj_set_name(Object* obj, char* name) {
-  if (!obj || !name) {
+Status obj_set_name(Object *obj, char *name)
+{
+  if (!obj || !name)
+  {
     return ERROR;
   }
 
-  if (strcpy(obj->name, name) == NULL) {
+  if (strcpy(obj->name, name) == NULL)
+  {
     return ERROR;
   }
   return OK;
 }
-Status obj_set_id(Object* obj, Id id) {
-  if (!obj || id == NO_ID) {
+Status obj_set_id(Object *obj, Id id)
+{
+  if (!obj || id == NO_ID)
+  {
     return ERROR;
   }
   obj->id = id;
@@ -75,25 +86,31 @@ Status obj_set_id(Object* obj, Id id) {
 }
 
 /* functios to gets info */
-char* obj_get_name(Object* obj) {
-  if (!obj) {
+char *obj_get_name(Object *obj)
+{
+  if (!obj)
+  {
     return NULL;
   }
   return obj->name;
 }
-Id   obj_get_id(Object* obj){
+Id obj_get_id(Object *obj)
+{
 
-  if(obj == NULL){
-    return  NO_ID;
+  if (obj == NULL)
+  {
+    return NO_ID;
   }
 
   return obj->id;
 }
 
 /* functios to prints */
-Status obj_print_name(Object* obj) {
+Status obj_print_name(Object *obj)
+{
   /* Error Control */
-  if (!obj || obj->name[0] == '\0') {
+  if (!obj || obj->name[0] == '\0')
+  {
     return ERROR;
   }
 
@@ -102,9 +119,11 @@ Status obj_print_name(Object* obj) {
 
   return OK;
 }
-Status obj_print_id(Object* obj) {
+Status obj_print_id(Object *obj)
+{
   /* Error Control */
-  if (!obj || obj->id == NO_ID) {
+  if (!obj || obj->id == NO_ID)
+  {
     return ERROR;
   }
 
@@ -113,9 +132,11 @@ Status obj_print_id(Object* obj) {
 
   return OK;
 }
-Status obj_print(Object* obj) {
+Status obj_print(Object *obj)
+{
   /* Error Control */
-  if (!obj || obj->id == NO_ID) {
+  if (!obj || obj->id == NO_ID)
+  {
     return ERROR;
   }
 
