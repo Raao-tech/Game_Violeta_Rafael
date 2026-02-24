@@ -17,6 +17,15 @@
 /**
    Game interface implementation
 */
+struct _Game {
+  Player *player;
+  Object *objects;
+  Space *spaces[MAX_SPACES];
+  Command *last_cmd;
+
+  int n_spaces;
+  Bool finished;
+};
 
 /* Functions to sets properties of the game */
 Status game_create_player(Game *game, Id id_player)
