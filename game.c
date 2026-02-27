@@ -14,17 +14,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct _Game
-{
-  Player  *player;
-  Object  *objects;
-  Space   *spaces[MAX_SPACES];
-  Command *last_cmd;
-
-  int     n_spaces;
-  Bool    finished;
-};
-
 /**
    Game interface implementation
 */
@@ -37,6 +26,69 @@ struct _Game {
   int n_spaces;
   Bool finished;
 };
+
+
+
+/* Functions to create the game */
+Game* game_create()
+{
+  int i;
+  Game  *game  = NULL;
+
+  game = (Game *)malloc(sizeof(Game)); 
+
+  if(!game)
+  {
+    return ERROR;
+  }
+
+  for (i = 0; i < MAX_SPACES; i++)
+  {
+    game->spaces[i] = NULL;
+  }
+
+  game->n_spaces = 0;
+  game->player = NULL;
+  game->objects = NULL;
+  game->last_cmd = command_create();
+  game->finished = FALSE;
+
+  return game;
+}
+
+Status game_destroy(Game **game)
+{
+  int i = 0;
+  if (game == NULL || *game == NULL)
+  {
+    return ERROR;
+  }
+
+  for (i = 0; i < (*game)->n_spaces; i++)
+  {
+    if(space_destroy((*game)->spaces[i]) == ERROR){
+      return  ERROR;
+    }
+  }
+
+  if ((player_destroy((*game)->player) == ERROR) || (obj_destroy((*game)->objects) == ERROR))
+  {
+    return ERROR;
+  }
+
+  if (command_destroy((*game)->last_cmd) == ERROR)
+  {
+    return ERROR;
+  }
+
+  free(*game);
+  *game = NULL;
+
+  return OK;
+}
+
+
+
 
 /* Functions to sets properties of the game */
 Status game_create_player(Game *game, Id id_player)
@@ -264,55 +316,7 @@ int game_get_n_spaces(Game *game)
   return game->n_spaces;
 }
 
-/* Functions to create the game */
-Status game_create(Game *game)
-{
-  int i;
 
-  if (game == NULL)
-  {
-    return ERROR;
-  }
-
-  for (i = 0; i < MAX_SPACES; i++)
-  {
-    game->spaces[i] = NULL;
-  }
-
-  game->n_spaces = 0;
-  game->player = NULL;
-  game->objects = NULL;
-  game->last_cmd = command_create();
-  game->finished = FALSE;
-
-  return OK;
-}
-
-Status game_destroy(Game *game)
-{
-  int i = 0;
-  if (game == NULL)
-  {
-    return ERROR;
-  }
-
-  for (i = 0; i < game->n_spaces; i++)
-  {
-    space_destroy(game->spaces[i]);
-  }
-
-  if ((player_destroy(game->player) == ERROR) || (obj_destroy(game->objects) == ERROR))
-  {
-    return ERROR;
-  }
-
-  if (command_destroy(game->last_cmd) == ERROR)
-  {
-    return ERROR;
-  }
-
-  return OK;
-}
 
 void game_print(Game *game)
 {

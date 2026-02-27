@@ -1,18 +1,20 @@
 #######################################
-FLAGS = -g -Wall -Wextra -I ./headers -pedantic 
-PREFLAG = valgrind
+FLAGS = -g -Wall -O0 -Wextra -I ./headers -Wpedantic -DDEBUG 
+PREFLAG = valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s
 BD = castle.dat
 DEPENDS = command.o game_actions.o game.o game_loop.o game_reader.o graphic_engine.o object.o player.o space.o
 CC = gcc
 TARGET = castle
 #######################################
 
+
+
 run: play
 
 play: $(TARGET)
 	./$(TARGET) $(BD)
 
-debug: $(TARGET)
+runv: $(TARGET)
 	$(PREFLAG) ./$(TARGET)	$(BD)
 
 castle: $(DEPENDS)

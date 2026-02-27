@@ -103,25 +103,30 @@ Status game_load_object(Game *game, Id id_object, char *name)
   return game_set_object_location(game, game_get_space_id_at(game, 0));
 }
 
-Status game_create_from_file(Game *game, char *filename)
+Status game_create_from_file(Game **game, char *filename)
 {
-  if (game_create(game) == ERROR)
-  {
+  if(!game){
+    return ERROR;
+  } 
+  if((*game = game_create()) == NULL){
     return ERROR;
   }
 
-  if (game_load_spaces(game, filename) == ERROR)
+  if (game_load_spaces(*game, filename) == ERROR)
   {
+    game_destroy(*game);
     return ERROR;
   }
 
-  if (game_load_player(game, ID_PLAYER) == ERROR)
+  if (game_load_player(*game, ID_PLAYER) == ERROR)
   {
+    game_destroy(*game);
     return ERROR;
   }
 
-  if (game_load_object(game, ID_OBJECT, NAME_OBJC) == ERROR)
+  if (game_load_object(*game, ID_OBJECT, NAME_OBJC) == ERROR)
   {
+    game_destroy(*game);
     return ERROR;
   }
 

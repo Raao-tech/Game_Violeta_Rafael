@@ -28,9 +28,9 @@ typedef struct _Game Game;
  * @author Profesores PPROG
  *
  * @param game a pointer to game
- * @return OK, if everything goes well, or ERROR if there was some mistake
+ * @return pointer to game if not then NULL
  */
-Status game_create(Game *game);
+Game* game_create();
 
 /**
  * @brief It destroys a game, freeing the allocated memory
@@ -39,7 +39,7 @@ Status game_create(Game *game);
  * @param obj a pointer to the game
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status game_destroy(Game *game);
+Status game_destroy(Game **game);
 
 /**
  * @brief It creates a game from a file
@@ -49,7 +49,7 @@ Status game_destroy(Game *game);
  * @param filename string with the name of the file
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status game_create_from_file(Game *game, char *filename);
+Status game_create_from_file(Game **game, char *filename);
 
 
 /**
