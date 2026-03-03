@@ -108,13 +108,13 @@ Status game_create_from_file(Game **game, char *filename)
 {
   if(!game){
     return ERROR;
-  } 
+  }
+
   if((*game = game_create()) == NULL){
     return ERROR;
   }
 
-  if (game_load_spaces(*game, filename) == ERROR)
-  {
+  if (game_load_spaces(*game, filename) == ERROR){
     game_destroy(game);
     return ERROR;
   }
