@@ -10,9 +10,6 @@
 
 #include "character.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #define TAM 6
 
@@ -23,39 +20,27 @@
  */
 struct _Character
 {
-  Id id;                    /*!< Id number of the object, it must be unique */
-  char name[WORD_SIZE + 1]; /*!< Name of the object */
-  char gdesc[TAM];
-  int health;
+  Entity *e_character;
   Bool friendly;
 };
 
-Character *character_create(Id id)
+Character *character_create()
 {
-  Character *newcreate = NULL;
+  Character *newCharacter = NULL;
 
-  /* Error control */
-  if (id == NO_ID)
-  {
+  if(!entity_create(newCharacter->e_character)){
     return NULL;
   }
 
-  newcreate = (Character *)malloc(sizeof(Character));
-  if (newcreate == NULL)
-  {
-    return NULL;
-  }
+  newCharacter->friendly = TRUE;
 
-  /* Initialization of an empty create*/
-  newcreate->id = id;
-  newcreate->id_space_location = NO_ID;
-  newcreate->id_object_take = NO_ID;
-  newcreate->name[0] = '\0';
-
-  return newcreate;
+  return newCharacter;
 }
 
-/* functions to sets properties and assets of the create */
+
+
+
+/*
 Status create_destroy(Character *create)
 {
   if (!create)
@@ -103,7 +88,7 @@ Status create_set_name(Character *create, char *name)
   return OK;
 }
 
-/* functions to know properties and assets of the create */
+
 char *create_get_name(Character *create)
 {
   if (!create)
@@ -133,14 +118,19 @@ Id create_get_obj(Character *create)
 
 Status create_print(Character *create)
 {
-  /* Error Control */
+
   if (!create || create->id == NO_ID)
   {
     return ERROR;
   }
 
-  /* 1. Print the id and the name of the create */
+
   fprintf(stdout, "--> Character %ld: %s)\n", create->id, create->name);
 
   return OK;
 }
+
+*/
+ 
+ 
+ 

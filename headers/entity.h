@@ -8,13 +8,12 @@
  * @copyright GNU Public License
  */
 
-#ifndef CHARACTER_H
-#define CHARACTER_H
+#ifndef ENTITY_H
+#define ENTITY_H
 
-#include "entity.h"
+#include "types.h"
 
-
-typedef struct _Character Character;
+typedef struct _Entity Entity;
 
 /**
  * @brief It creates a new character, allocating memory and initializing it
@@ -24,8 +23,7 @@ typedef struct _Character Character;
  * @param name the name for the new character
  * @return a new character, initialized
  */
-Character *character_create();
-
+Entity *entity_create();
 
 
 #endif

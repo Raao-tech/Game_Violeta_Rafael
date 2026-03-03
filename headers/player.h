@@ -14,6 +14,9 @@
 #include "types.h"
 #include "object.h"
 
+#include "entity.h"
+#include "set.h"
+
 typedef struct _Player Player;
 
 /**
@@ -24,7 +27,7 @@ typedef struct _Player Player;
  * @param name the name for the new player
  * @return a new player, initialized
  */
-Player *player_create(Id id);
+Player *player_create();
 
 /**
  * @brief It destroys a player, freeing the allocated memory

@@ -12,8 +12,6 @@
 #define SET_H
 
 #include "types.h"
-#define MIN_IDS 5
-#define SCALES 2
 
 typedef struct _Set Set;
 
@@ -44,16 +42,6 @@ Status    set_destroy(Set** ppset);
  * @return TRUE if is empty, FALSE when there are elements or the pointer is NULL.
  */
 Bool	set_is_empty(Set *pset);
-
-/**
- * @brief This function checks if stack is full
- * @author Rafa
- *
- * @param pset Pointer to object with the stack of the ids
- * @return TRUE, if the last element of the stack is not NO_ID. FALSE, if it is empty or the last element is not NO_ID.
- */
-Bool	set_is_full(Set *pset);
-
 
 
 #endif

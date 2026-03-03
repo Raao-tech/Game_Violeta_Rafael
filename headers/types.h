@@ -8,8 +8,14 @@
  * @copyright GNU Public License
  */
 
+
 #ifndef TYPES_H
 #define TYPES_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 #define WORD_SIZE 1000
 #define NO_ID -1
