@@ -25,8 +25,8 @@ struct _Player{
 Player *player_create(){
   /* Creamos espacio  para el player */
   Player *newPlayer = (Player *) malloc(sizeof(Player));
-
   if(!newPlayer) return NULL;
+
 
   /* Creamos el entity del player*/
   newPlayer->e_player = entity_create();
@@ -36,26 +36,20 @@ Player *player_create(){
     return  NULL;
   }
 
+  /* Creamos el set de ids de objects */
   newPlayer->objects = set_creat();
   if(!newPlayer->objects){
     entity_destroy(newPlayer->e_player);
     free(newPlayer);
     return  NULL;
   }
-
-
-
   //inicializar el resto de la estructura player//
 
   return newPlayer;
 }
 
-
-Status player_destroy(Player *player)
-{
-  if (!player){
-    return ERROR;
-  }
+Status player_destroy(Player *player){
+  if (!player)return ERROR;
 
   entity_destroy(player->e_player);
   set_destroy(player->objects);
@@ -64,33 +58,39 @@ Status player_destroy(Player *player)
   return OK;
 }
 
-Status player_set_name(Player *player, char *name)
-{
-  if (!player || !name)
-  {
-    return ERROR;
-  }
 
-  if (entity_set_name(player->e_player, name) == ERROR){
-    return ERROR;
-  }
+Status player_set_name(Player *player, char *name){
+  if (!player || !name) return ERROR;
+
+  if (entity_set_name(player->e_player, name) == ERROR)return ERROR;
   
   return OK;
 }
 
-char *player_get_name(Player *player)
-{
-  char *name=NULL;
+char *player_get_name(Player *player){
+  if (!player) return NULL;
 
-  if (!player)
-  {
-    return NULL;
-  }
-
-  name=entity_get_name(player->e_player);
-
-  return name;
+  return entity_get_name(player->e_player);
 }
+
+
+
+Status  player_set_health(Player *player, int life){
+    if(!player || !player->e_player) return ERROR;
+
+    return  entity_set_health(player->e_player, life);
+}
+
+int player_get_health(Player *player){
+  if(!player || !player->e_player) return ERROR_LIFE;
+
+  return  entity_get_health(player->e_player);
+}
+
+
+
+
+
 
 
 /*

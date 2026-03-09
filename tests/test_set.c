@@ -1,64 +1,75 @@
+/**
+ * @brief Professional Unit Testing for the Set Module
+ * @file test_set.c
+ * @author Rafael y Violeta
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "set.h"
 
 
+void print_test(char *msg, int result) {
+    printf("Test: %-45s [%s]\n", msg, result ? VERDE"PASS"RESET : ROJO"FAIL"RESET);
+}
+
 int main() {
-    Set *pset = NULL;
+    Set *s = NULL;
     Id id_out;
     Status st;
 
-    printf("--- Starting Set Module Tests ---\n\n");
+    printf("--- STARTING INTENSIVE SET MODULE TESTS ---\n\n");
 
-    /* 1. Test Creation */
-    printf("Test 1: Create Set... ");
-    pset = set_creat();
-    if (pset != NULL) printf(VERDE "PASS" RESET "\n");
-    else { printf(ROJO "FAIL" RESET "\n"); return 1; }
+    /* 1. TEST: set_creat */
+    s = set_creat();
+    print_test("1A: set_creat (pointer not NULL)", s != NULL);
+    print_test("1B: set_creat (initial state n_ids == 0)", set_is_empty(s) == TRUE);
 
-    /* 2. Test Is Empty */
-    printf("Test 2: Is Empty (New Set)... ");
-    if (set_is_empty(pset) == TRUE) printf(VERDE "PASS" RESET "\n");
-    else printf(ROJO "FAIL" RESET "\n");
+    /* 2. TEST: set_is_empty */
+    print_test("2A: set_is_empty (New Set is TRUE)", set_is_empty(s) == TRUE);
+    set_add(s, 100);
+    print_test("2B: set_is_empty (After add is FALSE)", set_is_empty(s) == FALSE);
 
-    /* 3. Test Add elements */
-    printf("Test 3: Adding IDs (10, 20, 30)... ");
-    st = set_add(pset, 10);
-    st = set_add(pset, 20);
-    st = set_add(pset, 30);
-    if (st == OK) printf(VERDE "PASS" RESET "\n");
-    else printf(ROJO "FAIL" RESET "\n");
+    /* 3. TEST: set_add (Limit Testing) */
+    st = set_add(s, 200);
+    print_test("3A: set_add (Valid ID return OK)", st == OK);
+    st = set_add(NULL, 300);
+    print_test("3B: set_add (NULL pointer return ERROR)", st == ERROR);
 
-    /* 4. Printing Set */
-    printf("\n--- Current Set Status ---\n");
-    set_print(stdout, pset);
-    printf("--------------------------\n\n");
+    /* 4. TEST: set_pop (LIFO and Underflow) */
+    id_out = set_pop(s); // Should pop 200
+    print_test("4A: set_pop (Valid LIFO - expected 200)", id_out == 200);
+    
+    set_pop(s); // Pops 100, now empty
+    id_out = set_pop(s);
+    print_test("4B: set_pop (Underflow on empty set)", id_out == NO_ID);
 
-    /* 5. Test Pop (LIFO behavior) */
-    printf("Test 4: Popping last ID (Expected 30)... ");
-    id_out = set_pop(pset);
-    if (id_out == 30) printf(VERDE "PASS (%ld)" RESET "\n", id_out);
-    else printf(ROJO "FAIL (Got %ld)" RESET "\n", id_out);
+    /* 5. TEST: Memory Stress (Adding/Popping multiple) */
+    printf("\n--- Stress Testing ---\n");
+    int i, count = 0;
+    for(i=1; i<=10; i++) {
+        if(set_add(s, (Id)i) == OK) count++;
+    }
+    print_test("5A: Massive add (10 elements)", count == 10);
+    
+    count = 0;
+    for(i=0; i<10; i++) {
+        if(set_pop(s) != NO_ID) count++;
+    }
+    print_test("5B: Massive pop (10 elements)", count == 10);
+    print_test("5C: Set is empty after stress", set_is_empty(s) == TRUE);
 
-    /* 6. Test sequence of pops until empty */
-    printf("Test 5: Popping remaining elements... ");
-    set_pop(pset); // Pops 20
-    id_out = set_pop(pset); // Pops 10
-    if (id_out == 10 && set_is_empty(pset) == TRUE) printf(VERDE "PASS" RESET "\n");
-    else printf(ROJO "FAIL" RESET "\n");
+    /* 6. TEST: set_destroy */
+    print_test("6A: set_destroy (Valid pointer)", set_destroy(s) == OK);
+    print_test("6B: set_destroy (NULL pointer safety)", set_destroy(NULL) == ERROR);
 
-    /* 7. Test Underflow */
-    printf("Test 6: Popping from empty set... ");
-    id_out = set_pop(pset);
-    if (id_out == NO_ID) printf(VERDE "PASS (Returned NO_ID)" RESET "\n");
-    else printf(ROJO "FAIL" RESET "\n");
+    /* 7. TEST: set_print (Visual check) */
+    printf("\n--- Visual Check (Printing Empty Set) ---\n");
+    s = set_creat();
+    set_add(s, 777);
+    set_print(stdout, s);
+    set_destroy(s);
 
-    /* 8. Final Destruction */
-    printf("Test 7: Destroying Set... ");
-    if (set_destroy(pset) == OK) printf(VERDE "PASS" RESET "\n");
-    else printf(ROJO "FAIL" RESET "\n");
-
-    printf("\n--- All Tests Completed ---\n");
-
+    printf("\n--- ALL SET TESTS COMPLETED ---\n");
     return 0;
 }
