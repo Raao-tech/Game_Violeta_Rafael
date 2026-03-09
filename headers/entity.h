@@ -25,5 +25,34 @@ typedef struct _Entity Entity;
  */
 Entity *entity_create();
 
+/**
+ * @brief It destroys a entity, freeing the allocated memory
+ * @author Violeta y Rafa
+ *
+ * @param entity a pointer to the entity
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
+Status entity_destroy(Entity *entity);
+
+/**
+ * @brief It sets the name of a entity
+ * @author Violeta y Rafa
+ *
+ * @param entity a pointer to the entity
+ * @param name the name of the entity
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
+Status entity_set_name(Entity *entity, char *name);
+
+
+/**
+ * @brief It gets the name of a entity
+ * @author Violeta y Rafa
+ *
+ * @param entity a pointer to the entity
+ * @return a string with the name of the entity
+ */
+char *entity_get_name(Entity *entity);
+
 
 #endif

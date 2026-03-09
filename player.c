@@ -20,8 +20,7 @@
 struct _Player
 {
   Entity *e_player;
-  Id id_space_location; //revisar si queremos que sea el espacio el que sepa la localicación//
-  Set *id_objects;
+  Set *objects;
 };
 
 Player *player_create()
@@ -38,9 +37,6 @@ Player *player_create()
 }
 
 
-
-
-/*
 Status player_destroy(Player *player)
 {
   if (!player)
@@ -48,10 +44,44 @@ Status player_destroy(Player *player)
     return ERROR;
   }
 
+  entity_destroy(player->e_player);
+  set_destroy(player->objects);
   free(player);
+
   return OK;
 }
 
+Status player_set_name(Player *player, char *name)
+{
+  if (!player || !name)
+  {
+    return ERROR;
+  }
+
+  if (entity_set_name(player->e_player, name) == ERROR)
+  {
+    return ERROR;
+  }
+  
+  return OK;
+}
+
+char *player_get_name(Player *player)
+{
+  char *name=NULL;
+
+  if (!player)
+  {
+    return NULL;
+  }
+
+  name=entity_get_name(player->e_player);
+
+  return name;
+}
+
+
+/*
 Status player_set_obj(Player *player, Id id_obj)
 {
   if (player == NULL)
@@ -63,49 +93,7 @@ Status player_set_obj(Player *player, Id id_obj)
   return OK;
 }
 
-Status player_set_space(Player *player, Id id_space)
-{
-  if (player == NULL || id_space == NO_ID)
-  {
-    return ERROR;
-  }
 
-  player->id_space_location = id_space;
-  return OK;
-}
-
-Status player_set_name(Player *player, char *name)
-{
-  if (!player || !name)
-  {
-    return ERROR;
-  }
-
-  if (!strcpy(player->name, name))
-  {
-    return ERROR;
-  }
-  return OK;
-}
-
-
-char *player_get_name(Player *player)
-{
-  if (!player)
-  {
-    return NULL;
-  }
-  return player->name;
-}
-
-Id player_get_space(Player *player)
-{
-  if (player == NULL)
-  {
-    return NO_ID;
-  }
-  return player->id_space_location;
-}
 
 Id player_get_obj(Player *player)
 {
