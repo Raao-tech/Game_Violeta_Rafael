@@ -17,19 +17,33 @@
  *
  * This struct stores all the information of a player.
  */
-struct _Player
-{
+struct _Player{
   Entity *e_player;
   Set *objects;
 };
 
-Player *player_create()
-{
-  Player *newPlayer = NULL;
+Player *player_create(){
+  /* Creamos espacio  para el player */
+  Player *newPlayer = (Player *) malloc(sizeof(Player));
 
-  if(!character_create(newPlayer->e_player)){
-    return NULL;
+  if(!newPlayer) return NULL;
+
+  /* Creamos el entity del player*/
+  newPlayer->e_player = entity_create();
+
+  if(!newPlayer->e_player) {
+    free(newPlayer);
+    return  NULL;
   }
+
+  newPlayer->objects = set_creat();
+  if(!newPlayer->objects){
+    entity_destroy(newPlayer->e_player);
+    free(newPlayer);
+    return  NULL;
+  }
+
+
 
   //inicializar el resto de la estructura player//
 
@@ -39,8 +53,7 @@ Player *player_create()
 
 Status player_destroy(Player *player)
 {
-  if (!player)
-  {
+  if (!player){
     return ERROR;
   }
 
@@ -58,8 +71,7 @@ Status player_set_name(Player *player, char *name)
     return ERROR;
   }
 
-  if (entity_set_name(player->e_player, name) == ERROR)
-  {
+  if (entity_set_name(player->e_player, name) == ERROR){
     return ERROR;
   }
   

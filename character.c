@@ -1,7 +1,7 @@
 /**
  * @brief It implements the create struct
  *
- * @file create.c
+ * @file character.c
  * @author Violeta y Rafael
  * @version 0
  * @date 04-02-2025
@@ -14,23 +14,27 @@
 #define TAM 6
 
 /**
- * @brief create
+ * @brief character
  *
  * This struct stores all the information of a create.
  */
-struct _Character
-{
+struct _Character{
   Entity *e_character;
   Bool friendly;
 };
 
-Character *character_create()
-{
-  Character *newCharacter = NULL;
+Character *character_create(){
+  /* Creamos el espacio para el character */
+  Character *newCharacter = (Character *) malloc(sizeof(Character));
+  if(!newCharacter) return NULL;
 
-  if(!entity_create(newCharacter->e_character)){
+
+  /* Creamos el espacio para entity de character */
+  newCharacter->e_character = entity_create();
+  if(!newCharacter->e_character){
+    free(newCharacter);
     return NULL;
-  }
+  };
 
   newCharacter->friendly = TRUE;
 
@@ -40,8 +44,7 @@ Character *character_create()
 
 Status character_destroy(Character *character)
 {
-  if (!character)
-  {
+  if (!character){
     return ERROR;
   }
 
@@ -51,55 +54,34 @@ Status character_destroy(Character *character)
   return OK;
 }
 
-Status character_set_name(Character *character, char *name)
-{
-  if (!character || !name)
-  {
-    return ERROR;
-  }
+Status character_set_name(Character *character, char *name){
+  if (!character || !name) return ERROR;
 
-  if (entity_set_name(character->e_character, name) == ERROR)
-  {
-    return ERROR;
-  }
+  if (entity_set_name(character->e_character, name) == ERROR) return ERROR;
 
   return OK;
+}
+
+char *character_get_name(Character *character){
+  if (!character || !character->e_character) return NULL;
+
+  /* Ya entity_get_name hace un strdup del name que devuelve */
+  return entity_get_name(character->e_character);
 }
 
 Status character_set_friendly(Character *character, Bool value){
 
-  if (!character){
-    return ERROR;
-  }
+  if (!character) return ERROR;
 
   character->friendly=value;
 
   return OK;
-
-}
-
-char *character_get_name(Character *character)
-{
-  char *name=NULL;
-
-  if (!character)
-  {
-    return NULL;
-  }
-
-  name=entity_get_name(character->e_character);
-
-  return name;
 }
 
 Bool character_get_friendly(Character *character){
-
-  if (!character){
-    return ERROR;
-  }
+  if (!character)return TRUE;
 
   return character->friendly;
-
 }
 
 
