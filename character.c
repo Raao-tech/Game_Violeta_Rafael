@@ -38,20 +38,72 @@ Character *character_create()
 }
 
 
-
-
-/*
-Status create_destroy(Character *create)
+Status character_destroy(Character *character)
 {
-  if (!create)
+  if (!character)
   {
     return ERROR;
   }
 
-  free(create);
+  entity_destroy(character->e_character);
+  free(character);
+
   return OK;
 }
 
+Status character_set_name(Character *character, char *name)
+{
+  if (!character || !name)
+  {
+    return ERROR;
+  }
+
+  if (entity_set_name(character->e_character, name) == ERROR)
+  {
+    return ERROR;
+  }
+
+  return OK;
+}
+
+Status character_set_friendly(Character *character, Bool value){
+
+  if (!character){
+    return ERROR;
+  }
+
+  character->friendly=value;
+
+  return OK;
+
+}
+
+char *character_get_name(Character *character)
+{
+  char *name=NULL;
+
+  if (!character)
+  {
+    return NULL;
+  }
+
+  name=entity_get_name(character->e_character);
+
+  return name;
+}
+
+Bool character_get_friendly(Character *character){
+
+  if (!character){
+    return ERROR;
+  }
+
+  return character->friendly;
+
+}
+
+
+/*
 Status create_set_obj(Character *create, Id id_obj)
 {
   if (create == NULL)
@@ -74,19 +126,6 @@ Status create_set_space(Character *create, Id id_space)
   return OK;
 }
 
-Status create_set_name(Character *create, char *name)
-{
-  if (!create || !name)
-  {
-    return ERROR;
-  }
-
-  if (!strcpy(create->name, name))
-  {
-    return ERROR;
-  }
-  return OK;
-}
 
 
 char *create_get_name(Character *create)

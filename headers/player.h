@@ -49,6 +49,19 @@ Status player_destroy(Player *player);
 Status player_set_name(Player *player, char *name);
 
 /**
+ * @brief It gets the name of a player
+ * @author Violeta y Rafa
+ *
+ * @param player a pointer to the player
+ * @return a string with the name of the player
+ */
+char *player_get_name(Player *player);
+
+
+
+
+
+/**
  * @brief It sets the id of the obcjet of the player
  * @author Violeta y Rafa
  *
@@ -58,24 +71,8 @@ Status player_set_name(Player *player, char *name);
  */
 Status player_set_obj(Player *player, Id id_obj);
 
-/**
- * @brief It sets location of player
- * @author Violeta y Rafa
- *
- * @param player a pointer to the player
- * @param id_space a space's id of location of player
- * @return OK, if everything goes well, or ERROR if there was some mistake
- */
-Status player_set_space(Player *player, Id id_space);
 
-/**
- * @brief It gets the name of a player
- * @author Violeta y Rafa
- *
- * @param player a pointer to the player
- * @return a string with the name of the player
- */
-char *player_get_name(Player *player);
+
 
 /**
  * @brief It gets the id of the space where the player is

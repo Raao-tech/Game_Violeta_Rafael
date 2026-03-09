@@ -26,6 +26,54 @@ typedef struct _Character Character;
  */
 Character *character_create();
 
+/**
+ * @brief It destroys a character, freeing the allocated memory
+ * @author Violeta y Rafa
+ *
+ * @param character a pointer to the character
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
+Status character_destroy(Character *character);
+
+/**
+ * @brief It sets the name of a character
+ * @author Violeta y Rafa
+ *
+ * @param character a pointer to the character
+ * @param name the name of the character
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
+Status character_set_name(Character *character, char *name);
+
+/**
+ * @brief It sets the relationship status of a character
+ * @author Violeta y Rafa
+ *
+ * @param character a pointer to the character
+ * @param value boolean value to see if it's friendly or unfriendly
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
+Status character_set_friendly(Character *character, Bool value);
+
+
+/**
+ * @brief It gets the name of a character
+ * @author Violeta y Rafa
+ *
+ * @param character a pointer to the character
+ * @return a string with the name of the character
+ */
+char *character_get_name(Character *character);
+
+
+/**
+ * @brief It gets the relationship status of a character
+ * @author Violeta y Rafa
+ *
+ * @param character a pointer to the character
+ * @return the boolean value that shows if a character is frindly or unfriendly
+ */
+Bool character_get_friendly(Character *character);
 
 
 #endif
