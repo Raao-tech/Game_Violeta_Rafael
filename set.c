@@ -18,7 +18,7 @@ struct _Set{
     int  n_ids;
 };
 
-
+/* create and destroy */
 Set*    set_creat(){
     Set*    newset = NULL;
 
@@ -54,20 +54,27 @@ Status  set_destroy(Set *pset){
     return OK;
 }
 
+
 Bool	set_is_empty(Set *pset){
 
-	if(pset == NULL){
-		return	FALSE;
-	}
+	if(pset == NULL) return	FALSE;
 
-	if(pset->n_ids <= 0){
-		return TRUE;
+	if(pset->n_ids <= 0) return TRUE;
+
+	return FALSE;
+}
+Bool	set_contains_id(Set *pset, Id _id){
+	int	i;
+	if(!pset) return ERROR;
+
+	for (i = 0; i < pset->n_ids; i++){
+		if(pset->ids[i] == _id)	return TRUE;
 	}
 
 	return FALSE;
 }
 
-
+/* add and pop */
 Status	set_add(Set* pset, Id	 new_id){
 
 	/* If pset or new_id don't exist  */
@@ -122,6 +129,8 @@ Id	set_pop(Set* pset){
 	return (id_pop);
 }
 
+
+/* print */
 Status	set_print(FILE* output, Set*	pset){
 	if(!pset){
 		fprintf(output, ROJO "ERROR: " RESET "There is nothing on the Set of ids\n");

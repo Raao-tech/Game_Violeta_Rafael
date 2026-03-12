@@ -39,6 +39,15 @@ Status  set_destroy(Set *pset);
  * @return TRUE if it is empty or NULL, FALSE when there are elements.
  */
 Bool	set_is_empty(Set *pset);
+/**
+ * @brief This function checks whether or not there are IDs in the set.
+ * @author Rafael
+ *
+ * @param pset Pointer to the set object.
+ * @param _id Value of id reference.
+ * @return TRUE if it is in set, FALSE when there are elements.
+ */
+Bool	set_contains_id(Set *pset, Id _id);
 
 /**
  * @brief Adds a new ID to the set by reallocating memory for the internal array.

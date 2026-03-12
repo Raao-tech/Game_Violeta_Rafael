@@ -58,13 +58,13 @@ Status character_destroy(Character *character)
 Status  character_set_id(Character *character, Id new_id){
   if(!character) return ERROR;
 
-  return  entity_set_id(character, new_id);
+  return  entity_set_id(character->e_character, new_id);
 }
 
 Id  character_get_id(Character *character){
   if(!character) return NO_ID;
 
-  return  entity_get_id(character);
+  return  entity_get_id(character->e_character);
 }
 
 /* name */

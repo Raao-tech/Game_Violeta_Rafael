@@ -87,15 +87,15 @@ const char *space_get_name(Space *space){
 
 
 /* objs */
-Status space_set_object(Space *space, Id id){
+Status space_set_object(Space *space, Id new_id){
   if (!space) return ERROR;
 
-
-  return OK;
+  return set_add(space->objs, new_id);
 }
 Id space_get_object(Space *space){
   if (!space) return FALSE;
-  
+ 
+  set_
 
   return  ;
 }
