@@ -26,9 +26,7 @@ struct _Space{
   Set*  objs;
 };
 
-/** space_create allocates memory for a new space
- *  and initializes its members
- */
+/* create or destroy */
 Space *space_create(){
   Space *newSpace = NULL;
 
@@ -60,7 +58,7 @@ Status space_destroy(Space *space){
 }
 
 
-
+/* id */
 Status space_set_id(Space *space, Id new_id){
   if(!space) return ERROR;
 
@@ -73,6 +71,7 @@ Id space_get_id(Space *space){
   return space->id;
 }
 
+/* name */
 Status space_set_name(Space *space, char *name){
   if (!space || !name) return ERROR;
 
@@ -87,8 +86,7 @@ const char *space_get_name(Space *space){
 }
 
 
-
-/* functions to objetc */
+/* objs */
 Status space_set_object(Space *space, Id id){
   if (!space) return ERROR;
 
@@ -111,7 +109,8 @@ Id space_get_object(Space *space){
 
 
 
-/* functions to sets to neitghboors */
+/* neitghboors */
+  /* north */
 Status space_set_north(Space *space, Id id)
 {
   if (!space || id == NO_ID)
@@ -121,35 +120,6 @@ Status space_set_north(Space *space, Id id)
   space->north = id;
   return OK;
 }
-Status space_set_south(Space *space, Id id)
-{
-  if (!space || id == NO_ID)
-  {
-    return ERROR;
-  }
-  space->south = id;
-  return OK;
-}
-Status space_set_east(Space *space, Id id)
-{
-  if (!space || id == NO_ID)
-  {
-    return ERROR;
-  }
-  space->east = id;
-  return OK;
-}
-Status space_set_west(Space *space, Id id)
-{
-  if (!space || id == NO_ID)
-  {
-    return ERROR;
-  }
-  space->west = id;
-  return OK;
-}
-
-/* functions to gets to neitghboors */
 Id space_get_north(Space *space)
 {
   if (!space)
@@ -157,6 +127,15 @@ Id space_get_north(Space *space)
     return NO_ID;
   }
   return space->north;
+}
+  /* South */
+Status space_set_south(Space *space, Id id){
+  if (!space || id == NO_ID)
+  {
+    return ERROR;
+  }
+  space->south = id;
+  return OK;
 }
 Id space_get_south(Space *space)
 {
@@ -166,13 +145,23 @@ Id space_get_south(Space *space)
   }
   return space->south;
 }
-Id space_get_east(Space *space)
-{
-  if (!space)
-  {
-    return NO_ID;
-  }
+
+  /* East */
+Status space_set_east(Space *space, Id id){
+  if (!space || id == NO_ID) return ERROR; 
+  space->east = id;
+  return OK;
+}
+Id space_get_east(Space *space){
+  if (!space) return NO_ID;
   return space->east;
+}
+
+  /* West */
+Status space_set_west(Space *space, Id id){
+  if (!space || id == NO_ID) return ERROR;
+  space->west = id;
+  return OK;
 }
 Id space_get_west(Space *space)
 {
@@ -184,6 +173,7 @@ Id space_get_west(Space *space)
 }
 
 
+/* Print */
 Status space_print(Space *space){
   Id idaux = NO_ID;
 
