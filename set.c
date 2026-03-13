@@ -30,7 +30,6 @@ Set*    set_creat(){
 
     return newset;
 }
-
 Status  set_destroy(Set *pset){
 
     int i;
@@ -55,6 +54,7 @@ Status  set_destroy(Set *pset){
 }
 
 
+/* private.  empty and reduce */
 Bool	set_is_empty(Set *pset){
 
 	if(pset == NULL) return	FALSE;
@@ -63,9 +63,44 @@ Bool	set_is_empty(Set *pset){
 
 	return FALSE;
 }
+Status	set_reduce(Set *pset, int dest_address){
+	int		i;
+	Id		*temp = NULL;
+	if(!pset || set_is_empty(pset) == TRUE || !pset->ids || dest_address < 0 || dest_address >= pset->n_ids ) return ERROR;
+
+	/* Si somos los únicos */
+	if(pset->n_ids == 1){
+		free(pset->ids);
+		pset->ids = NULL;
+		pset->n_ids = 0;
+		return OK;
+	}
+
+	/* nos posicionamos en el id inexistente */
+	i = dest_address; 
+	/* Verficiamos que no seamos los últimos */
+	while( ((i) < pset->n_ids-1) ){ 
+		pset->ids[i] = pset->ids[i+1]; //movemos el siguiente id a la posicion anterior
+		pset->ids[i+1] = NO_ID; // el espacio del id lo igualamos a No_id
+		i++;
+	}
+
+	//reducimos el tamaño del array de oids en una unidad
+	temp = (Id *)realloc(pset->ids,sizeof(Id) * (pset->n_ids-1)); 
+	if(!temp)	return ERROR;
+
+	//Igualamos el puntero realocado en la vairable origianl y disminuimos la cnatidad de ids
+	pset->ids = temp;
+	pset->n_ids--;
+	return	OK;
+}
+
+
+
+/* add, delete, contains_id, and get_n_ids */
 Bool	set_contains_id(Set *pset, Id _id){
 	int	i;
-	if(!pset) return ERROR;
+	if(!pset) return FALSE;
 
 	for (i = 0; i < pset->n_ids; i++){
 		if(pset->ids[i] == _id)	return TRUE;
@@ -73,21 +108,18 @@ Bool	set_contains_id(Set *pset, Id _id){
 
 	return FALSE;
 }
-
-/* add and pop */
-Status	set_add(Set* pset, Id	 new_id){
+Status	set_add(Set	*pset, Id	 new_id){
 
 	/* If pset or new_id don't exist  */
-	if(pset == NULL || new_id == NO_ID){
-		return	ERROR;
-	}
+	if(pset == NULL || new_id == NO_ID) return	ERROR;
+
+	if( set_contains_id(pset, new_id) == TRUE) return OK;
 
 	//agregamos un espacio en el conjutno de objetos
 	Id* pset_temp = (Id*)realloc((void *)pset->ids, (sizeof(Id) * (pset->n_ids + 1)) );
 	
-	if(pset_temp == NULL){
-		return ERROR;
-	}
+	if(pset_temp == NULL) return ERROR;
+	
 	pset_temp[pset->n_ids] = new_id;
 	pset->n_ids++; 
 
@@ -95,40 +127,20 @@ Status	set_add(Set* pset, Id	 new_id){
 
 	return	OK;
 }
+Status	set_delete_id(Set *pset, Id trash_id){
+	int	i;
+	if(!pset || trash_id == NO_ID) return ERROR;
 
-Id	set_pop(Set* pset){
-	Id id_pop;
-
-	/* Manejo de errores */
-	if(!pset || pset->n_ids == 0){
-		return NO_ID;
-	}
-	if(set_is_empty(pset) == TRUE){
-		return	NO_ID;
+	for (i = 0; i < pset->n_ids; i++){
+		if(pset->ids[i] == trash_id) return set_reduce(pset,i);
 	}
 
-
-	/* Guardamos el valor de id */
-	id_pop = pset->ids[(pset->n_ids)-1]; // se asigna el valor de id (ultimo eleemntos)
-	pset->ids[(pset->n_ids) - 1] = NO_ID;
-	
-	if(pset->n_ids == 1){   //Liberamos el array ids si queda un solo elemento
-		free(pset->ids);
-		pset->ids = NULL;
-		pset->n_ids = 0;
-		return id_pop;
-	}
-
-	/* Reducimos el array de ids de pset*/
-	Id* pset_temp = (Id*)realloc((void *)pset->ids, (sizeof(Id) * (pset->n_ids -1)));
-	if(pset_temp){
-		pset->ids = pset_temp;
-	}
-
-	pset->n_ids--;
-	return (id_pop);
+	return ERROR;
 }
-
+int		set_get_n_ids(Set *pset){
+	if(!pset) return -1;
+	return	pset->n_ids;
+}
 
 /* print */
 Status	set_print(FILE* output, Set*	pset){

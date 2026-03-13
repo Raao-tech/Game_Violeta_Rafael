@@ -3,7 +3,7 @@
  *
  * @file set.h
  * @author Rafael
- * @version 0
+ * @version 2
  * @date 28-02-2026
  * @copyright GNU Public License
  */
@@ -31,42 +31,47 @@ Set*    set_creat();
  */
 Status  set_destroy(Set *pset);
 
+
+
 /**
- * @brief This function checks whether or not there are IDs in the set.
+ * @brief It checks whether a given ID exists inside the set.
  * @author Rafael
  *
- * @param pset Pointer to the set object.
- * @return TRUE if it is empty or NULL, FALSE when there are elements.
+ * @param pset Pointer to the set.
+ * @param _id The ID to search for.
+ * @return TRUE if the ID is found, FALSE otherwise or if pset is NULL.
  */
-Bool	set_is_empty(Set *pset);
-/**
- * @brief This function checks whether or not there are IDs in the set.
- * @author Rafael
- *
- * @param pset Pointer to the set object.
- * @param _id Value of id reference.
- * @return TRUE if it is in set, FALSE when there are elements.
- */
-Bool	set_contains_id(Set *pset, Id _id);
+Bool    set_contains_id(Set *pset, Id _id);
 
 /**
  * @brief Adds a new ID to the set by reallocating memory for the internal array.
+ *        If the ID already exists in the set, it does nothing and returns OK.
  * @author Rafael
  *
  * @param pset Pointer to the set.
  * @param new_id The ID to be added.
- * @return OK if the ID was added successfully, or ERROR if pset is NULL or memory fails.
+ * @return OK if the ID was added successfully or already existed, ERROR if pset is NULL, new_id is NO_ID, or memory fails.
  */
-Status	set_add(Set* pset, Id new_id);
+Status  set_add(Set *pset, Id new_id);
 
 /**
- * @brief Extracts the last ID added to the set (LIFO) and reduces the allocated memory.
+ * @brief Removes a specific ID from the set, shifting elements to close the gap and reducing the allocated memory.
  * @author Rafael
  *
  * @param pset Pointer to the set.
- * @return The extracted ID, or NO_ID if the set is empty or NULL.
+ * @param trash_id The ID to be removed.
+ * @return OK if removed successfully, ERROR if pset is NULL, trash_id is NO_ID, or the ID was not found.
  */
-Id	set_pop(Set* pset);
+Status  set_delete_id(Set *pset, Id trash_id);
+
+/**
+ * @brief Returns the number of IDs currently stored in the set.
+ * @author Rafael
+ *
+ * @param pset Pointer to the set.
+ * @return Number of IDs, or -1 if pset is NULL.
+ */
+int     set_get_n_ids(Set *pset);
 
 /**
  * @brief Prints the contents of the set to the specified output stream.
@@ -76,6 +81,6 @@ Id	set_pop(Set* pset);
  * @param pset Pointer to the set to be printed.
  * @return OK if successful, or ERROR if pset is NULL.
  */
-Status	set_print(FILE* output, Set* pset);
+Status  set_print(FILE *output, Set *pset);
 
 #endif

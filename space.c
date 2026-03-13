@@ -92,13 +92,21 @@ Status space_set_object(Space *space, Id new_id){
 
   return set_add(space->objs, new_id);
 }
-Id space_get_object(Space *space){
+Bool space_contains_object(Space *space, Id id_obj){
   if (!space) return FALSE;
  
-  set_
-
-  return  ;
+  return  set_contains_id(space->objs, id_obj);
 }
+Status  space_remove_id(Space *space, Id id_obj){
+  if(!space) return ERROR;
+
+  if(set_contains_id(space->objs, id_obj) == FALSE) return OK;
+  
+
+  return set_remove_id(space->objs, id_obj);
+}
+
+
 
 
 
@@ -111,8 +119,7 @@ Id space_get_object(Space *space){
 
 /* neitghboors */
   /* north */
-Status space_set_north(Space *space, Id id)
-{
+Status space_set_north(Space *space, Id id){
   if (!space || id == NO_ID)
   {
     return ERROR;
@@ -120,8 +127,7 @@ Status space_set_north(Space *space, Id id)
   space->north = id;
   return OK;
 }
-Id space_get_north(Space *space)
-{
+Id space_get_north(Space *space){
   if (!space)
   {
     return NO_ID;

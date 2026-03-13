@@ -164,13 +164,14 @@ Id space_get_west(Space *space);
 Status space_set_object(Space *space, Id id);
 
 /**
- * @brief It gets whether the space has an object or not
+ * @brief It check the space has an id of object or not
  * @author Violeta y Rafa
  *
  * @param space a pointer to the space
+ * @param id_obj a pointer to the space
  * @return a Id, specifying objects's id on the spaces;
  */
-Id space_get_object(Space *space);
+Bool space_contains_object(Space *space, Id id_obj);
 
 /**
  * @brief It prints the space information
