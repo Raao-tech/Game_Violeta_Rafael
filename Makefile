@@ -44,4 +44,4 @@ mandar_rm:
 .PHONY: clean run runv mandar mandar_rm
 
 clean:
-	rm -f *.o *.gch $(TARGET) Game_mandar_RaVi.zip
+	rm -f *.o *.gch $(TARGET) play Game_mandar_RaVi.zip
