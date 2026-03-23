@@ -2,9 +2,9 @@
  * @brief It implements the player struct
  *
  * @file player.c
- * @author Violeta y Rafael
- * @version 0
- * @date 04-02-2025
+ * @author Violeta, Rafael and Salvador
+ * @version 1.0
+ * @date 23-4-2026
  * @copyright GNU Public License
  */
 
@@ -21,7 +21,7 @@
  */
 struct _Player{
   Entity  *e_player;
-  Set     *objects_id;
+ Inventory *backpack;
   Id      location;
 };
 
@@ -43,8 +43,8 @@ Player    *player_create(){
   }
 
   /* Creamos el set de ids de objects */
-  newPlayer->objects_id = set_creat();
-  if(!newPlayer->objects_id){
+  newPlayer->backpack = inventory_create();
+  if(!newPlayer->backpack){
     entity_destroy(newPlayer->e_player);
     free(newPlayer);
     return  NULL;
@@ -57,7 +57,7 @@ Status    player_destroy(Player *player){
   if (!player)return ERROR;
 
   entity_destroy(player->e_player);
-  set_destroy(player->objects_id);
+  inventory_destroy(player->backpack);
   free(player);
 
   return OK;
@@ -113,19 +113,19 @@ int       player_get_attack(Player *player){
 /* objects*/
 Status    player_add_object(Player *player, Id new_obj){
   if(!player) return ERROR;
-  return set_add(player->objects_id,new_obj);
+  return inventory_add(player->backpack,new_obj);
 }
 Bool      player_contains_object(Player *player, Id ref_obj){
   if(!player) return FALSE;
-  return  set_contains_id(player->objects_id, ref_obj);
+  return  inventory_contains_id(player->backpack, ref_obj);
 }
 Status    player_delete_object(Player *player, Id trash_obj){
   if(!player) return ERROR;
-  return  set_delete_id(player->objects_id, trash_obj);
+  return  inventory_delete_id(player->backpack, trash_obj);
 }
 int       player_get_n_objects(Player *player){
   if(!player) return ERROR_MAIN;
-  return  set_get_n_ids(player->objects_id);
+  return  inventory_get_n_ids(player->backpack);
 }
 
 

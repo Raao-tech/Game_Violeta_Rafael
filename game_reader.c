@@ -2,9 +2,9 @@
  * @brief It reads information from files to create the game
  *
  * @file game_reader.c
- * @author Violeta y Rafael
- * @version 2
- * @date 27-01-2025
+ * @author Violeta, Rafael and Salvador
+ * @version 3.0
+ * @date 23-4-2026
  * @copyright GNU Public License
  */
 
@@ -192,21 +192,126 @@ Status game_load_characters(Game *game, char *filename){
 }
 
 /* ========== Private: Load player ========== */
-Status game_load_player(Game *game){
-  Player *player = NULL;
+Status game_load_player(Game *game, char *filename)
+{
+    FILE *file = NULL;
+    Player *p = NULL;
+    Id id, player_space;
+    char name[WORD_SIZE];
+    char *toks;
+    char *gdesc = NULL;
+    char line[WORD_SIZE] = "";
+    int health = 0;
 
-  if (!game) return ERROR;
+    /* Error control */
+    if (!filename)
+    {
+        return ERROR;
+    }
+    if (!(file = fopen(filename, "r")))
+    {
+        return ERROR;
+    }
 
-  player = game_get_player(game);
-  if (!player) return ERROR;
+    /* Reading and loading player */
+    while (fgets(line, WORD_SIZE, file))
+    {
+        if (strncmp(line, "#p:", 3) == 0)
+        {
+            toks = strtok(line + 3, "|");
+            if (!toks)
+            {
+                fclose(file);
+                return ERROR;
+            }
+            id = atol(toks);
+            toks = strtok(NULL, "|");
+            if (!toks)
+            {
+                fclose(file);
+                return ERROR;
+            }
+            strncpy(name, toks, WORD_SIZE - 1);
+            name[WORD_SIZE - 1] = '\0';
+            toks = strtok(NULL, "|");
+            if (!toks)
+            {
+                fclose(file);
+                return ERROR;
+            }
+            player_space = atol(toks);
+            toks = strtok(NULL, "|");
+            if (!toks)
+            {
+                fclose(file);
+                return ERROR;
+            }
 
-  player_set_id(player, 1);
-  player_set_name(player, "Player");
-  player_set_health(player, 5);
-  player_set_gdesc(player, ">8D");
+            if (strlen(toks) < 1)
+            {
+                fclose(file);
+                return ERROR;
+            }
+            gdesc = (char *)calloc(strlen(toks) + 1, sizeof(char));
+            if (!gdesc)
+            {
+                fclose(file);
+                return ERROR;
+            }
+            strcpy(gdesc, toks);
 
-  /* Start at first space */
-  return player_set_location(player, game_get_space_id_at(game, 0));
+            toks = strtok(NULL, "|");
+            if (!toks)
+            {
+                free(gdesc);
+                fclose(file);
+                return ERROR;
+            }
+            health = atoi(toks);
+
+            if (health < 1)
+            {
+                free(gdesc);
+                fclose(file);
+                return ERROR;
+            }
+
+            p = player_create(id);
+            if (!p)
+            {
+                free(gdesc);
+                fclose(file);
+                return ERROR;
+            }
+
+            if (player_set_name(p, name) == ERROR || player_set_gdesc(p, gdesc) == ERROR || player_set_health(p, health) == ERROR)
+            {
+                player_destroy(p);
+                free(gdesc);
+                fclose(file);
+                return ERROR;
+            }
+            if (game_add_player(game, p) == ERROR)
+            {
+                player_destroy(p);
+                fclose(file);
+                return ERROR;
+            }
+            if (game_set_player_location(game, player_space) == ERROR)
+            {
+                player_destroy(p);
+                fclose(file);
+                return ERROR;
+            }
+        }
+    }
+    if (ferror(file))
+    {
+        fclose(file);
+        return ERROR;
+    }
+    fclose(file);
+    return OK;
 }
 
 /* ========== Public: Create game from file ========== */
@@ -234,7 +339,7 @@ Status game_create_from_file(Game **game, char *filename){
     return ERROR;
   }
 
-  if (game_load_player(*game) == ERROR){
+  if (game_load_player(*game, filename) == ERROR){
     game_destroy(*game);
     *game = NULL;
     return ERROR;
