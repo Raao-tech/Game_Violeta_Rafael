@@ -74,14 +74,9 @@ Status character_set_name(Character *character, char *name){
   return OK;
 }
 Bool character_has_name(Character *character, char *name){
-    char *char_name = NULL;
-    Bool result = FALSE;
-    if(!character || !name) return FALSE;
-    char_name = character_get_name(character);
-    if(!char_name) return FALSE;
-    result = (strcmp(char_name, name) == 0) ? TRUE : FALSE;
-    free(char_name);
-    return result;
+      if(!character || !name) return FALSE;
+ 
+      return entity_has_name(character->e_character, name);
 }
 char *character_get_name(Character *character){
   if (!character || !character->e_character) return NULL;

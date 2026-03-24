@@ -276,7 +276,7 @@ Status game_load_player(Game *game, char *filename)
                 return ERROR;
             }
 
-            p = player_create(id);
+            p = player_create();
             if (!p)
             {
                 free(gdesc);
@@ -284,25 +284,20 @@ Status game_load_player(Game *game, char *filename)
                 return ERROR;
             }
 
-            if (player_set_name(p, name) == ERROR || player_set_gdesc(p, gdesc) == ERROR || player_set_health(p, health) == ERROR)
+            if (player_set_id(p, id)==ERROR||player_set_name(p, name) == ERROR || player_set_gdesc(p, gdesc) == ERROR || player_set_health(p, health) == ERROR||player_set_location(game, player_space) == ERROR)
             {
                 player_destroy(p);
                 free(gdesc);
                 fclose(file);
                 return ERROR;
-            }
+            }  
             if (game_add_player(game, p) == ERROR)
             {
                 player_destroy(p);
                 fclose(file);
                 return ERROR;
             }
-            if (game_set_player_location(game, player_space) == ERROR)
-            {
-                player_destroy(p);
-                fclose(file);
-                return ERROR;
-            }
+         
         }
     }
     if (ferror(file))

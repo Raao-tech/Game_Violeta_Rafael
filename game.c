@@ -22,13 +22,14 @@
  */
 struct _Game
 {
-  Player *player;
+  Player *players[MAX_PLAYERS];
   Object *objects[MAX_OBJECTS];
   Space *spaces[MAX_SPACES];
   Character *characters[MAX_CHARACTERS];
   Command *last_cmd;
   Links *links[MAX_LINKS];
 
+  int n_players;
   int n_spaces;
   int n_objects;
   int n_characters;
@@ -49,6 +50,8 @@ Game *game_create()
     return NULL;
 
   for (i = 0; i < MAX_SPACES; i++)
+    game->players[i] = NULL;
+  for (i = 0; i < MAX_SPACES; i++)
     game->spaces[i] = NULL;
   for (i = 0; i < MAX_OBJECTS; i++)
     game->objects[i] = NULL;
@@ -64,17 +67,9 @@ Game *game_create()
   game->finished = FALSE;
   game->last_cmd_status = OK;
 
-  game->player = player_create();
-  if (!game->player)
-  {
-    free(game);
-    return NULL;
-  }
-
   game->last_cmd = command_create();
   if (!game->last_cmd)
   {
-    player_destroy(game->player);
     free(game);
     return NULL;
   }
@@ -97,7 +92,9 @@ Status game_destroy(Game *game)
   for (i = 0; i < game->n_characters; i++)
     character_destroy(game->characters[i]);
 
-  player_destroy(game->player);
+  for (i = 0; i < game->n_players; i++)
+    player_destroy(game->players[i]);
+
   command_destroy(game->last_cmd);
 
   free(game);
@@ -106,11 +103,12 @@ Status game_destroy(Game *game)
 
 /* ========== Access: Enfoque B (expose pointers) ========== */
 
-Player *game_get_player(Game *game)
+Player **game_get_players(Game *game)
 {
   if (!game)
     return NULL;
-  return game->player;
+
+  return game->players;
 }
 
 Command *game_get_last_command(Game *game)
@@ -145,9 +143,13 @@ Id game_get_connection(Game *game, Id space, Direction dir)
   }
   for (i = 0; i < game->n_links; i++)
   {
-    if (link_find_origin_id(game->links[i], space ) == TRUE && link_find_direction(game->links[i], dir) == TRUE)
+    if (link_get_origin_id(game->links[i]) == space && link_get_direction(game->links[i]) == dir)
     {
-      return link_get_destiny_id_from_id(game->links[i], space, dir);
+      return link_get_destiny_id(game->links[i]);
+    }
+    else if (link_get_destiny_id(game->links[i]) == space && link_get_opposite_direction(game->links[i]) == dir)
+    {
+      return link_get_origin_id(game->links[i]);
     }
   }
   return NO_ID;
@@ -162,9 +164,13 @@ Bool game_connection_is_open(Game *game, Id space, Direction dir)
   }
   for (i = 0; i < game->n_links; i++)
   {
-    if (link_find_origin_id(game->links[i], space) == TRUE && link_find_direction(game->links[i], dir) == TRUE)
+    if (link_get_origin_id(game->links[i]) == space && link_get_direction(game->links[i]) == dir)
     {
-      return link_find_open(game->links[i], space, dir);
+      return link_get_open_orig_to_dest(game->links[i]);
+    }
+    else if (link_get_destiny_id(game->links[i]) == space && link_get_opposite_direction(game->links[i]) == dir)
+    {
+      return link_get_open_dest_to_orig(game->links[i]);
     }
   }
   return FALSE;
@@ -202,6 +208,16 @@ Status game_add_character(Game *game, Character *character)
   return OK;
 }
 
+Status game_add_player(Game *game, Player *player)
+{
+  if (!game || !player || game->n_players >= MAX_PLAYERS)
+    return ERROR;
+
+  game->players[game->n_players] = player;
+  game->n_players++;
+  return OK;
+}
+
 /* ========== Search: Objects ========== */
 
 Object *game_get_object_by_id(Game *game, Id id)
@@ -236,15 +252,6 @@ Object *game_get_object_by_name(Game *game, char *name)
   return NULL;
 }
 
-/**
- * @brief Given an object id, finds in which space it is located
- *
- * Iterates through all spaces checking if any contains the given object id.
- *
- * @param game a pointer to game
- * @param obj_id the id of the object to locate
- * @return the Id of the space containing the object, or NO_ID if not found
- */
 Id game_get_object_location(Game *game, Id obj_id)
 {
   int i;
@@ -294,15 +301,6 @@ Character *game_get_character_by_name(Game *game, char *name)
   return NULL;
 }
 
-/**
- * @brief Given a character id, finds in which space it is located
- *
- * Iterates through all spaces checking if any contains the given character id.
- *
- * @param game a pointer to game
- * @param char_id the id of the character to locate
- * @return the Id of the space containing the character, or NO_ID if not found
- */
 Id game_get_character_location(Game *game, Id char_id)
 {
   int i;
@@ -314,6 +312,55 @@ Id game_get_character_location(Game *game, Id char_id)
   {
     if (space_contains_character(game->spaces[i], char_id) == TRUE)
       return space_get_id(game->spaces[i]);
+  }
+
+  return NO_ID;
+}
+
+/* ========== Search: Players ========== */
+
+Player *game_get_player_by_id(Game *game, Id id)
+{
+  int i;
+
+  if (!game || id == NO_ID)
+    return NULL;
+
+  for (i = 0; i < game->n_players; i++)
+  {
+    if (player_get_id(game->players[i]) == id)
+      return game->players[i];
+  }
+
+  return NULL;
+}
+
+Player *game_get_player_by_name(Game *game, char *name)
+{
+  int i;
+  if (!game || !name)
+    return NULL;
+
+  for (i = 0; i < game->n_players; i++)
+  {
+    if (player_has_name(game->players[i], name) == TRUE)
+      return game->players[i];
+  }
+
+  return NULL;
+}
+
+Id game_get_player_location(Game *game, Id player_id)
+{
+  int i;
+
+  if (!game || player_id == NO_ID)
+    return NO_ID;
+
+  for (i = 0; i < game->n_players; i++)
+  {
+    if (player_get_id(game->players[i])==player_id)
+      return player_get_location(game->players[i]);
   }
 
   return NO_ID;
@@ -333,6 +380,13 @@ Character *game_get_character_at(Game *game, int position)
   if (!game || position < 0 || position >= game->n_characters)
     return NULL;
   return game->characters[position];
+}
+
+Player *game_get_player_at(Game *game, int position)
+{
+  if (!game || position < 0 || position >= game->n_players)
+    return NULL;
+  return game->players[position];
 }
 
 Id game_get_space_id_at(Game *game, int position)
@@ -363,6 +417,12 @@ int game_get_n_characters(Game *game)
   return game->n_characters;
 }
 
+int game_get_n_players(Game *game)
+{
+  if (!game)
+    return -1;
+  return game->n_players;
+}
 /* ========== Game state ========== */
 
 Status game_set_finished(Game *game, Bool finished)
@@ -408,15 +468,21 @@ Status game_get_last_cmd_status(Game *game)
 void game_print(Game *game)
 {
   int i;
-
+  Id loc;
   if (!game)
     return;
 
   printf("\n============ GAME STATE ============\n");
 
   /* Player info */
-  printf("=> Player:\n");
-  player_print(game->player);
+  printf("\n=> Players (%d):\n", game->n_players);
+  for (i = 0; i < game->n_players; i++)
+  {
+     loc = game_get_player_location(game, player_get_id(game->players[i]));
+    player_print(game->players[i]);
+    if (loc != NO_ID)
+      printf("   Located in space: %ld\n", loc);
+  }
 
   /* Spaces */
   printf("\n=> Spaces (%d):\n", game->n_spaces);
@@ -429,7 +495,7 @@ void game_print(Game *game)
   printf("\n=> Objects (%d):\n", game->n_objects);
   for (i = 0; i < game->n_objects; i++)
   {
-    Id loc = game_get_object_location(game, obj_get_id(game->objects[i]));
+     loc = game_get_object_location(game, obj_get_id(game->objects[i]));
     obj_print(game->objects[i]);
     if (loc != NO_ID)
       printf("   Located in space: %ld\n", loc);
@@ -441,7 +507,7 @@ void game_print(Game *game)
   printf("\n=> Characters (%d):\n", game->n_characters);
   for (i = 0; i < game->n_characters; i++)
   {
-    Id loc = game_get_character_location(game, character_get_id(game->characters[i]));
+     loc = game_get_character_location(game, character_get_id(game->characters[i]));
     character_print(game->characters[i]);
     if (loc != NO_ID)
       printf("   Located in space: %ld\n", loc);
