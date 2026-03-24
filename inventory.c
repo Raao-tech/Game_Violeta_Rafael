@@ -87,35 +87,10 @@ Id	inventory_get_id_at(Inventory *inventory, int position){
 }
 
 
-
-
-/* name */
-Status obj_set_name(Object *obj, char *name){
-  if (!obj || !name) return ERROR;
-  strncpy(obj->name, name, WORD_SIZE);
-  obj->name[WORD_SIZE] = '\0';
-
-  return OK;
-}
-
-Bool obj_has_name(Object *obj, char *name){
-    if(!obj || !name) return FALSE;
-    return (strcmp(obj->name, name) == 0) ? TRUE : FALSE;
-}
-char *obj_get_name(Object *obj){
-  if (!obj) return NULL;
-  return obj->name;
-}
-
-
-
 /* Print */
-Status obj_print(Object *obj){
+Status inventory_print(Inventory *inventory){
   /* Error Control */
-  if (!obj) return ERROR;
+  if (!inventory) return ERROR;
   
-  /* Print the id and the name of the object */
-  fprintf(stdout, "--> Object (Id: %ld; Name: %s)\n", obj->id, obj->name);
-
-  return OK;
+  return set_print(stdout, inventory->objs);
 }
