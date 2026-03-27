@@ -11,6 +11,9 @@ BD = castle.dat
 TARGET = castle
 #######################################
 
+Ingit: Ingit.sh
+	./Ingit.sh
+
 all: $(TARGET)
 
 run: $(TARGET)

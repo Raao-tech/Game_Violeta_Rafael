@@ -88,21 +88,48 @@ if [ "$opcion" == 1 ]; then
     git remote remove origin 2>/dev/null
     git remote add origin "$url_con_token"
 
-    echo -e "Pidiendo datos al repo..."
+    echo -e "Pidiendo datos al repo...\n"
     git fetch origin
     
-    echo -e "Sincronizando con la nube (borrando basura local)..."
+    echo -e "Sincronizando con la nube (borrando basura local)...\n"
     git reset --hard origin/main
     
     # Esto conecta tu rama local 'main' con la de GitHub para siempre
     git branch --set-upstream-to=origin/main main
 
-    echo -e "¡Listo! El repo está vinculado y al día."
+    echo -e "¡Listo! El repo está vinculado y al día.\n"
     
     sleep 1.5
     echo -e "Estado actual del repo:"
     git status
     ls -la
+elif [ "$opcion" == 3 ]; then
+    read -p "Vale, ¿Que Cambios has hecho?\n" cambios;
+
+    echo -e "OK. Comenzaremos viendo si hay errores de compatibilidad...\n"
+
+    # 1. Intentamos traer lo de la nube
+    git fetch origin main
+
+    # 2. Intentamos un pull. Si falla, hay conflictos.
+    if ! git pull origin main --rebase; then
+        echo -e "¡HOUSTON, TENEMOS UN CONFLICTO! 
+        Alguien ha tocado las mismas líneas que tú. 
+        Abre los archivos marcados, busca las marcas '<<<<<<', límpialas y guarda."
+        
+        # Aquí el script se detiene para que el humano arregle el código
+        read -p "Presiona ENTER cuando hayas resuelto los conflictos en el código..." listo
+        
+        git add .
+        git rebase --continue
+    fi
+
+    # 3. Una vez limpio, mandamos
+    read -p "¿Qué cambios has hecho? (Mensaje para el commit): " cambios
+    git add .
+    git commit -m "$cambios"
+    git push origin main
+        
 fi
 
 
