@@ -129,6 +129,10 @@ elif [ "$opcion" == 3 ]; then
     git add .
     git commit -m "$cambios"
     git push origin main
+
+    echo -e "Vale. Ya estaria, si necesitas algo mas, vuelve a llamarme\n"
+    sleep 3
+    clean
         
 fi
 
