@@ -55,7 +55,8 @@ while [ $play -eq 1 ]; do
     fi
 done
 
-sleep 1
+sleep 1.5
+clear
 if [ "$opcion" == 1 ]; then
     echo -e "Antes de empezar, voy a crear un repo, se supone que has descargado esto desde un .zip"
     sleep 0.5
@@ -131,7 +132,7 @@ elif [ "$opcion" == 3 ]; then
     git push origin main
 
     echo -e "Vale. Ya estaria, si necesitas algo mas, vuelve a llamarme\n"
-    sleep 3
+    sleep 2
     clear
         
 fi
