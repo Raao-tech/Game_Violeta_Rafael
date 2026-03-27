@@ -4,26 +4,32 @@ adios="6";
 
 # Revisamos la memoria de ingit
 stats_file="otros/memoria_ingit.txt"
-mkdir -p .otros  # Crea la carpeta oculta si no existe
+mkdir -p otros  # Crea la carpeta si no existe
 
 if [ ! -f "$stats_file" ]; then
-    echo -e "Aperturas\t0\nUltimo_user\tNAN\nultima_fecha\t$(date +'%H\t%M\t%d\t%m\t%Y')" > "$stats_file"
+    echo -e "Aperturas\t0\nUltimo_name\tNAN\nUltimo_user\tNAN\nultima_fecha\t$(date +'%H\t%M\t%d\t%m\t%Y')" > "$stats_file"
 fi
 
 # Leer datos con un valor por defecto si falla awk
 aperturas=$(awk '/Aperturas/ {print $2}' "$stats_file")
 aperturas=${aperturas:-0} # Si está vacío, pon 0
+
+ultimo_name=$(awk '/Ultimo_name/ {print $2}' "$stats_file")
+ultimo_name=${ultimo_name:-"NAN"}
+
 ultimo_user=$(awk '/Ultimo_user/ {print $2}' "$stats_file")
 ultimo_user=${ultimo_user:-"NAN"}
 
 if [ "$aperturas" -eq 0 ]; then
     echo -e "Hola! Soy tu asistente de Pre_prog, llamame Ingit.\n"
     read -p "Veo que es tu primera vez por aquí. ¿Quién eres? responde: " name
+    read -p "Vale, ahora necesito conocer tu USERNAME de GITHUB porque sin eso no se para que estas aqui: " username
     # Actualizamos el archivo: Aperturas pasa a 1 y guardamos el nombre
     sed -i "s/Aperturas.*/Aperturas\t1/" "$stats_file"
-    sed -i "s/Ultimo_user.*/Ultimo_user\t$name/" "$stats_file"
+    sed -i "s/Ultimo_name.*/Ultimo_name\t$name/" "$stats_file"
+    sed -i "s/Ultimo_user.*/Ultimo_user\t$username/" "$stats_file"
 else
-    name=$ultimo_user
+    name=$ultimo_name
     echo -e "¡Hola de nuevo, ${name}! Soy Ingit.\n"
 fi
 sleep 1
@@ -93,7 +99,7 @@ if [ "$opcion" == 1 ]; then
     echo -e "Antes de empezar, voy a crear un repo, se supone que has descargado esto desde un .zip"
     sleep 0.5
     read -p "¿Correcto? (responde  si, yes, s, y, todo lo demas sera un NO): " respuesta;
-    
+
     if [[ ! "$respuesta" =~ ^(si|yes|s|y|S|correct)$ ]]; then
         sleep 0.3
         echo -e "Pues ¿que haces aqui? Deja de joder"

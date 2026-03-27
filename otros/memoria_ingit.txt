@@ -1,3 +1,4 @@
 Aperturas	1
+Ultimo_name Rafael
 Ultimo_user	Rafael
-ultima_fecha	18	20	27	03	2026	\n
+ultima_fecha	18	44	27	03	2026
