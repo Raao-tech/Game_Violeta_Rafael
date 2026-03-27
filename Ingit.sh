@@ -132,7 +132,7 @@ elif [ "$opcion" == 3 ]; then
 
     echo -e "Vale. Ya estaria, si necesitas algo mas, vuelve a llamarme\n"
     sleep 3
-    clean
+    clear
         
 fi
 
