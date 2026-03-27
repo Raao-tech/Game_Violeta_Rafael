@@ -3,7 +3,7 @@ repo="https://github.com/Raao-tech/Game_Violeta_Rafael.git";
 adios="6";
 
 # Revisamos la memoria de ingit
-stats_file=".otros/memoria_ingit.txt"
+stats_file="otros/memoria_ingit.txt"
 mkdir -p .otros  # Crea la carpeta oculta si no existe
 
 if [ ! -f "$stats_file" ]; then
@@ -28,6 +28,7 @@ else
 fi
 sleep 1
 
+echo -e "¿En que te puedo ayudar hoy?\n"
 echo -e "1. iniciar mi repo desde una compu de la uni\n";
 echo -e "2. iniciar mi repo desde mi compu";
 echo -e "-----------Opciones de administracion------------";
@@ -91,7 +92,8 @@ clear
 if [ "$opcion" == 1 ]; then
     echo -e "Antes de empezar, voy a crear un repo, se supone que has descargado esto desde un .zip"
     sleep 0.5
-    read -p "¿Correcto? (responde  si, yes, s, y, todo lo demas sera un NO): " respuesta
+    read -p "¿Correcto? (responde  si, yes, s, y, todo lo demas sera un NO): " respuesta;
+    
     if [[ ! "$respuesta" =~ ^(si|yes|s|y|S|correct)$ ]]; then
         sleep 0.3
         echo -e "Pues ¿que haces aqui? Deja de joder"
