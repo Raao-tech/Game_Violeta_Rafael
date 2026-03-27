@@ -1,5 +1,6 @@
 #!/bin/bash
 repo="https://github.com/Raao-tech/Game_Violeta_Rafael.git";
+adios="6";
 echo -e "Hola! Soy tu asistente de Pre_prog, llamame Ingit.\n";
 
 read -p "Quien eres? responde: " name;
@@ -7,15 +8,20 @@ sleep 0.29
 echo -e "Bienvenido ${name}, que quieres hacer?\n";
 sleep 1
 echo -e "1. iniciar mi repo desde una compu de la uni\n";
-echo -e "2. iniciar mi repo desde mi compu\n";
-echo -e "3. Adios Ingit\n";
+echo -e "2. iniciar mi repo desde mi compu";
+echo -e "-----------Opciones de administracion------------";
+echo -e "3. Guarda y manda mis cambios\n";
+echo -e "4. Visualizar Ramas\n";
+echo -e "5. Estado del proyecto\n";
+
+echo -e "${adios}. Adios Ingit\n";
 
 
 play=1;
 sleep 1
 while [ $play -eq 1 ]; do
     read -p "Hare la opcion: " opcion;
-    if [ "$opcion" == "3" ]; then
+    if [ "$opcion" == "${adios}" ]; then
         echo -e "Marchando ${name}!!"
         sleep 1
         echo -e "Dame un chance que estoy limpiando toda nuestra conversacion"
@@ -38,10 +44,10 @@ while [ $play -eq 1 ]; do
 
         git config --global --unset user.name
         git config --global --unset user.email
-        git remote remove origin  # Para que no se quede tu Token guardado en la carpeta
+        git remote remove origin
 
         exit 0;
-    elif [[ ! "$opcion" =~ ^[1-2]+$ ]]; then
+    elif (( opcion < 1 || opcion >= adios )); then
         echo -e "${name} Has introducido una opcion invalida.... Dios, lo que me toca vivir\n";
     else 
         echo -e "Ok ${name}! En camino...\n";
@@ -59,26 +65,45 @@ if [ "$opcion" == 1 ]; then
         echo -e "Pues ¿que haces aqui? Deja de joder"
         exit 0
     fi
-    echo -e "Inciando repo en el directorio actual"
+    clear;
+    sleep 1
+    echo -e "Iniciando repo en el directorio actual"
     git init
-    git remote add origin $repo
+    git config --global init.defaultBranch main
+    git branch -m main
+
+    sleep 0.35
     read -p "cual es tu USERNAME de github? : " username
     read -p "cual es tu EMAIL de github? : " email
     read -p "Cual es tu TOKEN de uni? : " token
-
+    
     echo -e "Configurando credenciales temporales..."
     git config --global user.email "$email"
     git config --global user.name "$username"
 
+    echo -e "Estableciendo el enlace HTTPS al repo"
+    
+    url_con_token="https://${username}:${token}@github.com/Raao-tech/Game_Violeta_Rafael.git"
+    
     git remote remove origin 2>/dev/null
-    git remote add origin "https://$username:$token@github.com/Raao-tech/Game_Violeta_Rafael.git"
+    git remote add origin "$url_con_token"
 
-    echo -e "¡Listo! Intentando sincronizar con GitHub..."
-    git pull origin main --allow-unrelated-histories
+    echo -e "Pidiendo datos al repo..."
+    git fetch origin
+    
+    echo -e "Sincronizando con la nube (borrando basura local)..."
+    git reset --hard origin/main
+    
+    # Esto conecta tu rama local 'main' con la de GitHub para siempre
+    git branch --set-upstream-to=origin/main main
 
-
+    echo -e "¡Listo! El repo está vinculado y al día."
+    
+    sleep 1.5
+    echo -e "Estado actual del repo:"
+    git status
+    ls -la
 fi
-
 
 
 
