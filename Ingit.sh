@@ -137,6 +137,11 @@ if [ "$opcion" == 1 ]; then
     # Esto conecta tu rama local 'main' con la de GitHub para siempre
     git branch --set-upstream-to=origin/main main
 
+    # Guardar fecha actual y resetear aperturas a 0
+    sed -i "s/Aperturas.*/Aperturas\t0/" "$stats_file"
+    git add otros/memoria_ingit.txt
+    fecha_actual=$(date +'%H\t%M\t%d\t%m\t%Y')
+    git commit -m "Ingreso de ${username} el dia ${fecha_actual}"
     echo -e "¡Listo! El repo está vinculado y al día.\n"
     
     sleep 1.5
@@ -144,7 +149,7 @@ if [ "$opcion" == 1 ]; then
     git status
     ls -la
 elif [ "$opcion" == 3 ]; then
-    read -p "Vale, ¿Que Cambios has hecho?\n" cambios;
+    read -p "¿Qué cambios has hecho? (Mensaje para el commit): " cambios;
 
     echo -e "OK. Comenzaremos viendo si hay errores de compatibilidad...\n"
 
@@ -165,7 +170,7 @@ elif [ "$opcion" == 3 ]; then
     fi
 
     # 3. Una vez limpio, mandamos
-    read -p "¿Qué cambios has hecho? (Mensaje para el commit): " cambios
+   
     git add .
     git commit -m "$cambios"
     git push origin main

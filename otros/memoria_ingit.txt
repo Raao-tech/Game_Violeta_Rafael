@@ -1,4 +1,4 @@
-Aperturas	0
-Ultimo_name Rafael
+Aperturas	1
+Ultimo_name	Rafael
 Ultimo_user	Raao-tech
 ultima_fecha	18	44	27	03	2026
