@@ -132,7 +132,7 @@ elif [ "$opcion" == 3 ]; then
     git push origin main
 
     echo -e "Vale. Ya estaria, si necesitas algo mas, vuelve a llamarme\n"
-    sleep 2
+    sleep 1.5
     clear
         
 fi
