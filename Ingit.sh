@@ -212,6 +212,7 @@ elif [ "$opcion" == 3 ]; then
         read -p "Presiona ${GREEN} ENTER ${RESET} cuando hayas ${RED} resuelto los conflictos ${RESET} en el código..." listo
         
         git add .
+        git commit -m "Commit de emergencia antes de hacer el pusheado de rebase del colaborador ${username}"
         git rebase --continue
     fi
 
