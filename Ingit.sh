@@ -227,7 +227,8 @@ elif [ "$opcion" == 3 ]; then
     
     sed -i "s/ultima_fecha.*/ultima_fecha\t$fecha_actual/" "$stats_file"
     sed -i "s/Aperturas.*/Aperturas\t1/" "$stats_file"
-    echo -e "Vale. Ya estaría, ${GREEN}registro de fecha actualizado${RESET}. Vuelve cuando quieras.\n" echo -e "Vale. Ya estaria, si necesitas algo mas, vuelve a llamarme\n"
+    echo -e "Vale. Ya estaría, ${GREEN}registro de fecha actualizado${RESET}. Vuelve cuando quieras.\n"
+    echo -e "Vale. Ya estaria, si necesitas algo mas, vuelve a llamarme\n"
     echo -e "Mientras tanto, me ire a sentar junto tu carpeta de matematicas de 20GB.... 
     ¿Sera que lo publico por telegram? mmmm bueno, luego vere. HASTA LUEGOO!!";
     
@@ -235,6 +236,3 @@ elif [ "$opcion" == 3 ]; then
     clear
         
 fi
-
-
-
