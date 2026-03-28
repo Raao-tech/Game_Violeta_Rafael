@@ -135,27 +135,27 @@ if [ "$opcion" == 1 ]; then
     sleep 1
     
 
-    echo -e "Esta bien, ${RED}ya estas advertido${RESET}.  El que avisa no es traidor....
-    Dicho eso, ${GREEN}empecemos con la magia git${BLUE} jejeje${RESET}\n";
+    echo -e "Esta bien, ${RED} ya estas advertido ${RESET}.  El que avisa no es traidor....
+    Dicho eso, ${GREEN} empecemos con la magia git ${BLUE} jejeje ${RESET}\n";
     
     #Esto es para dejar por default en el sistema el main
     git config --global init.defaultBranch main
     
-    echo -e "${GREEN}Iniciando repo en el ${YELOW}directorio actual${RESET}"
+    echo -e "${GREEN} Iniciando repo en el ${YELOW} directorio actual ${RESET}"
     git init
     git branch -m main
 
     sleep 0.35
-    read -p "cual es tu ${YELOW}USERNAME${RESET} de github? : " username
-    read -p "cual es tu EMAIL de github? : " email
-    read -p "Cual es tu TOKEN de uni? : " token
+    read -p "cual es tu ${YELOW} USERNAME ${RESET} de github? : " username
+    read -p "cual es tu ${YELOW} EMAIL ${RESET} de github? : " email
+    read -p "Cual es tu ${YELOW} TOKEN ${RESET} de uni? : " token
     
     echo -e "Configurando credenciales temporales..."
     git config --global user.email "$email"
     git config --global user.name "$username"
 
     sleep 0.5
-    echo -e "Estableciendo el enlace HTTPS al repo"
+    echo -e "${BLUE} Estableciendo ${RESET} el enlace HTTPS al repo"
     
     url_con_token="https://${username}:${token}@github.com/Raao-tech/Game_Violeta_Rafael.git"
     
@@ -165,10 +165,10 @@ if [ "$opcion" == 1 ]; then
     git remote add origin "$url_con_token"
 
     sleep 0.5
-    echo -e "${GREEN}Pidiendo${RESET} datos al repo...\n"
+    echo -e "${GREEN} Pidiendo ${RESET} datos al repo...\n"
     git fetch origin
     
-    echo -e "Sincronizando con la nube ${RED}(borrando basura local)${RESET}...\n"
+    echo -e "${BLUE} Sincronizando ${RESET} con la nube ${RED} (borrando basura local) ${RESET} ...\n"
     git reset --hard origin/main
     
     # Esto conecta tu rama local 'main' con la de GitHub para siempre
@@ -185,14 +185,14 @@ if [ "$opcion" == 1 ]; then
 
     
     sleep 1.5
-    echo -e "Para verificar el estado de su repo, ejecuta    ${YELOW}git status${RESET}"
+    echo -e "Para verificar el estado de su repo, ejecuta    ${YELOW} git status ${RESET}"
     #Nos aseguramos de que los datos del actual usuario esten en la memoria local de Ingit.
     sed -i "s/Aperturas.*/Aperturas\t1/" "$stats_file"
     sed -i "s/Ultimo_user.*/Ultimo_user\t$username/" "$stats_file"
     sed -i "s/Ultimo_name.*/Ultimo_name\t$name/" "$stats_file"
     
 elif [ "$opcion" == 3 ]; then
-    read -p "${YELOW}¿Qué cambios has hecho?${RESET} (Mensaje para el ${GREEN}commit${RESET}): " cambios;
+    read -p "$(echo -e "${YELLOW}¿Qué cambios has hecho?${RESET} (Mensaje para el ${GREEN}commit${RESET}): ")" respuesta
 
     echo -e "OK. Comenzaremos viendo si hay errores de compatibilidad...\n"
 
@@ -201,15 +201,15 @@ elif [ "$opcion" == 3 ]; then
 
     # 2. Intentamos un pull. Si falla, hay conflictos.
     if ! git pull origin main --rebase; then
-        echo -e "${RED}¡HOUSTON, TENEMOS UN CONFLICTO!${RESET} 
-        ${YELOW}Alguien${RESET} ha tocado las ${RED}mismas líneas que tú${RESET}. 
+        echo -e "${RED} ¡HOUSTON, TENEMOS UN CONFLICTO! ${RESET} 
+        ${YELOW} Alguien ${RESET} ha tocado las ${RED} mismas líneas que tú ${RESET}. 
         Abre los archivos marcados, busca las marcas ${YELOW}'<<<<<<'${RESET}, límpialas y guarda.
         Se que usar tu criterio es algo costoso para ti, pero no pasa nada, intentalo.
-        o llama al  ${GREEN}+58 PENDEJ@ HAS TU TRABAJO!!${RESET}"
+        o llama al  ${GREEN} +58 PENDEJ@ HAS TU TRABAJO!! ${RESET}"
         
         sleep 2
         # Aquí el script se detiene para que el humano arregle el código
-        read -p "Presiona ${GREEN}ENTER${RESET} cuando hayas ${RED}resuelto los conflictos${RESET} en el código..." listo
+        read -p "Presiona ${GREEN} ENTER ${RESET} cuando hayas ${RED} resuelto los conflictos ${RESET} en el código..." listo
         
         git add .
         git rebase --continue
