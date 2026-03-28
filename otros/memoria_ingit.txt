@@ -1,4 +1,4 @@
-Aperturas	0
+Aperturas	1
 Ultimo_name	Salvador
 Ultimo_user	Ao6400
 ultima_fecha	19	27	27	03	2026
