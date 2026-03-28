@@ -233,6 +233,6 @@ elif [ "$opcion" == 3 ]; then
     ¿Sera que lo publico por telegram? mmmm bueno, luego vere. HASTA LUEGOO!!";
     
     sleep 1.5
-    clear
+    
         
 fi
