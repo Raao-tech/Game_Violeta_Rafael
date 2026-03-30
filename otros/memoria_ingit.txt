@@ -1,4 +1,4 @@
-Aperturas	1
+Aperturas	0
 Ultimo_name	Rafael
 Ultimo_user	Raao-teh
 ultima_fecha	20	46	28	03	2026
