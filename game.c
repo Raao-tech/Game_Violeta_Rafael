@@ -210,6 +210,16 @@ Status game_add_player(Game *game, Player *player)
   return OK;
 }
 
+Status game_add_links(Game *game, Links *link)
+{
+  if (!game || !link || game->n_links >= MAX_LINKS)
+    return ERROR;
+
+  game->links[game->n_links] = link;
+  game->n_links++;
+  return OK;
+}
+
 /* ========== Search: Objects ========== */
 
 Object *game_get_object_by_id(Game *game, Id id)

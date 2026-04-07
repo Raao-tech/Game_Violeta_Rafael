@@ -368,6 +368,11 @@ Status game_load_links(Game *game, char *filename)
       dest_id = atol(toks);
       toks = strtok(NULL, "|");
       direction = (Direction)atoi(toks);
+      if((int)direction<0||(int)direction>4)
+      {
+        fclose(file);
+        return ERROR;
+      }
       toks = strtok(NULL, "|");
       orig_to_dest = (Bool)atoi(toks);
       toks = strtok(NULL, "|");

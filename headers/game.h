@@ -142,6 +142,16 @@ Status game_add_character(Game *game, Character *character);
  */
 Status game_add_player(Game *game, Player *player);
 
+/**
+ * @brief It adds a link to the game
+ * @author Salvador
+ *
+ * @param game a pointer to the game
+ * @param link a pointer to the link to add
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
+Status game_add_links(Game *game, Links *link);
+
 /* ========== Search: Objects ========== */
 
 /**
