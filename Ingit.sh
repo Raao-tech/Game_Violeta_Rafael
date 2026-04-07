@@ -199,7 +199,7 @@ elif [ "$opcion" == 3 ]; then
 
     echo -e "OK. Primero guardemos tus cambios en el local\n"
     git add .
-    git commit -m "$respuesta es un comentario preambulo"
+    git commit -m "$respuesta (Guardadndo Cambios locales)"
     echo -e "OK. Comenzaremos viendo si hay errores de compatibilidad...\n"
     
     
