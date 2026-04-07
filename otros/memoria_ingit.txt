@@ -1,4 +1,4 @@
-Aperturas	1
+Aperturas	0
 Ultimo_name	rafa
 Ultimo_user	Raao-tech
 ultima_fecha	17	02	07	04	2026
