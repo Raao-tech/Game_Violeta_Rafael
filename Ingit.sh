@@ -45,15 +45,16 @@ else
     name=$ultimo_name
     echo -e "¡Hola de nuevo, ${RED}${name}${RESET}! Soy ${GREEN}Ingit${RESET}.\n"
     sleep 1
-    echo -e "¿En que te puedo ayudar esta vez? \n"
+    echo -e "Se supone que soy un asistente, pero realmente estoy escalvizad@.... \n"
+    echo -e "Llama a la policia please \n"
     sleep 1
     echo -e "\n-----------${YELOW}Opciones de administracion${RESET}------------\n";
-    echo -e "3. Guarda y manda mis cambios\n";
-    echo -e "4. Visualizar Ramas (no funciona)\n";
-    echo -e "5. Estado del proyecto (no funciona)\n";
+    echo -e "3. ${GREEN}Guarda y manda mis cambios${RESET}\n";
+    echo -e "4. Visualizar Ramas ${RED}(no funciona)${RESET}\n";
+    echo -e "5. Estado del proyecto ${RED}(no funciona)${RESET}\n";
 fi
 
-echo -e "${adios}. Adios Ingit (No usar)\n";
+echo -e "${adios}. ${RED}Adios Ingit ${RESET}\n";
 
 
 play=1;
