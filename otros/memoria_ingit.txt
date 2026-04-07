@@ -1,4 +1,4 @@
-Aperturas	1
-Ultimo_name	Rafa
-Ultimo_user	Raao-tech
+Aperturas	0
+Ultimo_name	NAN
+Ultimo_user	NAN
 ultima_fecha	19	32	07	04	2026
