@@ -96,7 +96,7 @@ while [ $play -eq 1 ]; do
         git remote remove origin
 
         GLOBIGNORE="Ingit.sh:Makefile"
-        rm -rf *
+        rm -rf *.git
         unset GLOBIGNORE
         exit 0;
     elif (( opcion < 1 || opcion >= adios )); then
@@ -256,7 +256,7 @@ elif [ "$opcion" == 3 ]; then
     ¿Sera que lo publico por telegram? mmmm bueno, luego vere. HASTA LUEGOO!!";
     
     sleep 1.5
-    if [$aperturas -eq 0]; then
+    if [ $aperturas -eq 0 ]; then
         sed -i "s/ultima_fecha.*/ultima_fecha\t$fecha_actual/" "$stats_file";
         sed -i "s/Ultimo_user.*/Ultimo_user\t$username/" "$stats_file";
         sed -i "s/Ultimo_name.*/Ultimo_name\t$name/" "$stats_file";
