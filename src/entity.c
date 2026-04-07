@@ -112,7 +112,7 @@ Bool entity_has_name(Entity *entity, char *name){
     if(!entity|| !name) return FALSE;
     entity_name = entity_get_name(entity);
     if(!entity_name) return FALSE;
-    result = (strcmp(entity, name) == 0) ? TRUE : FALSE;
+    result = (strcmp(entity_name, name) == 0) ? TRUE : FALSE;
     free(entity_name);
     return result;
 }

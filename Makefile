@@ -1,7 +1,7 @@
 #######################################
 CC = gcc
 # Busca todos los .c en el directorio actual
-SRCS = $(wildcard *.c)
+SRCS = $(wildcard ./src/*.c)
 # Convierte la lista de .c en .o
 OBJS = $(SRCS:.c=.o)
 
@@ -38,7 +38,7 @@ $(TARGET): $(OBJS)
 
 	
 
-# Empaquetado
+# Empaquetado ya ni lo usamos jsjsjsjsjs, pero no pasa nada, lo dejamops por ser bonito
 mandar: clean
 	zip -r Game_mandar_RaVi.zip ./
 	clear
@@ -50,3 +50,4 @@ mandar_rm:
 
 clean:
 	rm -f *.o *.gch $(TARGET) play Game_mandar_RaVi.zip
+	rm -f ./src/*.o
