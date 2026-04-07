@@ -1,4 +1,4 @@
 Aperturas	1
 Ultimo_name	Rafa
 Ultimo_user	
-ultima_fecha	19	16	07	04	2026
+ultima_fecha	19	17	07	04	2026
