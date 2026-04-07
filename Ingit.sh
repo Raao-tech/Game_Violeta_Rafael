@@ -203,7 +203,6 @@ elif [ "$opcion" == 3 ]; then
     
 
     # 1. Intentamos traer lo de la nube
-
     echo -e "OK. Comenzaremos viendo si hay errores de compatibilidad con la NUBE...\n"
     git fetch origin main
 
@@ -211,9 +210,6 @@ elif [ "$opcion" == 3 ]; then
     sed -i "s/Aperturas.*/Aperturas\t0/" "$stats_file"
     # 2. Intentamos un pull. Si falla, hay conflictos.
     if ! git pull origin main --rebase; then
-            git add . 
-            git commit -m "Cambios ehchos en main (rama con cambios locales)   para pasar a origin/main (rama global) "
-            git checkout origin/main
             
 
 
@@ -222,24 +218,25 @@ elif [ "$opcion" == 3 ]; then
         Abre los archivos marcados, busca las marcas ${YELOW}'<<<<<<'${RESET}, límpialas y guarda.
         Se que usar tu criterio es algo costoso para ti, pero no pasa nada, intentalo.
         o llama al  ${GREEN} +58 PENDEJ@ HAS TU TRABAJO!! ${RESET}"
-        git rebase main
-        
+
         sleep 2
         # Aquí el script se detiene para que el humano arregle el código
         read -p "Presiona ${GREEN} ENTER ${RESET} cuando hayas ${RED} resuelto los conflictos ${RESET} en el código..." listo
         
+        # Continuación del rebase tras la intervención humana
         git add .
-        git rebase --continue
+        
+        # Vemos que fecha es para poder guardarla y mandarla al commit
+        fecha_actual=$(date +'%H\t%M\t%d\t%m\t%Y')
+        sed -i "s/Aperturas.*/Aperturas\t0/" "$stats_file"
+        # Usamos una variable de entorno para que no abra el editor de texto en cada commit rebasado
+        GIT_EDITOR=true git rebase --continue
     fi
 
-    # Vemos que fecha es para poder guardarla y mandarla al commit
-    fecha_actual=$(date +'%H\t%M\t%d\t%m\t%Y')
-    sed -i "s/Aperturas.*/Aperturas\t0/" "$stats_file"
     
     # 3. Una vez limpio, mandamos 
-    git add .
-    git commit -m "$cambios $fecha_actual"
-    git push origin main
+    echo -e "Subiendo cambios limpios a la nube..."
+    git push origin main --force-with-lease
 
     
     sed -i "s/ultima_fecha.*/ultima_fecha\t$fecha_actual/" "$stats_file"
