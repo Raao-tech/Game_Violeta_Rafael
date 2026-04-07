@@ -399,6 +399,7 @@ Status game_load_links(Game *game, char *filename)
   fclose(file);
   return status;
 }
+
 /* ========== Public: Create game from file ========== */
 Status game_create_from_file(Game **game, char *filename)
 {
