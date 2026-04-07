@@ -1,4 +1,4 @@
 Aperturas	0
-Ultimo_name	salva
-Ultimo_user	Ao6400
+Ultimo_name	Rafa
+Ultimo_user	Raao-tech
 ultima_fecha	12	26	07	04	2026
