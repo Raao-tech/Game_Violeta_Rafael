@@ -1,4 +1,4 @@
 Aperturas	1
-Ultimo_name	Rafael
+Ultimo_name	rafael
 Ultimo_user	Raao-tech
-ultima_fecha	18	30	07	04	2026
+ultima_fecha	18	58	07	04	2026
