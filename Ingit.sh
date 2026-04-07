@@ -211,6 +211,7 @@ elif [ "$opcion" == 3 ]; then
     sed -i "s/Aperturas.*/Aperturas\t0/" "$stats_file"
     # 2. Intentamos un pull. Si falla, hay conflictos.
     if ! git pull origin main --rebase; then
+            git add .
             git rebase origin
         echo -e "${RED} ¡HOUSTON, TENEMOS UN CONFLICTO! ${RESET} 
         ${YELOW} Alguien ${RESET} ha tocado las ${RED} mismas líneas que tú ${RESET}. 
