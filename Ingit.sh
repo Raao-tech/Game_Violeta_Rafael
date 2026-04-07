@@ -211,13 +211,18 @@ elif [ "$opcion" == 3 ]; then
     sed -i "s/Aperturas.*/Aperturas\t0/" "$stats_file"
     # 2. Intentamos un pull. Si falla, hay conflictos.
     if ! git pull origin main --rebase; then
-            git add .
-            git rebase origin
+            git add . 
+            git commit -m "Cambios ehchos en main (rama con cambios locales)   para pasar a origin/main (rama global) "
+            git checkout origin/main
+            
+
+
         echo -e "${RED} ¡HOUSTON, TENEMOS UN CONFLICTO! ${RESET} 
         ${YELOW} Alguien ${RESET} ha tocado las ${RED} mismas líneas que tú ${RESET}. 
         Abre los archivos marcados, busca las marcas ${YELOW}'<<<<<<'${RESET}, límpialas y guarda.
         Se que usar tu criterio es algo costoso para ti, pero no pasa nada, intentalo.
         o llama al  ${GREEN} +58 PENDEJ@ HAS TU TRABAJO!! ${RESET}"
+        git rebase main
         
         sleep 2
         # Aquí el script se detiene para que el humano arregle el código
