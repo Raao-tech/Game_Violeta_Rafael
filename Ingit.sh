@@ -257,5 +257,5 @@ elif [ "$opcion" == 3 ]; then
     
     sleep 1.5
     
-    sed -i "s/Aperturas.*/Aperturas\t1/" "$stats_file"
+
 fi
