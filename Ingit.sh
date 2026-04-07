@@ -199,12 +199,12 @@ elif [ "$opcion" == 3 ]; then
 
     echo -e "OK. Primero guardemos tus cambios en el local\n"
     git add .
-    git commit -m "$respuesta (Guardadndo Cambios locales)"
-    echo -e "OK. Comenzaremos viendo si hay errores de compatibilidad...\n"
-    
+    git commit -m "$respuesta (Guardadndo Cambios locales)"    
     
 
     # 1. Intentamos traer lo de la nube
+
+    echo -e "OK. Comenzaremos viendo si hay errores de compatibilidad con la NUBE...\n"
     git fetch origin main
 
     #Esto ees para que no haya problemas con el estado de la nube en la memoeria de Ingit, leugo lo ponemos otra vez en 1
