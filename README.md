@@ -12,7 +12,7 @@ El jugador (o jugadores) exploran un mundo compuesto por espacios conectados ent
 El motor gráfico renderiza en ASCII la sala actual, las salas adyacentes, el inventario del jugador activo y los mensajes de los personajes.
 
 ---
-   JAVIERRRR BORRARR
+   Se suponne, que este repo es el idoneo
 ## Ingit — Asistente para colaboradores
 
 El repositorio incluye `Ingit.sh`, un asistente interactivo en Bash pensado para simplificar el flujo de trabajo con Git, especialmente en los **ordenadores compartidos de la uni** donde las credenciales no persisten entre sesiones.
