@@ -394,7 +394,7 @@ void game_actions_inspect(Game* game)
 {
   char *obj_name = NULL;
   Object* object;
-  char description;
+  char* description = NULL;
 
   if (!game) return;
   obj_name = command_get_obj(game_get_last_command(game));

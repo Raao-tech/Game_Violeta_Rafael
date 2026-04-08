@@ -63,6 +63,32 @@ Bool obj_has_name(Object *obj, char *name);
  * @return a string with the name of the object
  */
 char *obj_get_name(Object *obj);
+/**
+ * @brief It sets the description of an object
+ * @author Javier Jarque
+ *
+ * @param obj a pointer to the object
+ * @param description the description of the object
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
+Status obj_set_description(Object *obj, char *description);
+/**
+ * @brief It checks whether the object has the given description
+ * @author Javier Jarque
+ *
+ * @param obj a pointer to the object
+ * @param description the description to compare against
+ * @return TRUE if the descriptions match, FALSE otherwise or if any parameter is NULL
+ */
+Bool obj_has_description(Object *obj, char *description);
+/**
+ * @brief It gets the description of an object
+ * @author Javier Jarque
+ *
+ * @param obj a pointer to the object
+ * @return a string with the description of the object
+ */
+char *obj_get_description(Object *obj);
 
  /* =============ID============= */
 /**
