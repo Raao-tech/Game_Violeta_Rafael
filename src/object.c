@@ -2,7 +2,7 @@
  * @brief  It implements the object struct
  *
  * @file object.c
- * @author Violeta y Rafael
+ * @author Violeta, Rafael and Javier Jarque
  * @version 0
  * @date 04-02-2025
  * @copyright GNU Public License
@@ -20,8 +20,9 @@
  * This struct stores all the information of a obj.
  */
 struct _Object{
-  Id id;                    /*!< Id number of the object, it must be unique */
-  char name[WORD_SIZE + 1]; /*!< Name of the object */
+  Id id;                           /*!< Id number of the object, it must be unique */
+  char name[WORD_SIZE + 1];        /*!< Name of the object */
+  char description[WORD_SIZE + 1]  /*!< Description of the object*/
 };
 
 /* create or destroy */
@@ -54,7 +55,7 @@ Id obj_get_id(Object *obj){
 }
 
 
-/* name */
+/* name and description  */
 Status obj_set_name(Object *obj, char *name){
   if (!obj || !name) return ERROR;
   strncpy(obj->name, name, WORD_SIZE);
@@ -69,6 +70,21 @@ Bool obj_has_name(Object *obj, char *name){
 char *obj_get_name(Object *obj){
   if (!obj) return NULL;
   return obj->name;
+}
+Status obj_set_description(Object *obj, char *description){
+  if (!obj || !description) return ERROR;
+  strncpy(obj->description, description, WORD_SIZE);
+  obj->description[WORD_SIZE] = '\0';
+
+  return OK;
+}
+Bool obj_has_description(Object *obj, char *description){
+    if(!obj || !description) return FALSE;
+    return (strcmp(obj->description, description) == 0) ? TRUE : FALSE;
+}
+char *obj_get_description(Object *obj){
+  if (!obj) return NULL;
+  return obj->description;
 }
 
 

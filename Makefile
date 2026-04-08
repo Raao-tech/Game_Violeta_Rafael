@@ -9,6 +9,8 @@ FLAGS = -g -Wall -O0 -Wextra -I ./headers -Wpedantic -DDEBUG
 PREFLAG = valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s
 BD = castle.dat
 TARGET = castle
+COMMENT = -l
+NAME_FILE = log_file
 #######################################
 
 #Nuestro querido asistente, apreciadla, es vuestra mejor herramienta para esta semana santa, recuerden mantender actualziados sus
@@ -23,7 +25,11 @@ run: $(TARGET)
 
 # Ejecución con Valgrind
 runv: $(TARGET)
-	$(PREFLAG) ./$(TARGET) $(BD)
+	$(PREFLAG) ./$(TARGET) $(BD) 
+
+# Ejecución con Valgrind
+run_log: $(TARGET)
+	$(PREFLAG) ./$(TARGET) $(BD)  
 
 # Linkado final (usando $^ que son todas las dependencias)
 $(TARGET): $(OBJS)
@@ -42,7 +48,8 @@ $(TARGET): $(OBJS)
 mandar: clean
 	zip -r Game_mandar_RaVi.zip ./
 	clear
-
+rm_txt:
+	rm $(NAME_FILE)*
 mandar_rm:
 	rm -f Game_mandar_RaVi.zip
 

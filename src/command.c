@@ -2,7 +2,7 @@
  * @brief It implements the command interpreter
  *
  * @file command.c
- * @author Profesores PPROG
+ * @author Profesores PPROG and Javier Jarque
  * @version 2
  * @date 24-01-2026
  * @copyright GNU Public License
@@ -28,7 +28,8 @@ char *cmd_to_str[N_CMD][N_CMDT] = {
   {"t", "Take"},
   {"d", "Drop"},
   {"a", "Attack"},
-  {"c", "Chat"}
+  {"c", "Chat"},
+  {"i","Inspect"}
 };
 
 struct _Command {

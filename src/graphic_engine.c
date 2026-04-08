@@ -2,8 +2,8 @@
  * @brief It implements a textual graphic engine
  *
  * @file graphic_engine.c
- * @author Profesores PPROG
- * @version 2
+ * @author Profesores PPROG and Javier Jarque
+ * @version 3
  * @date 24-01-2026
  * @copyright GNU Public License
  */
@@ -280,6 +280,30 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game){
           sprintf(str, " \"%s\"", msg);
           screen_area_puts(ge->descript, str);
           free(msg);
+        }
+      }
+    }
+  }
+
+  /* Inspect object: if last command was INSPECT and OK, show object description */
+  char *obj_name = NULL;
+  obj_name = command_get_obj(game_get_last_command(game));
+  if (!obj_name){
+    game_set_last_cmd_status(game, ERROR_inspect);
+    return;
+  }
+  last_cmd = command_get_code(game_get_last_command(game));
+  if (last_cmd == INSPECT && game_get_last_cmd_status(game) == OK){
+    char *description = command_get_obj(game_get_last_command(game));
+    if (description){
+      Object *obj = game_get_object_by_name(game, obj_name);
+      if (obj){
+        char *dsc = obj_get_description(obj);
+        if (dsc){
+          screen_area_puts(ge->descript, " ");
+          sprintf(str, " \"%s\"", dsc);
+          screen_area_puts(ge->descript, str);
+          free(dsc);
         }
       }
     }

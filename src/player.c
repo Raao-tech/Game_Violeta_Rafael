@@ -2,15 +2,15 @@
  * @brief It implements the player struct
  *
  * @file player.c
- * @author Violeta, Rafael and Salvador
- * @version 1.1
- * @date 25-3-2026
+ * @author Violeta y Rafael
+ * @version 0
+ * @date 04-02-2025
  * @copyright GNU Public License
  */
 
 
 #include "player.h"
-#include "inventory.h"
+
 
 
 
@@ -21,7 +21,7 @@
  */
 struct _Player{
   Entity  *e_player;
- Inventory *backpack;
+  Inventory* backpack;
   Id      location;
 };
 
@@ -43,7 +43,7 @@ Player    *player_create(){
   }
 
   /* Creamos el set de ids de objects */
-  newPlayer->backpack = inventory_create();
+  newPlayer->backpack = inventroy_create();
   if(!newPlayer->backpack){
     entity_destroy(newPlayer->e_player);
     free(newPlayer);
@@ -82,24 +82,17 @@ Status      player_set_name(Player *player, char *name){
   if (!player || !name) return ERROR;
   return entity_set_name(player->e_player, name);
 }
-
 char        *player_get_name(Player *player){
   if (!player) return NULL;
   return entity_get_name(player->e_player);
 }
 
-Bool player_has_name(Player *player, char *name){
-      if(!player || !name) return FALSE;
- 
-      return entity_has_name(player->e_player, name);
-}
 
 /* health */
 Status    player_set_health(Player *player, int life){
     if(!player) return ERROR;
     return  entity_set_health(player->e_player, life);
 }
-
 int       player_get_health(Player *player){
   if(!player || !player->e_player) return ERROR_LIFE;
 
@@ -124,15 +117,15 @@ Status    player_add_object(Player *player, Id new_obj){
 }
 Bool      player_contains_object(Player *player, Id ref_obj){
   if(!player) return FALSE;
-  return  inventory_contains_obj(player->backpack, ref_obj);
+  return  inventory_contains_object(player->backpack, ref_obj);
 }
 Status    player_delete_object(Player *player, Id trash_obj){
   if(!player) return ERROR;
-  return  inventory_delete_obj(player->backpack, trash_obj);
+  return  inventory_delete_object(player->backpack, trash_obj);
 }
 int       player_get_n_objects(Player *player){
   if(!player) return ERROR_MAIN;
-  return  inventory_get_n_ids(player->backpack);
+  return  inventory_get_max_objs(player->backpack);
 }
 
 

@@ -32,7 +32,8 @@ typedef enum {
   TAKE,
   DROP,
   ATTACK,
-  CHAT
+  CHAT,
+  INSPECT
 } CommandCode;
 
 typedef struct _Command Command;

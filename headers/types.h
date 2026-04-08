@@ -43,7 +43,8 @@ typedef enum
     ERROR_dir,
     ERROR_take,
     ERROR_drop,
-    FULL_OF_LOVE
+    FULL_OF_LOVE,
+    ERROR_inspect
 } Status;
 
 typedef enum

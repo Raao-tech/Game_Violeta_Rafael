@@ -2,8 +2,8 @@
  * @brief It implements the game update through user actions
  *
  * @file game_actions.c
- * @author Profesores PPROG
- * @version 2
+ * @author Profesores PPROG and Javier Jarque
+ * @version 3
  * @date 27-01-2025
  * @copyright GNU Public License
  */
@@ -69,6 +69,9 @@ Status game_actions_update(Game *game, Command *command){
       break;
     case CHAT:
       game_actions_chat(game);
+      break;
+    case INSPECT:
+      game_actions_inspect(game);
       break;
     default:
       break;
@@ -381,6 +384,37 @@ void game_actions_chat(Game *game){
   /* The message will be displayed by graphic_engine reading from the character */
   /* We store the character id so graphic_engine knows who spoke last */
   /* For now, the graphic_engine will check the last command and find the character */
+
+  game_set_last_cmd_status(game, OK);
+}
+
+/* F12: inspect <object_name> */
+void game_actions_inspect(Game* game)
+{
+  char *obj_name = NULL;
+  Object* object;
+  char description;
+
+  if (!game) return;
+  obj_name = command_get_obj(game_get_last_command(game));
+  if (!obj_name){
+    game_set_last_cmd_status(game, ERROR_inspect);
+    return;
+  }
+  object = game_get_object_by_name(game, obj_name);
+  if (!object){
+    game_set_last_cmd_status(game, ERROR_inspect);
+    return;
+  }
+  description = obj_get_description(object);
+  if (!description){
+    game_set_last_cmd_status(game, ERROR_inspect);
+    return;
+  }
+
+  /* The descrition will be displayed by graphic_engine reading from the object */
+  /* We store the object id so graphic_engine knows who spoke last */
+  /* For now, the graphic_engine will check the last command and find the object */
 
   game_set_last_cmd_status(game, OK);
 }
