@@ -37,15 +37,15 @@ typedef struct _Command Command;
 
 /*========== (Create/Destroy) Command =========== */
 Command *command_create();
-Status command_destroy(Command *command);
+Status  command_destroy(Command *command);
 
 /*========== (Set/Get) Code =========== */
-Status command_set_code(Command *command, CommandCode code);
+Status      command_set_code(Command *command, CommandCode code);
 CommandCode command_get_code(Command *command);
 
 /*========== (Get or Read) User Input  =========== */
-Status command_get_user_input(Command *command);
-char *command_get_obj(Command *command);
+Status  command_get_user_input(Command *command);
+char    *command_get_obj(Command *command);
 
 
 #endif

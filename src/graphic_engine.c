@@ -26,117 +26,118 @@
 #define HEIGHT_BAN 1
 #define HEIGHT_HLP 2
 #define HEIGHT_FDB 3
-
 struct _Graphic_engine {
   Area *map, *descript, *banner, *help, *feedback;
 };
 
+/*=================================================================================================*/
 
-/**
- * @brief It evaluates the status result of the last command executed
- * @author Violeta y Rafa
- *
- *
- * @param result OK, ERROR_attack, ERROR_chat, ERROR_dir, ERROR_take, ERROR_drop,  ERROR
- * @return  A pointer to string with feedback
- */
+/* ======== PRIVATE FUNTIONS ======================== */
+
+/* Helper: Return a pointer to string with feedback */
 static char *ge_evaluated_error(Status result);
 
+/* Helper: build character gdesc string for a space */
+static void ge_build_char_str(Game *game, Space *space, char *buf, int bufsize);
+
+/* Helper: build a string with object names in a space, comma-separated */
+static void ge_build_obj_str(Game *game, Space *space, char *buf, int bufsize);
+
+/* ============================================================================================= */
 
 
 
-
-
+/*=== (Create/Destroy)  Graphic Engine =======*/
 Graphic_engine *graphic_engine_create(){
-  static Graphic_engine *ge = NULL;
+	static Graphic_engine *ge = NULL;
+	int   rows_gzone = HEIGHT_MAP + HEIGHT_BAN + HEIGHT_HLP + HEIGHT_FDB + 4;
+	int   columns_gzone = WIDTH_MAP + WIDTH_DES + 3;
 
-  if (ge) return ge;
+	int   x_map, y_map, width_map, height_map; //dimenssions of map
+	int   x_des, y_des, width_des, height_des; //dimenssions of descripcion
+	int   x_ban, y_ban, width_ban, height_ban; //dimenssions of banner
+	int   x_hlp, y_hlp, width_hlp, height_hlp; //dimenssions of help
+	int   x_fdb, y_fdb, width_fdb, height_fdb; //dimenssions of feedback
 
-  screen_init(HEIGHT_MAP + HEIGHT_BAN + HEIGHT_HLP + HEIGHT_FDB + 4, WIDTH_MAP + WIDTH_DES + 3);
-  ge = (Graphic_engine *)calloc(1, sizeof(Graphic_engine));
-  if (ge == NULL) return NULL;
+	if (ge) return ge;
 
-  ge->map = screen_area_init(1, 1, WIDTH_MAP, HEIGHT_MAP);
-  ge->descript = screen_area_init(WIDTH_MAP + 2, 1, WIDTH_DES, HEIGHT_MAP);
-  ge->banner = screen_area_init((int)((WIDTH_MAP + WIDTH_DES + 1 - WIDTH_BAN) / 2), HEIGHT_MAP + 2, WIDTH_BAN, HEIGHT_BAN);
-  ge->help = screen_area_init(1, HEIGHT_MAP + HEIGHT_BAN + 2, WIDTH_MAP + WIDTH_DES + 1, HEIGHT_HLP);
-  ge->feedback = screen_area_init(1, HEIGHT_MAP + HEIGHT_BAN + HEIGHT_HLP + 3, WIDTH_MAP + WIDTH_DES + 1, HEIGHT_FDB);
+	/* definition dimmension map */
+	x_map = y_map = 1;
+	width_map =     WIDTH_MAP;
+	height_map =    HEIGHT_MAP;
+	/* definition dimmension descripcion */
+	x_des =         width_map + 2; 
+	y_des =         1;
+	width_des =     WIDTH_DES;
+	height_des =    height_map;
+	/* definition dimmension  banner */
+	x_ban = (int) ((width_map + width_des + 1- WIDTH_BAN)/2);
+	y_ban = 		HEIGHT_MAP + 2;
+	width_ban = 	WIDTH_BAN;
+	height_ban = 	HEIGHT_BAN;
+	/* definition dimmension help */
+	x_hlp = 		1;
+	y_hlp = 		height_map + height_ban + 2;
+	width_hlp = 	width_map + width_des + 1;
+	height_hlp = 	HEIGHT_HLP;
+	/* definition dimmension feedback */
+	x_fdb = 		1;
+	y_fdb = 		height_map + height_ban + height_hlp + 3;
+	width_fdb = 	width_hlp;
+	height_fdb = 	HEIGHT_FDB;
 
-  return ge;
+
+
+	/* initialization of Game Zone int terminal */
+	screen_init(rows_gzone, columns_gzone);
+
+	/* create Graphic Engine */
+	ge = (Graphic_engine *)calloc(1, sizeof(Graphic_engine));
+	if (ge == NULL) return NULL;
+
+	ge->map = 		screen_area_init(x_map, y_map, width_map, height_map);
+	ge->descript = 	screen_area_init(x_des, y_des, width_des, height_des);
+	ge->banner = 	screen_area_init(x_ban, y_ban, width_ban, height_ban);
+	ge->help = 		screen_area_init(x_hlp, y_hlp, width_hlp, height_hlp);
+	ge->feedback = 	screen_area_init(x_fdb, y_fdb, width_fdb, height_fdb);
+
+	return ge;
 }
 
 void graphic_engine_destroy(Graphic_engine *ge){
-  if (!ge) return;
+	if (!ge) return;
 
-  screen_area_destroy(ge->map);
-  screen_area_destroy(ge->descript);
-  screen_area_destroy(ge->banner);
-  screen_area_destroy(ge->help);
-  screen_area_destroy(ge->feedback);
+	screen_area_destroy(ge->map);
+	screen_area_destroy(ge->descript);
+	screen_area_destroy(ge->banner);
+	screen_area_destroy(ge->help);
+	screen_area_destroy(ge->feedback);
 
-  screen_destroy();
-  free(ge);
+	screen_destroy();
+	free(ge);
 }
 
-/* Helper: build a string with object names in a space, comma-separated */
-static void ge_build_obj_str(Game *game, Space *space, char *buf, int bufsize){
-  int i;
-  Object *obj;
 
-  buf[0] = '\0';
-  if (!space) return;
 
-  /* Iterate game objects and check which are in this space */
-  {
-    int total = game_get_n_objects(game);
-    int first = 1;
-    for (i = 0; i < total; i++){
-      obj = game_get_object_at(game, i);
-      if (obj && space_contains_object(space, obj_get_id(obj)) == TRUE){
-        if (!first) strncat(buf, ",", bufsize - strlen(buf) - 1);
-        strncat(buf, obj_get_name(obj), bufsize - strlen(buf) - 1);
-        first = 0;
-      }
-    }
-  }
-}
 
-/* Helper: build character gdesc string for a space */
-static void ge_build_char_str(Game *game, Space *space, char *buf, int bufsize){
-  int i, total;
-  Character *ch;
-  char *gdesc;
-
-  buf[0] = '\0';
-  if (!space) return;
-
-  total = game_get_n_characters(game);
-  for (i = 0; i < total; i++){
-    ch = game_get_character_at(game, i);
-    if (ch && space_contains_character(space, character_get_id(ch)) == TRUE){
-      gdesc = character_get_gdesc(ch);
-      if (gdesc){
-        if (buf[0] != '\0') strncat(buf, " ", bufsize - strlen(buf) - 1);
-        strncat(buf, gdesc, bufsize - strlen(buf) - 1);
-        free(gdesc);
-      }
-    }
-  }
-}
+/* ===== Paint Game Current ========= */
 
 void graphic_engine_paint_game(Graphic_engine *ge, Game *game){
-  Id id_act = NO_ID, id_back = NO_ID, id_next = NO_ID, id_left = NO_ID, id_right = NO_ID;
-  Space *space_act = NULL;
-  Player *player = NULL;
-  char str[255];
-  char obj_str[100];
-  char char_str[50];
-  CommandCode last_cmd = UNKNOWN;
-  Status  type_error;
-  extern char *cmd_to_str[N_CMD][N_CMDT];
-  int i;
+  Id 			id_act, id_back,  id_next, id_left, id_right;
+  Space 		*space_act = 	NULL;
+  Player 		*player = 		NULL;
+  CommandCode 	last_cmd = 		UNKNOWN;
+  extern char 	*cmd_to_str[N_CMD][N_CMDT];
+  Status  		type_error;
+  char 			str[255];
+  char 			obj_str[100];
+  char 			char_str[50];
+  int 			i;
 
-  player = game_get_player(game);
+  if(!ge || !game) return;
+
+  player = game_get_player_by_turn(game);
+  last_cmd = command_get_code(game_get_last_command(game));
 
   /* ===== MAP AREA ===== */
   screen_area_clear(ge->map);
@@ -221,7 +222,6 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game){
     }
   }
 
-  /* ===== DESCRIPTION AREA ===== */
   screen_area_clear(ge->descript);
 
   /* Objects list with locations */
@@ -268,7 +268,7 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game){
   }
 
   /* Chat message: if last command was CHAT and OK, show character message */
-  last_cmd = command_get_code(game_get_last_command(game));
+
   if (last_cmd == CHAT && game_get_last_cmd_status(game) == OK){
     char *char_name = command_get_obj(game_get_last_command(game));
     if (char_name){
@@ -292,7 +292,7 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game){
     game_set_last_cmd_status(game, ERROR_inspect);
     return;
   }
-  last_cmd = command_get_code(game_get_last_command(game));
+
   if (last_cmd == INSPECT && game_get_last_cmd_status(game) == OK){
     char *description = command_get_obj(game_get_last_command(game));
     if (description){
@@ -309,26 +309,27 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game){
     }
   }
 
-  /* ===== BANNER ===== */
-  screen_area_puts(ge->banner, "              The haunted castle game ");
 
-  /* ===== HELP ===== */
+
+
+  /* ====================================== BANNER ====================================== */
+  screen_area_puts(ge->banner, "\t\tThe Haunted Castle Game\t\t");
+
+  /* ======================================= HELP ======================================= */
   screen_area_clear(ge->help);
   sprintf(str, " The commands you can use are:");
   screen_area_puts(ge->help, str);
-  sprintf(str, "  next(n) back(b) left(l) right(r) take(t) drop(d) attack(a) chat(c) exit(e)");
+  sprintf(str, ROJO"\tmove(m) <[n,s,e,w]> "VERDE"take(t) \033[5;1;45m <name_obj>"RESET AZUL"drop(d) \033[5;1;45m <name_obj>"RESET AMARILLO"attack(a) \033[5;1;45m <name_enemy>"RESET MORADO"chat(c) <name_chara>"RESET" exit(e)\t");
   screen_area_puts(ge->help, str);
 
-  /* ===== FEEDBACK (F15j: last commands with OK/ERROR) ===== */
+  /* ====================================== FEEDBACK (F15j: last commands with OK/ERROR)====================================== */
   screen_area_clear(ge->feedback);
   last_cmd = command_get_code(game_get_last_command(game));
   type_error = game_get_last_cmd_status(game);
   if (last_cmd >= 0 && last_cmd < N_CMD + 1){
     int idx = last_cmd - NO_CMD;
     if (idx >= 0 && idx < N_CMD){
-      sprintf(str, " %s (%s): %s",
-        cmd_to_str[idx][CMDL],
-        cmd_to_str[idx][CMDS],
+      sprintf(str, " %s (%s): %s", cmd_to_str[idx][CMDL], cmd_to_str[idx][CMDS], 
         ge_evaluated_error(type_error));
       screen_area_puts(ge->feedback, str);
     }
@@ -336,14 +337,61 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game){
 
   /* Dump to terminal */
   screen_paint();
-  printf("prompt:> ");
+  printf("\033[1;5;37;45m prompt:> "RESET);
 }
 
 
 
 
 
-/* =========PRIVATED FUNCTION================= */
+/* =========IMPLEMENTATION: private funtions ================= */
+
+/* Helper: build character gdesc string for a space */
+static void ge_build_char_str(Game *game, Space *space, char *buf, int bufsize){
+  int 		i,total;
+  Character *ch = 		NULL;
+  char 		*gdesc = 	NULL;
+
+  buf[0] = '\0';
+  if (!space || !game || !buf || bufsize < 0) return;
+
+  total = game_get_n_characters(game);
+  for (i = 0; i < total; i++){
+    ch = game_get_character_at(game, i);
+    if (ch && space_contains_character(space, character_get_id(ch)) == TRUE){
+      gdesc = character_get_gdesc(ch);
+      if (gdesc){
+        if (buf[0] != '\0') strncat(buf, " ", bufsize - strlen(buf) - 1);
+        strncat(buf, gdesc, bufsize - strlen(buf) - 1);
+        free(gdesc);
+      }
+    }
+  }
+}
+
+/* Helper: build a string with object names in a space, comma-separated */
+static void ge_build_obj_str(Game *game, Space *space, char *buf, int bufsize){
+  int i;
+  Object *obj;
+
+  if (!space || !game || !buf || bufsize < 0) return;
+  buf[0] = '\0';
+
+
+  /* Iterate game objects and check which are in this space */
+  {
+    int total = game_get_n_objects(game);
+    int first = 1;
+    for (i = 0; i < total; i++){
+      obj = game_get_object_at(game, i);
+      if (obj && space_contains_object(space, obj_get_id(obj)) == TRUE){
+        if (!first) strncat(buf, ",", bufsize - strlen(buf) - 1);
+        strncat(buf, obj_get_name(obj), bufsize - strlen(buf) - 1);
+        first = 0;
+      }
+    }
+  }
+}
 
 static char *ge_evaluated_error(Status result){
 

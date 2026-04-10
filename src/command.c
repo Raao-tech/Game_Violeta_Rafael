@@ -90,10 +90,8 @@ Status command_get_user_input(Command *command){
 
     cmd = UNKNOWN;
     while (cmd == UNKNOWN && i < N_CMD){
-      if (!strcasecmp(token, cmd_to_str[i][CMDS]) || !strcasecmp(token, cmd_to_str[i][CMDL]))
-        cmd = i + NO_CMD;
-      else
-        i++;
+      if (!strcasecmp(token, cmd_to_str[i][CMDS]) || !strcasecmp(token, cmd_to_str[i][CMDL])) cmd = i + NO_CMD;
+      else  i++;
     }
 
     /* Second token: the object/target name (for take, drop, attack, chat) */

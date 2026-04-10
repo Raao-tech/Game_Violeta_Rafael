@@ -23,9 +23,12 @@
 #define ERROR_GAME -1
 
 /* Colors to prints */
-#define ROJO     "\x1b[31m"
-#define VERDE   "\x1b[32m"
-#define RESET   "\x1b[0m"
+#define ROJO        "\033[0;31m"
+#define VERDE       "\033[0;32m"
+#define AMARILLO    "\033[0;33m"
+#define AZUL        "\033[0;34m"
+#define MORADO      "\033[0;35m"
+#define RESET       "\033[0m"
 
 typedef long Id;
 
