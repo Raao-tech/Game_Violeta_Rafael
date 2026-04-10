@@ -197,8 +197,8 @@ elif [ "$opcion" == 3 ]; then
     read -p "$(echo -e "${YELOW}¿Qué cambios has hecho?${RESET} (Mensaje para el commit): ")" mensaje
 
     # Asegura que Git pregunte por el nombre de la rama al hacer pull
-    git config pull.rebase false 
-    
+    git config pull.rebase true
+
     # 1. Guardar cambios locales del usuario
     echo -e "\nGuardando tus avances locales..."
     git add .
