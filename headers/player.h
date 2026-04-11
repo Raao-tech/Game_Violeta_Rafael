@@ -3,8 +3,8 @@
  *
  * @file player.h
  * @author Violeta y Rafa
- * @version 2
- * @date 04-02-2025
+ * @version 3
+ * @date 08-04-2026
  * @copyright GNU Public License
  */
 
@@ -16,6 +16,8 @@
 #include "set.h"
 
 typedef struct _Player Player;
+
+/* ========== Create / Destroy ========== */
 
 /**
  * @brief It creates a new player, allocating memory and initializing it
@@ -33,6 +35,8 @@ Player *player_create();
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
 Status player_destroy(Player *player);
+
+/* ========== Id ========== */
 
 /**
  * @brief It sets the id of a player
@@ -52,6 +56,8 @@ Status player_set_id(Player *player, Id new_id);
  * @return the player's id, or NO_ID if player is NULL
  */
 Id player_get_id(Player *player);
+
+/* ========== Name ========== */
 
 /**
  * @brief It sets the name of a player
@@ -78,9 +84,11 @@ char *player_get_name(Player *player);
  *
  * @param player a pointer to the player
  * @param name the name to compare against
- * @return TRUE if the names match, FALSE otherwise or if any parameter is NULL
+ * @return TRUE if the names match, FALSE otherwise
  */
 Bool player_has_name(Player *player, char *name);
+
+/* ========== Health ========== */
 
 /**
  * @brief It sets the health of a player
@@ -101,6 +109,8 @@ Status player_set_health(Player *player, int life);
  */
 int player_get_health(Player *player);
 
+/* ========== Attack ========== */
+
 /**
  * @brief It sets the attack value of a player
  * @author Violeta y Rafa
@@ -120,8 +130,7 @@ Status player_set_attack(Player *player, int value);
  */
 int player_get_attack(Player *player);
 
-
-/* ========== Objects (Set of Ids) ========== */
+/* ========== Objects (Inventory) ========== */
 
 /**
  * @brief It adds an object id to the player's inventory
@@ -162,6 +171,19 @@ Status player_delete_object(Player *player, Id trash_obj);
  */
 int player_get_n_objects(Player *player);
 
+/**
+ * @brief It sets the maximum number of objects the player can carry
+ * @author Rafael
+ *
+ * This is a wrapper around inventory_set_max_objs that respects
+ * encapsulation: game_reader calls this instead of accessing
+ * the Inventory directly.
+ *
+ * @param player a pointer to the player
+ * @param max the maximum capacity of the backpack
+ * @return OK if successful, ERROR if player is NULL or max < 0
+ */
+Status player_set_max_objects(Player *player, int max);
 
 /* ========== Location ========== */
 
@@ -184,14 +206,11 @@ Status player_set_location(Player *player, Id new_location);
  */
 Id player_get_location(Player *player);
 
+/* ========== Message ========== */
 
-/* ========== Message (PENDING: I3. We didn't have any more time, We love you, don't kill us please!!) ========== */
-/* This is not necesary to this I2... we thing */
 /**
  * @brief It sets the message of a player
  * @author Violeta y Rafa
- *
- * @note Not used in I2. Planned for I3 to allow player dialogue.
  *
  * @param player a pointer to the player
  * @param messg a string with the message
@@ -203,13 +222,10 @@ Status player_set_message(Player *player, char *messg);
  * @brief It gets a copy of the message of a player (caller must free it)
  * @author Violeta y Rafa
  *
- * @note Not used in I2. Planned for I3 to allow player dialogue.
- *
  * @param player a pointer to the player
  * @return a copy of the message, or NULL if player is NULL
  */
 char *player_get_message(Player *player);
-
 
 /* ========== Graphic description ========== */
 
@@ -231,7 +247,6 @@ Status player_set_gdesc(Player *player, char *desc);
  * @return a copy of the gdesc, or NULL if player is NULL
  */
 char *player_get_gdesc(Player *player);
-
 
 /* ========== Print ========== */
 

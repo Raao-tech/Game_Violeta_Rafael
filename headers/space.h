@@ -2,28 +2,29 @@
  * @brief It defines the space module interface
  *
  * @file space.h
- * @author Profesores PPROG
- * @version 2
- * @date 24-01-2026
+ * @author Profesores PPROG, Violeta y Rafa
+ * @version 3
+ * @date 08-04-2026
  * @copyright GNU Public License
- */
-
+*/
 #ifndef SPACE_H
 #define SPACE_H
 
 #include "types.h"
 #include "set.h"
 
-#define MAX_LINE 5
-#define MAX_CHAR 9
+#define MAX_LINE 5    /*!< Number of lines in the graphic description */
+#define MAX_CHAR 9    /*!< Max characters per gdesc line */
 
 typedef struct _Space Space;
+
+/* ========== Create / Destroy ========== */
 
 /**
  * @brief It creates a new space, allocating memory and initializing its members
  * @author Profesores PPROG
  *
- * @return a new space, initialized
+ * @return a new space, initialized, or NULL if allocation fails
  */
 Space *space_create();
 
@@ -35,6 +36,8 @@ Space *space_create();
  * @return OK, if everything goes well or ERROR if there was some mistake
  */
 Status space_destroy(Space *space);
+
+/* ========== Id ========== */
 
 /**
  * @brief It sets the id of a space
@@ -55,6 +58,8 @@ Status space_set_id(Space *space, Id new_id);
  */
 Id space_get_id(Space *space);
 
+/* ========== Name ========== */
+
 /**
  * @brief It sets the name of a space
  * @author Profesores PPROG
@@ -73,7 +78,6 @@ Status space_set_name(Space *space, char *name);
  * @return a string with the name of the space
  */
 const char *space_get_name(Space *space);
-
 
 /* ========== Objects (Set of Ids) ========== */
 
@@ -116,6 +120,15 @@ Status space_remove_object(Space *space, Id id_obj);
  */
 int space_get_n_objects(Space *space);
 
+/**
+ * @brief It gets the object id at a specific position in the space
+ * @author Rafael
+ *
+ * @param space a pointer to the space
+ * @param position zero-based index
+ * @return the object Id at that position, or NO_ID if out of range
+ */
+Id space_get_object_id_at(Space *space, int position);
 
 /* ========== Characters (Set of Ids) ========== */
 
@@ -158,12 +171,28 @@ Status space_remove_character(Space *space, Id id_chara);
  */
 int space_get_n_characters(Space *space);
 
-/*========== Discovered (Can you come in?) ===========*/
+/* ========== Discovered (F12) ========== */
 
-Status space_set_discovered(Space* space, Bool value);
-Bool space_get_discovered(Space* space);
+/**
+ * @brief It sets whether the space has been discovered
+ * @author Rafael
+ *
+ * @param space a pointer to the space
+ * @param value TRUE if discovered, FALSE otherwise
+ * @return OK if successful, ERROR if space is NULL
+ */
+Status space_set_discovered(Space *space, Bool value);
 
-/* ========== Graphic description (5 x 9 ASCII art) ========== */
+/**
+ * @brief It gets whether the space has been discovered
+ * @author Rafael
+ *
+ * @param space a pointer to the space
+ * @return TRUE if discovered, FALSE if not or if space is NULL
+ */
+Bool space_get_discovered(Space *space);
+
+/* ========== Graphic description ========== */
 
 /**
  * @brief It sets one line of the graphic description of a space
@@ -196,92 +225,12 @@ Status space_print_gdesc(FILE *output, Space *space);
  */
 char *space_get_gdesc(Space *space, int line);
 
-
-/* ========== Neighbours ========== */
-
-/**
- * @brief It sets the id of the space located at the north
- * @author Profesores PPROG
- *
- * @param space a pointer to the space
- * @param id the id number of the space located at the north
- * @return OK, if everything goes well or ERROR if there was some mistake
- */
-Status space_set_north(Space *space, Id id);
-
-/**
- * @brief It gets the id of the space located at the north
- * @author Profesores PPROG
- *
- * @param space a pointer to the space
- * @return the id number of the space located at the north
- */
-Id space_get_north(Space *space);
-
-/**
- * @brief It sets the id of the space located at the south
- * @author Profesores PPROG
- *
- * @param space a pointer to the space
- * @param id the id number of the space located at the south
- * @return OK, if everything goes well or ERROR if there was some mistake
- */
-Status space_set_south(Space *space, Id id);
-
-/**
- * @brief It gets the id of the space located at the south
- * @author Profesores PPROG
- *
- * @param space a pointer to the space
- * @return the id number of the space located at the south
- */
-Id space_get_south(Space *space);
-
-/**
- * @brief It sets the id of the space located at the east
- * @author Profesores PPROG
- *
- * @param space a pointer to the space
- * @param id the id number of the space located at the east
- * @return OK, if everything goes well or ERROR if there was some mistake
- */
-Status space_set_east(Space *space, Id id);
-
-/**
- * @brief It gets the id of the space located at the east
- * @author Profesores PPROG
- *
- * @param space a pointer to the space
- * @return the id number of the space located at the east
- */
-Id space_get_east(Space *space);
-
-/**
- * @brief It sets the id of the space located at the west
- * @author Profesores PPROG
- *
- * @param space a pointer to the space
- * @param id the id number of the space located at the west
- * @return OK, if everything goes well or ERROR if there was some mistake
- */
-Status space_set_west(Space *space, Id id);
-
-/**
- * @brief It gets the id of the space located at the west
- * @author Profesores PPROG
- *
- * @param space a pointer to the space
- * @return the id number of the space located at the west
- */
-Id space_get_west(Space *space);
-
 /* ========== Print ========== */
 
 /**
  * @brief It prints all the space information
  * @author Profesores PPROG
  *
- * Shows the id, name, neighbours, objects, characters and graphic description.
  * @param space a pointer to the space
  * @return OK, if everything goes well or ERROR if there was some mistake
  */

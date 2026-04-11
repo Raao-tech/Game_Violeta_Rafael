@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "command.h"
@@ -18,100 +19,211 @@
 #include "game_actions.h"
 #include "graphic_engine.h"
 
+/**
+ * @brief Initializes the game and the graphic engine from a data file
+ * @author Profesores PPROG
+ *
+ * @param game pointer to pointer to the game (will be allocated)
+ * @param gengine pointer to pointer to the graphic engine (will be allocated)
+ * @param file_name path to the .dat file
+ * @return 0 on success, 1 if game init fails, 2 if graphic engine fails
+ */
 int game_loop_init(Game **game, Graphic_engine **gengine, char *file_name);
-void game_loop_cleanup(Game *game, Graphic_engine *gengine, FILE *file);
 
-int main(int argc, char *argv[])
-{
-	FILE*       		file = 		NULL;
-	Game*				game = 		NULL;
-	Graphic_engine*	gengine = 	NULL;
-	Command*			last_cmd = 	NULL;
-	char* 			t_file = 	NULL;
-	int 				result;
-
-	if (argc < 2){
-	fprintf(stderr, "Use: %s <game_data_file>\n", argv[0]);
-	return 1;
-	}
-	//si hay argumentos de entrada abr
-	if (argv != NULL){
-	strcpy( t_file, argv[2]);
-	if (argv[3] != NULL){
-		char* n_file = NULL;
-		strcpy(n_file, argv[3]);
-		file = fopen(n_file, "w");
-	}
-	}
+/**
+ * @brief Frees the game, graphic engine and closes the log file
+ * @author Profesores PPROG
+ *
+ * @param game pointer to the game
+ * @param gengine pointer to the graphic engine
+ * @param log_file pointer to the log FILE (may be NULL)
+ */
+void game_loop_cleanup(Game *game, Graphic_engine *gengine, FILE *log_file);
 
 
-	/* Seed random for attack */
-	srand(time(NULL));
+/* ========================================================================= */
+/*                                 MAIN                                      */
+/* ========================================================================= */
+/*
+ * Usage (F14 of the enunciado):
+ *
+ *   ./castle dataFile                   (no LOG)
+ *   ./castle dataFile -l logFile        (with LOG)
+ *
+ * argv[0] = executable name
+ * argv[1] = data file (.dat)
+ * argv[2] = "-l"       (optional)
+ * argv[3] = log file   (required if -l present)
+ *
+ * BUGS FIXED IN THIS VERSION:
+ *
+ *  BUG 1 (CRASH):  The original code declared:
+ *      char *t_file = NULL;
+ *    then immediately did:
+ *      strcpy(t_file, argv[2]);
+ *    This writes to a NULL pointer → instant SEGFAULT.
+ *
+ *  BUG 2 (CRASH):  Same problem with:
+ *      char *n_file = NULL;
+ *      strcpy(n_file, argv[3]);
+ *
+ *  BUG 3 (OUT OF BOUNDS):  argv[2] and argv[3] were accessed
+ *    without checking argc first.  If the user runs:
+ *      ./castle castle.dat
+ *    then argv[2] does not exist → undefined behaviour.
+ *
+ *  BUG 4 (CRASH):  strcmp(t_file, "-l") was called inside the
+ *    game loop even when t_file was NULL → SEGFAULT.
+ *
+ *  BUG 5 (UNDEFINED):  game_loop_cleanup called fclose(file)
+ *    even when file was NULL → undefined behaviour.
+ *
+ *  BUG 6 (MISSING):  game_turn_update was never called, so
+ *    multiplayer turns never advanced (F11).
+ *
+ *  BUG 7 (FORMAT):  The LOG did not include the object/target
+ *    name.  F14 says "take sword: ERROR", not just "take: ERROR".
+ *
+ *  BUG 8 (WARNING):  The variable `obj` was declared but never
+ *    used in the LOG switch → warning under -Wall.
+ */
+int main(int argc, char *argv[]) {
+  FILE           *log_file = NULL;
+  Game           *game     = NULL;
+  Graphic_engine *gengine  = NULL;
+  Command        *last_cmd = NULL;
+  int             result;
+  Bool            log_enabled = FALSE;
+
+  /* ---- Validate minimum arguments ---- */
+  if (argc < 2) {
+    fprintf(stderr, "Use: %s <game_data_file> [-l <log_file>]\n", argv[0]);
+    return 1;
+  }
+
+  /* ---- Parse optional LOG arguments ---- */
+  /* We check argc >= 4 AND argv[2] == "-l" before opening the log file.*/
+  if (argc >= 4 && strcmp(argv[2], "-l") == 0) {
+    log_file = fopen(argv[3], "w");
+    if (!log_file) {
+      fprintf(stderr, "Error: cannot open log file '%s' for writing.\n", argv[3]);
+      return 1;
+    }
+    log_enabled = TRUE;
+  }
+
+  /* Seed random number generator for attack rolls */
+  srand(time(NULL));
+
+  /* ---- Initialize game and graphic engine ---- */
+  result = game_loop_init(&game, &gengine, argv[1]);
+
+  switch (result) {
+    case 0:  break;
+    case 1:  fprintf(stderr, "Error while initializing game.\n");
+             if (log_file) fclose(log_file);
+             return 1;
+    case 2:  fprintf(stderr, "Error while initializing graphic engine.\n");
+             if (log_file) fclose(log_file);
+             return 1;
+    default: fprintf(stderr, "Error: unknown initialization failure.\n");
+             if (log_file) fclose(log_file);
+             return 1;
+  }
+
+  /* ---- Get the command struct (reused every turn) ---- */
+  last_cmd = game_get_last_command(game);
+  if (!last_cmd) {
+    fprintf(stderr, "Error: could not get command struct.\n");
+    game_loop_cleanup(game, gengine, log_file);
+    return 1;
+  }
+
+  /* ========== GAME LOOP ========== */
+  while (command_get_code(last_cmd) != EXIT &&
+         game_get_finished(game) == FALSE) {
+
+    /* 1. RENDER — paint the current state */
+    graphic_engine_paint_game(gengine, game);
+
+    /* 2. INPUT — read the next command from stdin */
+    command_get_user_input(last_cmd);
+
+    /* 3. UPDATE — apply the command to the game state */
+    game_actions_update(game, last_cmd);
+
+    /* 4. LOG — if enabled, write the command and its result */
+    if (log_enabled && log_file) {
+      Status      status   = game_get_last_cmd_status(game);
+      CommandCode cmd_code = command_get_code(last_cmd);
+      char       *obj_name = command_get_obj(last_cmd);
+      const char *result_str = (status == OK) ? "OK" : "ERROR";
 
 
-	result = game_loop_init(&game, &gengine, argv[1]);
+      switch (cmd_code) {
+        case EXIT:
+          fprintf(log_file, "exit: %s\n", result_str);
+          break;
+        case MOVE:
+          fprintf(log_file, "move %s: %s\n",
+                  obj_name ? obj_name : "", result_str);
+          break;
+        case TAKE:
+          fprintf(log_file, "take %s: %s\n",
+                  obj_name ? obj_name : "", result_str);
+          break;
+        case DROP:
+          fprintf(log_file, "drop %s: %s\n",
+                  obj_name ? obj_name : "", result_str);
+          break;
+        case ATTACK:
+          fprintf(log_file, "attack %s: %s\n",
+                  obj_name ? obj_name : "", result_str);
+          break;
+        case CHAT:
+          fprintf(log_file, "chat %s: %s\n",
+                  obj_name ? obj_name : "", result_str);
+          break;
+        case INSPECT:
+          fprintf(log_file, "inspect %s: %s\n",
+                  obj_name ? obj_name : "", result_str);
+          break;
+        default:
+          break;
+      }
+    }
 
-	switch (result)
-	{
-		case 0 :	break; //succesfully 
-		case 1 : 	fprintf(stderr, "Error while initializing game.\n");			return 1;
-		case 2 : 	fprintf(stderr, "Error while initializing graphic engine.\n");	return 1;
-		default:	fprintf(stderr, "Error Unknow initialization loop.\n");			break;
-	}	
+    /* 5. TURN — advance to the next player (F11 multiplayer) */
+    game_turn_update(game);
+  }
 
+  /* ---- Cleanup ---- */
+  game_loop_cleanup(game, gengine, log_file);
 
-	last_cmd = game_get_last_command(game);
-	if(!last_cmd){
-		
-	}
-
-	while ((command_get_code(last_cmd) != EXIT) && (game_get_finished(game) == FALSE))
-	{
-		graphic_engine_paint_game(gengine, game);
-		command_get_user_input(last_cmd);
-		game_actions_update(game, last_cmd);
-		/*implementation of LOG*/
-		if (strcmp(t_file, "-l") == 0)
-		{
-			if (file != NULL)
-			{
-				Status status = game_get_last_cmd_status(game);
-				char *obj = command_get_obj(last_cmd);
-				CommandCode comand_c = command_get_code(last_cmd);
-
-				switch (comand_c)
-				{
-					case EXIT : 	fprintf(file, "exit: %s\n", (status == OK) ? "OK" : "ERROR" ); 		break;
-					case MOVE : 	fprintf(file, "move: %s\n", (status == OK) ? "OK" : "ERROR" ); 		break;
-					case TAKE : 	fprintf(file, "take: %s\n", (status == OK) ? "OK" : "ERROR" ); 		break;
-					case DROP : 	fprintf(file, "drop: %s\n", (status == OK) ? "OK" : "ERROR" ); 		break;
-					case ATTACK : 	fprintf(file, "attack: %s\n", (status == OK) ? "OK" : "ERROR" ); 	break;
-					case CHAT : 	fprintf(file, "chat: %s\n", (status == OK) ? "OK" : "ERROR" ); 		break;
-					case INSPECT : 	fprintf(file, "inspect: %s\n", (status == OK) ? "OK" : "ERROR" ); 	break;
-				
-					default: fprintf(file,"command: UNKNOW.  Sorry, could you repeat that?\n");			break;
-				}
-			}
-		}
-	}
-
-	/*game_loop cleanup*/
-	game_loop_cleanup(game, gengine, file);
-
-	return 0;
+  return 0;
 }
 
-int game_loop_init(Game **game, Graphic_engine **gengine, char *file_name)
-{
-	if (game_create_from_file(game, file_name) == ERROR)				   return 1;
-	if ((*gengine = graphic_engine_create()) == NULL){game_destroy(*game); return 2; }
 
-	return 0;
+/* ========================================================================= */
+/*                            INIT / CLEANUP                                 */
+/* ========================================================================= */
+
+int game_loop_init(Game **game, Graphic_engine **gengine, char *file_name) {
+  if (game_create_from_file(game, file_name) == ERROR)
+    return 1;
+
+  *gengine = graphic_engine_create();
+  if (*gengine == NULL) {
+    game_destroy(*game);
+    return 2;
+  }
+
+  return 0;
 }
 
-void game_loop_cleanup(Game *game, Graphic_engine *gengine, FILE *file)
-{
-game_destroy(game);
-graphic_engine_destroy(gengine);
-fclose(file);
+void game_loop_cleanup(Game *game, Graphic_engine *gengine, FILE *log_file) {
+  game_destroy(game);
+  graphic_engine_destroy(gengine);
+
+  if (log_file) fclose(log_file);
 }

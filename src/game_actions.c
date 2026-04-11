@@ -2,9 +2,9 @@
  * @brief It implements the game update through user actions
  *
  * @file game_actions.c
- * @author Profesores PPROG and Javier Jarque
- * @version 3
- * @date 27-01-2025
+ * @author Profesores PPROG, Violeta, Rafael and Javier
+ * @version 4
+ * @date 11-04-2026
  * @copyright GNU Public License
  */
 
@@ -13,31 +13,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <time.h>
 
 /**
-   Private functions
-*/
-void game_actions_unknown(Game *game);
-void game_actions_exit(Game *game);
-void game_actions_move(game);
-void game_actions_take(Game *game);
-void game_actions_drop(Game *game);
-void game_actions_attack(Game *game);
-void game_actions_chat(Game *game);
-void game_actions_inspect(Game* game);
+ * Private function prototypes.
+ * Each handles one command type and sets the last_cmd_status in game.
+ */
+static void game_actions_unknown(Game *game);
+static void game_actions_exit(Game *game);
+static void game_actions_move(Game *game);
+static void game_actions_take(Game *game);
+static void game_actions_drop(Game *game);
+static void game_actions_attack(Game *game);
+static void game_actions_chat(Game *game);
+static void game_actions_inspect(Game *game);
 
 /**
-   Game actions implementation
-*/
-Status game_actions_update(Game *game, Command *command){
-  if(!game || !command) return ERROR;
+ * @brief Converts a direction string to a Direction enum value
+ *
+ * Accepts "north"/"n", "south"/"s", "east"/"e", "west"/"w"
+ * (case-insensitive).  Returns U if unrecognized.
+ */
+static Direction ge_parse_direction(const char *str);
+
+
+/* ========================================================================= */
+/*                          PUBLIC: DISPATCHER                               */
+/* ========================================================================= */
+
+Status game_actions_update(Game *game, Command *command) {
   CommandCode cmd;
 
+  if (!game || !command) return ERROR;
   if (game_set_last_command(game, command) == ERROR) return ERROR;
+
   cmd = command_get_code(command);
 
-  switch (cmd){
+  switch (cmd) {
     case UNKNOWN: game_actions_unknown(game); break;
     case EXIT:    game_actions_exit(game);    break;
     case MOVE:    game_actions_move(game);    break;
@@ -46,273 +59,456 @@ Status game_actions_update(Game *game, Command *command){
     case ATTACK:  game_actions_attack(game);  break;
     case CHAT:    game_actions_chat(game);    break;
     case INSPECT: game_actions_inspect(game); break;
-    default:                                  break;
+    default:      break;
   }
 
   return OK;
 }
 
-/**
-   Calls implementation for each action (Enfoque B: access Player/Space directly)
-*/
 
-/*Accion desconocida (anyway)*/
-void game_actions_unknown(Game *game) {
-  if(!game) return;
+/* ========================================================================= */
+/*                       PRIVATE: ACTION HANDLERS                            */
+/* ========================================================================= */
+
+/* ---- UNKNOWN ---- */
+static void game_actions_unknown(Game *game) {
+  if (!game) return;
   game_set_last_cmd_status(game, ERROR);
 }
 
-/*Accion de salida (e exit)*/
-void game_actions_exit(Game *game) {
-  if(!game) return;
+/* ---- EXIT ---- */
+static void game_actions_exit(Game *game) {
+  if (!game) return;
   game_set_last_cmd_status(game, OK);
 }
 
-/*Comandos Moves*/
-void  game_actions_move(Game *game){
-  if(!game) return;
-  
+
+/* ========================================================================= */
+/*                    MOVE (F8): move <direction>                             */
+/* ========================================================================= */
+
+
+static void game_actions_move(Game *game) {
+  Player    *player  = NULL;
+  Space     *dest_sp = NULL;
+  char      *dir_str = NULL;
+  Direction  dir;
+  Id         origin, dest;
+
+  if (!game) return;
+
+  player = game_get_player_by_turn(game);
+  if (!player) {
+    game_set_last_cmd_status(game, ERROR_dir);
+    return;
+  }
+
+  origin = player_get_location(player);
+  if (origin == NO_ID) {
+    game_set_last_cmd_status(game, ERROR_dir);
+    return;
+  }
+
+  dir_str = command_get_obj(game_get_last_command(game));
+  if (!dir_str) {
+    game_set_last_cmd_status(game, ERROR_dir);
+    return;
+  }
+
+  dir = ge_parse_direction(dir_str);
+  if (dir == U) {
+    game_set_last_cmd_status(game, ERROR_dir);
+    return;
+  }
+
+  dest = game_get_connection(game, origin, dir);
+  if (dest == NO_ID) {
+    game_set_last_cmd_status(game, ERROR_dir);
+    return;
+  }
+
+  if (game_connection_is_open(game, origin, dir) == FALSE) {
+    game_set_last_cmd_status(game, ERROR_dir);
+    return;
+  }
+
+  player_set_location(player, dest);
+
+  dest_sp = game_get_space(game, dest);
+  if (dest_sp) space_set_discovered(dest_sp, TRUE);
+
+  game_set_last_cmd_status(game, OK);
 }
 
-/* F12: take <object_name> */
-void game_actions_take(Game *game){
-  if(!game) return; 
-  Player  *player =   game_get_player_by_turn(game);
-  Space   *space =    NULL;
-  char    *obj_name = NULL;
-  Object  *obj =      NULL;
-  Id      space_id =  player_get_location(player);
-  Id      obj_id =    NO_ID;
 
-  if (space_id == NO_ID){
+/* ========================================================================= */
+/*                    TAKE (F10): take <object_name>                          */
+/* ========================================================================= */
+static void game_actions_take(Game *game) {
+  Player *player   = NULL;
+  Space  *space    = NULL;
+  Object *obj      = NULL;
+  char   *obj_name = NULL;
+  Id      space_id, obj_id;
+
+  if (!game) return;
+
+  player = game_get_player_by_turn(game);
+  if (!player) {
     game_set_last_cmd_status(game, ERROR_take);
     return;
   }
 
-  /* Get the object name from the command */
+  space_id = player_get_location(player);
+  if (space_id == NO_ID) {
+    game_set_last_cmd_status(game, ERROR_take);
+    return;
+  }
+
   obj_name = command_get_obj(game_get_last_command(game));
-  if (!obj_name){
+  if (!obj_name) {
     game_set_last_cmd_status(game, ERROR_take);
     return;
   }
 
-  /* Find the object by name in the game */
   obj = game_get_object_by_name(game, obj_name);
-  if (!obj){
+  if (!obj) {
     game_set_last_cmd_status(game, ERROR_take);
     return;
   }
 
   obj_id = obj_get_id(obj);
-  space = game_get_space(game, space_id);
+  space  = game_get_space(game, space_id);
 
-  /* Check that the object is in the current space */
-  if (space_contains_object(space, obj_id) == FALSE){
+  if (space_contains_object(space, obj_id) == FALSE) {
     game_set_last_cmd_status(game, ERROR_take);
     return;
   }
 
-  /* Remove from space, add to player */
   space_remove_object(space, obj_id);
-  player_add_object(player, obj_id);
+
+  if (player_add_object(player, obj_id) != OK) {
+    /* Inventory full — put the object back */
+    space_set_object(space, obj_id);
+    game_set_last_cmd_status(game, ERROR_take);
+    return;
+  }
 
   game_set_last_cmd_status(game, OK);
 }
 
-/* Drop: drops the first object (or specified by name) */
-void game_actions_drop(Game *game){
-  if(!game) return;
-  Player  *player =      game_get_player_by_turn(game);
-  Space   *space =       NULL;
-  Object  *obj =         NULL;
-  char    *obj_name =    NULL;
-  Id      space_id =     player_get_location(player);
-  Id      obj_id =       NO_ID;
 
-  if (space_id == NO_ID || player_get_n_objects(player) == 0){
+/* ========================================================================= */
+/*                    DROP: drop <object_name>                          */
+/* ========================================================================= */
+static void game_actions_drop(Game *game) {
+  Player *player   = NULL;
+  Space  *space    = NULL;
+  Object *obj      = NULL;
+  char   *obj_name = NULL;
+  Id      space_id, obj_id;
+
+  if (!game) return;
+
+  player = game_get_player_by_turn(game);
+  if (!player) {
     game_set_last_cmd_status(game, ERROR_drop);
     return;
   }
 
-  space = game_get_space(game, space_id);
+  space_id = player_get_location(player);
+  if (space_id == NO_ID) {
+    game_set_last_cmd_status(game, ERROR_drop);
+    return;
+  }
+
   obj_name = command_get_obj(game_get_last_command(game));
-
-  if (obj_name){
-    /* Drop a specific object by name */
-    obj = game_get_object_by_name(game, obj_name);
-    if (!obj){
-      game_set_last_cmd_status(game, ERROR_drop);
-      return;
-    }
-    obj_id = obj_get_id(obj);
-  } else {
-    /* No name specified: error */
+  if (!obj_name) {
     game_set_last_cmd_status(game, ERROR_drop);
     return;
   }
 
-  /* Check player has it */
-  if (player_contains_object(player, obj_id) == FALSE){
+  obj = game_get_object_by_name(game, obj_name);
+  if (!obj) {
     game_set_last_cmd_status(game, ERROR_drop);
     return;
   }
 
-  /* Remove from player, add to space */
+  obj_id = obj_get_id(obj);
+
+  if (player_contains_object(player, obj_id) == FALSE) {
+    game_set_last_cmd_status(game, ERROR_drop);
+    return;
+  }
+
   player_delete_object(player, obj_id);
+  space = game_get_space(game, space_id);
   space_set_object(space, obj_id);
 
   game_set_last_cmd_status(game, OK);
 }
 
-/* F10: attack <character_name> */
-void game_actions_attack(Game *game){
-  if(!game) return;
-  Player    *player =     game_get_player_by_turn(game);
-  Space     *space =      NULL;
-  char      *char_name =  NULL;
-  Character *ch =         NULL;
-  Id        char_id =     NO_ID;
-  Id        space_id =    player_get_location(player);
-  
-  int       roll;
 
-  if (space_id == NO_ID || !player){
+/* ========================================================================= */
+/*            ATTACK: attack <name>  (NPC or PvP)                            */
+/* ========================================================================= */
+/*
+ * The attack command now supports TWO modes:
+ *
+ *  1. NPC combat (original):
+ *     "attack Skeleton" → find Character by name → must be in
+ *     same space, hostile, alive → random roll.
+ *
+ *  2. PvP combat (NEW):
+ *     "attack witch" → if no Character found with that name,
+ *     search for a Player with that name → must be in same space,
+ *     cannot be yourself → random roll.
+ */
+static void game_actions_attack(Game *game) {
+  Player    *player    = NULL;
+  Space     *space     = NULL;
+  Character *ch        = NULL;
+  char      *name      = NULL;
+  Id         space_id;
+  int        roll;
+
+  if (!game) return;
+
+  player = game_get_player_by_turn(game);
+  if (!player) {
     game_set_last_cmd_status(game, ERROR_Attack);
     return;
   }
 
-  /* Get character name from command */
+  space_id = player_get_location(player);
+  if (space_id == NO_ID) {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
+
+  name = command_get_obj(game_get_last_command(game));
+  if (!name) {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
+
+  space = game_get_space(game, space_id);
+
+  /* ========== PHASE 1: Try as NPC (Character) ========== */
+  ch = game_get_character_by_name(game, name);
+
+  if (ch) {
+    Id char_id = character_get_id(ch);
+
+    /* Must be in the same space */
+    if (space_contains_character(space, char_id) == FALSE) {
+      game_set_last_cmd_status(game, ERROR_Attack);
+      return;
+    }
+
+    /* Must NOT be friendly */
+    if (character_get_friendly(ch) == TRUE) {
+      game_set_last_cmd_status(game, ERROR_Attack);
+      return;
+    }
+
+    /* Must be alive */
+    if (character_get_health(ch) <= 0) {
+      game_set_last_cmd_status(game, ERROR_Attack);
+      return;
+    }
+
+    /* NPC Combat roll */
+    roll = rand() % 10;
+
+    if (roll < 5) {
+      /* Enemy wins: player loses 1 HP */
+      player_set_health(player, player_get_health(player) - 1);
+      if (player_get_health(player) <= 0) {
+        game_set_finished(game, TRUE);
+      }
+    } else {
+      /* Player wins: enemy loses 1 HP */
+      character_set_health(ch, character_get_health(ch) - 1);
+      if (character_get_health(ch) <= 0) {
+        space_remove_character(space, char_id);
+      }
+    }
+
+    game_set_last_cmd_status(game, OK);
+    return;
+  }
+
+  /* ========== PHASE 2: Try as Player (PvP) ========== */
+  {
+    Player *target = game_get_player_by_name(game, name);
+
+    if (!target) {
+      /* Not a Character and not a Player — nothing to attack */
+      game_set_last_cmd_status(game, ERROR_Attack);
+      return;
+    }
+
+    /* Cannot attack yourself */
+    if (player_get_id(target) == player_get_id(player)) {
+      game_set_last_cmd_status(game, ERROR_Attack);
+      return;
+    }
+
+    /* Target must be in the same space */
+    if (player_get_location(target) != space_id) {
+      game_set_last_cmd_status(game, ERROR_Attack);
+      return;
+    }
+
+    /* PvP Combat roll: same rules as NPC */
+    roll = rand() % 10;
+
+    if (roll < 5) {
+      /* Target wins: attacker loses 1 HP */
+      player_set_health(player, player_get_health(player) - 1);
+      if (player_get_health(player) <= 0) {
+        game_set_finished(game, TRUE);
+      }
+    } else {
+      /* Attacker wins: target loses 1 HP */
+      player_set_health(target, player_get_health(target) - 1);
+      if (player_get_health(target) <= 0) {
+        game_set_finished(game, TRUE);
+      }
+    }
+
+    game_set_last_cmd_status(game, OK);
+    return;
+  }
+}
+
+
+/* ========================================================================= */
+/*                    CHAT: chat <character_name>                             */
+/* ========================================================================= */
+static void game_actions_chat(Game *game) {
+  Player    *player    = NULL;
+  Space     *space     = NULL;
+  Character *ch        = NULL;
+  char      *char_name = NULL;
+  Id         char_id, space_id;
+
+  if (!game) return;
+
+  player = game_get_player_by_turn(game);
+  if (!player) {
+    game_set_last_cmd_status(game, ERROR_Chat);
+    return;
+  }
+
+  space_id = player_get_location(player);
+  if (space_id == NO_ID) {
+    game_set_last_cmd_status(game, ERROR_Chat);
+    return;
+  }
+
   char_name = command_get_obj(game_get_last_command(game));
-  if (!char_name){
-    game_set_last_cmd_status(game, ERROR_Attack);
+  if (!char_name) {
+    game_set_last_cmd_status(game, ERROR_Chat);
     return;
   }
 
-  /* Find character by name */
   ch = game_get_character_by_name(game, char_name);
-  if (!ch){
-    game_set_last_cmd_status(game, ERROR_Attack);
+  if (!ch) {
+    game_set_last_cmd_status(game, ERROR_Chat);
     return;
   }
 
   char_id = character_get_id(ch);
-  space = game_get_space(game, space_id);
+  space   = game_get_space(game, space_id);
 
-  /* Character must be in the same space */
-  if (space_contains_character(space, char_id) == FALSE){
-    game_set_last_cmd_status(game, ERROR_Attack);
+  if (space_contains_character(space, char_id) == FALSE) {
+    game_set_last_cmd_status(game, ERROR_Chat);
     return;
   }
 
-  /* Character must NOT be friendly */
-  if (character_get_friendly(ch) == TRUE){
-    game_set_last_cmd_status(game, ERROR_Attack);
+  if (character_get_friendly(ch) == FALSE) {
+    game_set_last_cmd_status(game, ERROR_Chat);
     return;
-  }
-
-  /* Character must be alive */
-  if (character_get_health(ch) <= 0){
-    game_set_last_cmd_status(game, ERROR_Attack);
-    return;
-  }
-
-  /* F10: random 0-9, 0-4 enemy wins, 5-9 player wins */
-  roll = rand() % 10;
-
-  if (roll < 5){
-    /* Enemy wins: player loses 1 HP */
-    player_set_health(player, player_get_health(player) - 1);
-    if (player_get_health(player) <= 0){
-      game_set_finished(game, TRUE);
-    }
-  } else {
-    /* Player wins: enemy loses 1 HP */
-    character_set_health(ch, character_get_health(ch) - 1);
-    if(character_get_health(ch) <= 0){
-      space_remove_character(space, char_id);
-    }
   }
 
   game_set_last_cmd_status(game, OK);
 }
 
-/* F11: chat <character_name> */
-void game_actions_chat(Game *game){
-  if(!game) return;
-  Player    *player =     game_get_player_by_turn(game);
-  Space     *space =      NULL;
-  char      *char_name =  NULL;
-  Character *ch =         NULL;
-  Id        char_id =     NO_ID;
-  Id        space_id =    player_get_location(player);
 
-  if (space_id == NO_ID || !player){
-    game_set_last_cmd_status(game, ERROR_Chat);
+/* ========================================================================= */
+/*           INSPECT (F9): inspect <object_name>                             */
+/* ========================================================================= */
+/*
+ */
+static void game_actions_inspect(Game *game) {
+  Player *player   = NULL;
+  Space  *space    = NULL;
+  Object *obj      = NULL;
+  char   *obj_name = NULL;
+  Id      obj_id, space_id;
+  Bool    in_space, in_inventory;
+
+  if (!game) return;
+
+  player = game_get_player_by_turn(game);
+  if (!player) {
+    game_set_last_cmd_status(game, ERROR_inspect);
     return;
   }
-
-  /* Get character name from command */
-  char_name = command_get_obj(game_get_last_command(game));
-  if (!char_name){
-    game_set_last_cmd_status(game, ERROR_Chat);
-    return;
-  }
-
-  /* Find character by name */
-  ch = game_get_character_by_name(game, char_name);
-  if (!ch){
-    game_set_last_cmd_status(game, ERROR_Chat);
-    return;
-  }
-
-  char_id = character_get_id(ch);
-  space = game_get_space(game, space_id);
-
-  /* Character must be in the same space */
-  if (space_contains_character(space, char_id) == FALSE){
-    game_set_last_cmd_status(game, ERROR_Chat);
-    return;
-  }
-
-  /* Character must be friendly */
-  if (character_get_friendly(ch) == FALSE){
-    game_set_last_cmd_status(game, ERROR_Chat);
-    return;
-  }
-
-  /* The message will be displayed by graphic_engine reading from the character */
-  /* We store the character id so graphic_engine knows who spoke last */
-  /* For now, the graphic_engine will check the last command and find the character */
-
-  game_set_last_cmd_status(game, OK);
-}
-
-/* F12: inspect <object_name> */
-void game_actions_inspect(Game* game){
-  if(!game) return;
-  char      *obj_name    = NULL;
-  char      *description = NULL;
-  Object    *object      = NULL;
 
   obj_name = command_get_obj(game_get_last_command(game));
-  if (!obj_name){
-    game_set_last_cmd_status(game, ERROR_inspect);
-    return;
-  }
-  object = game_get_object_by_name(game, obj_name);
-  if (!object){
-    game_set_last_cmd_status(game, ERROR_inspect);
-    return;
-  }
-  description = obj_get_description(object);
-  if (!description){
+  if (!obj_name) {
     game_set_last_cmd_status(game, ERROR_inspect);
     return;
   }
 
-  /* The descrition will be displayed by graphic_engine reading from the object */
-  /* We store the object id so graphic_engine knows who spoke last */
-  /* For now, the graphic_engine will check the last command and find the object */
+  obj = game_get_object_by_name(game, obj_name);
+  if (!obj) {
+    game_set_last_cmd_status(game, ERROR_inspect);
+    return;
+  }
+
+  obj_id   = obj_get_id(obj);
+  space_id = player_get_location(player);
+  space    = game_get_space(game, space_id);
+
+  /* Object must be accessible: in current space OR in inventory */
+  in_space     = (space && space_contains_object(space, obj_id));
+  in_inventory = player_contains_object(player, obj_id);
+
+  if (in_space == FALSE && in_inventory == FALSE) {
+    game_set_last_cmd_status(game, ERROR_inspect);
+    return;
+  }
+
+  /* Object must have a description */
+  if (obj_get_description(obj) == NULL ||
+      obj_get_description(obj)[0] == '\0') {
+    game_set_last_cmd_status(game, ERROR_inspect);
+    return;
+  }
 
   game_set_last_cmd_status(game, OK);
+}
+
+
+/* ========================================================================= */
+/*                      HELPER: PARSE DIRECTION                              */
+/* ========================================================================= */
+
+static Direction ge_parse_direction(const char *str) {
+  if (!str) return U;
+
+  if (strcasecmp(str, "north") == 0 || strcasecmp(str, "n") == 0)
+    return N;
+  if (strcasecmp(str, "south") == 0 || strcasecmp(str, "s") == 0)
+    return S;
+  if (strcasecmp(str, "east") == 0  || strcasecmp(str, "e") == 0)
+    return E;
+  if (strcasecmp(str, "west") == 0  || strcasecmp(str, "w") == 0)
+    return W;
+
+  return U;
 }
