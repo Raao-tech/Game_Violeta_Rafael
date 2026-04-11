@@ -1,23 +1,31 @@
 #s:11|Entry|    _ !# |[_]--'---|!'!""`""!|! ! /^\ !|!_!_!I!_!|
 #s:12|Corridor|!-------!|! . . !|! . . !|! . . !|!-------!|
 #s:13|Dinning Room| .-===-. |! . . !|! .'. !|() _____()|II_____II|
-#s:14|Kitchen|
-#s:15|Courtyard|
+#s:14|Kitchen|  [_]_[_] |  ! T !  |  !___!  | _!___!_ |!_______!|
+#s:15|Courtyard|  . * .  |  * . *  |  . * .  |  * . *  |_________|
 #s:16|Garden| /\ /\ /\|//\\/\\/\|//\\/\\/\| II II II|---------|
-#s:121|Daungeon|
+#s:121|Dungeon| _!_!_!_ |!  o o  !|! (___) !|!  ~~~  !|!_______!|
 #s:131|Bedroom|    _    |   ! !   |___! !   |(   .'   |)  (     |
-#s:132|Bathroom|
+#s:132|Bathroom|  _____  | !  _  !| ! !_! ! | ! !   ! | !_____! |
 
-#o:21|Sword|11
-#o:22|Chest|14
-#o:23|Tapestry|13
-#o:24|Candelabra|12
+#o:21|Sword|11|A sharp blade, rusty but deadly
+#o:22|Chest|14|An old wooden chest, locked tight
+#o:23|Tapestry|13|A faded tapestry depicting a battle scene
+#o:24|Candelabra|12|A silver candelabra, still warm
 
-#c:51|Ghost|  (o)|5|1|Welcome to my castle... beware!|12
-#c:52|Skeleton| ^M*|5|0|...|13
+#c:51|Ghost|(o)|12|5|1|Welcome to my castle... beware!
+#c:52|Skeleton|^M*|13|5|0|...
 
-#p:1000|knight|11|^C>|5|
-#p:1001|witch|12|*u*|1000|
-#p:1002|happy_person|(^O^)|13|5|3
+#p:1|knight|^C>|11|5|3
+#p:2|witch|*u*|12|5|3
 
-#l:31|Entry|11|12|1|1|1|
+#l:31|Hall_Entry|11|12|1|1|1
+#l:32|Dungeon_Gate|12|121|3|0|0
+#l:33|Dining_Hall|12|13|1|1|1
+#l:34|Bedroom_Door|13|131|2|1|1
+#l:35|Bath_Door|131|132|2|1|1
+#l:36|Kitchen_Pass|13|14|1|1|1
+#l:37|Yard_Gate|14|15|1|1|1
+#l:38|Garden_Path|15|16|1|1|1
+#l:39|Escape_Tunnel|121|16|1|1|0
+
