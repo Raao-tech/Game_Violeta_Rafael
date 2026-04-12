@@ -6,23 +6,6 @@
  * @version 6
  * @date 11-04-2026
  * @copyright GNU Public License
- *
- * Map layout showing all 4 neighbors around the current space:
- *
- *                  +---------------+
- *                  |          NORTH|
- *                  |  gdesc/???    |
- *                  +---------------+
- *                        ^
- * +-------+        +---------------+        +-------+
- * | WEST  |   x    | players  ID   |   >    | EAST  |
- * | info  |        | gdesc...      |        | info  |
- * +-------+        | objects       |        +-------+
- *                  +---------------+
- *                        v
- *                  +---------------+
- *                  |          SOUTH|
- *                  +---------------+
  */
 
 #include "graphic_engine.h"
@@ -249,7 +232,7 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game) {
       ge_build_player_str(game, id_act, plyr_str, sizeof(plyr_str));
 
       /* Combine NPCs + players for header */
-      char combined[30] = "";
+      char combined[101] = "";
       if (char_str[0] && plyr_str[0])
         snprintf(combined, sizeof(combined), "%s %s", char_str, plyr_str);
       else if (char_str[0])
@@ -265,7 +248,7 @@ void graphic_engine_paint_game(Graphic_engine *ge, Game *game) {
       /* Line 1: west ID / center header / east ID */
       {
         char ctr[20];
-        sprintf(ctr, "| %-10s %3ld|", combined, id_act);
+        sprintf(ctr, "| %-10.10s %3ld|", combined, id_act);
         sprintf(str, " %s%s%s%s%s", wL[1], wG[1], ctr, eG[1], eL[1]);
         screen_area_puts(ge->map, str);
       }

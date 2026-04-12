@@ -14,6 +14,7 @@ SRC_DIR  = src
 HDR_DIR  = headers
 OBJ_DIR  = obj
 DOC_DIR  = doc
+DOC_OTR  = otros
 
 # =============== FILES ===============
 SRCS     = $(wildcard $(SRC_DIR)/*.c)
@@ -22,7 +23,7 @@ TARGET   = castle
 
 # =============== DATA FILES ===============
 BD       = castle.dat
-LOG_FILE = output.log
+LOG_FILE = otros/output.log
 
 # =============== LIBRARIES ===============
 LIBS     = -L. -lscreen
@@ -110,8 +111,8 @@ play: $(TARGET)
 	if [ "$$logyn" = "y" ] || [ "$$logyn" = "Y" ]; then \
 		read -p "Log filename [output.log]: " logname; \
 		logname=$${logname:-output.log}; \
-		echo "Running: ./$(TARGET) $$file -l $$logname"; \
-		./$(TARGET) "$$file" -l "$$logname"; \
+		echo "Running: ./$(TARGET) $$file -l ./logs/$$logname"; \
+		./$(TARGET) "$$file" -l "./logs/$$logname"; \
 	else \
 		echo "Running: ./$(TARGET) $$file"; \
 		./$(TARGET) "$$file"; \
@@ -148,8 +149,8 @@ playv: $(TARGET)
 	if [ "$$logyn" = "y" ] || [ "$$logyn" = "Y" ]; then \
 		read -p "Log filename [output.log]: " logname; \
 		logname=$${logname:-output.log}; \
-		echo "Running with Valgrind: ./$(TARGET) $$file -l $$logname"; \
-		$(PREFLAG) ./$(TARGET) "$$file" -l "$$logname"; \
+		echo "Running with Valgrind: ./$(TARGET) $$file -l ./logs/$$logname"; \
+		$(PREFLAG) ./$(TARGET) "$$file" -l "./logs/$$logname"; \
 	else \
 		echo "Running with Valgrind: ./$(TARGET) $$file"; \
 		$(PREFLAG) ./$(TARGET) "$$file"; \

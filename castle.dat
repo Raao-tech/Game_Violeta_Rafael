@@ -18,6 +18,9 @@
 
 #p:1|knight|^C>|11|5|3
 #p:2|witch|*u*|12|5|3
+#p:3|Luigi|=0D|12|5|5
+#p:3|Maria Lionza|_M_|12|25|25
+#p:3|Neton|<z>|12|25|25
 
 #l:31|Hall_Entry|11|12|1|1|1
 #l:32|Dungeon_Gate|12|121|3|0|0

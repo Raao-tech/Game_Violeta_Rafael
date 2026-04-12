@@ -1,7 +1,0 @@
-move n: ERROR
-move e: ERROR
-take Sword: OK
-move s: OK
-move s: OK
-attack Skeleton: OK
-exit: OK

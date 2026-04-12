@@ -339,12 +339,20 @@ static void game_actions_attack(Game *game) {
     return;
   }
 
+  /*Inciiamos nuestro ambioto local. Toda variable declarada dentri de los {}  sólo existe ahí*/
+  /*
+    Se suele usar para evitar tener que declarar target arriba de todo.  
+    -Wependatic es muyyyy pedante y obliga a declarar todas las variables
+    según el estandar c99.   Lamentando lo mucho, no lo tenemos así, y me da pereza
+    cambiar todo desde cero, (incluyendo lógica), pero también es muy útil para evitar errores de
+    scope, por lo que iré a reescribir partes del código para usar este estilo.
+    Se les quiere!!! besitosss ;D
+  */
   /* ========== PHASE 2: Try as Player (PvP) ========== */
-  {
+   {
     Player *target = game_get_player_by_name(game, name);
 
     if (!target) {
-      /* Not a Character and not a Player — nothing to attack */
       game_set_last_cmd_status(game, ERROR_Attack);
       return;
     }
@@ -361,21 +369,21 @@ static void game_actions_attack(Game *game) {
       return;
     }
 
-    /* PvP Combat roll: same rules as NPC */
-    roll = rand() % 10;
+    /* Target must be alive */
+    if (player_get_health(target) <= 0) {
+      game_set_last_cmd_status(game, ERROR_Attack);
+      return;
+    }
+
+    /* PvP Combat roll */
+    roll = rand() % 20;
 
     if (roll < 5) {
-      /* Target wins: attacker loses 1 HP */
       player_set_health(player, player_get_health(player) - 1);
-      if (player_get_health(player) <= 0) {
-        game_set_finished(game, TRUE);
-      }
+      /*game_turn_update saltará al muerto */
     } else {
-      /* Attacker wins: target loses 1 HP */
       player_set_health(target, player_get_health(target) - 1);
-      if (player_get_health(target) <= 0) {
-        game_set_finished(game, TRUE);
-      }
+      /*game_turn_update saltará al muerto */
     }
 
     game_set_last_cmd_status(game, OK);

@@ -426,9 +426,22 @@ Status game_get_last_cmd_status(Game *game) {
 }
 
 Status game_turn_update(Game *game) {
+  int checked = 0;
+
   if (!game) return ERROR;
   if (game->n_players <= 0) return ERROR;
-  game->turn = (game->turn + 1) % game->n_players;
+
+  do {
+    game->turn = (game->turn + 1) % game->n_players;
+    checked++;
+
+    if (checked >= game->n_players) {
+      /* Todos muertos -> game over */
+      game->finished = TRUE;
+      return OK;
+    }
+  } while (player_get_health(game->players[game->turn]) <= 0);
+
   return OK;
 }
 
