@@ -26,7 +26,7 @@ BD       = castle.dat
 LOG_FILE = otros/output.log
 
 # =============== LIBRARIES ===============
-LIBS     = -L. -lscreen
+LIBS     = -L./lib -lscreen
 
 #######################################
 #            BUILD TARGETS
