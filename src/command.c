@@ -94,7 +94,7 @@ Status command_get_user_input(Command *command){
       else  i++;
     }
 
-    /* Second token: the object/target name (for take, drop, attack, chat) */
+    /* Second token: the object/target name (for take, drop, attack, chat, inspect) */
     token = strtok(NULL, " \n");
     if (token)  command->obj = strdup(token);
     return command_set_code(command, cmd);
