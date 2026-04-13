@@ -1,60 +1,65 @@
-# 🏰 The Haunted Castle
+# The Haunted Castle — PPROG · Violeta & Rafael & Salva & Javier
 
-> Dungeon crawler textual por turnos desarrollado en C (ANSI/C89) para la asignatura **PPROG** — Grado en Ingeniería Informática, **Universidad Autónoma de Madrid**.
-
-**Iteración:** I3 · **Versión del ejecutable:** `castle`
-**Autores:** Violeta · Rafael · Salvador · Javier
-**Licencia:** GNU Public License
+> Juego de aventura **textual en ASCII** desarrollado en C para la asignatura de PPROG (UAM · EPS).
+> Versión I3 — Abril 2026
 
 ---
 
-## Índice
+## Descripción
 
-1. [Descripción del juego](#descripción-del-juego)
-2. [Estructura del repositorio](#estructura-del-repositorio)
-3. [Arquitectura del sistema](#arquitectura-del-sistema)
-4. [Compilación](#compilación)
-5. [Ejecución](#ejecución)
-6. [Targets del Makefile](#targets-del-makefile)
-7. [Comandos disponibles](#comandos-disponibles)
-8. [Reglas de las acciones](#reglas-de-las-acciones)
-9. [Sistema multijugador por turnos](#sistema-multijugador-por-turnos)
-10. [Motor gráfico](#motor-gráfico)
-11. [Formato de los ficheros `.dat`](#formato-de-los-ficheros-dat)
-12. [Tests unitarios](#tests-unitarios)
-13. [Comprobación de memoria](#comprobación-de-memoria)
-14. [Documentación Doxygen](#documentación-doxygen)
-15. [Herramienta Ingit](#herramienta-ingit)
-16. [Notas de diseño](#notas-de-diseño)
+El jugador (o jugadores) exploran un castillo compuesto por salas conectadas mediante **enlaces (Links)** bidireccionales que pueden estar abiertos o cerrados. Es posible recoger objetos, inspeccionarlos, hablar con personajes amistosos y combatir contra enemigos en un sistema de combate por turnos con resultado aleatorio.
+
+El motor gráfico renderiza en ASCII la sala actual junto con las cuatro salas adyacentes (N/S/E/W), el inventario del jugador activo, las barras de salud y los mensajes de los personajes.
 
 ---
 
-## Descripción del juego
+## Características destacadas (I3)
 
-**The Haunted Castle** es un videojuego de exploración tipo dungeon crawler que funciona íntegramente en terminal. El jugador (o jugadores, en modo multijugador por turnos) explora habitaciones interconectadas, recoge objetos, interactúa con personajes NPC y combate contra enemigos. El objetivo es sobrevivir y explorar el castillo antes de que la salud llegue a cero.
+- **Multijugador por turnos** — varios jugadores rotan en orden; cada turno pertenece a un jugador distinto.
+- **Links bidireccionales** — cada enlace almacena el estado abierto/cerrado de forma independiente por sentido de travesía (`orig→dest` y `dest→orig`), lo que permite pasajes de un solo sentido.
+- **Descubrimiento de salas (F12)** — las salas desconocidas se muestran como cajas vacías hasta que el jugador las visita; una vez descubiertas se revelan su `gdesc`, objetos y personajes.
+- **Sistema de combate PvP** — `attack` funciona tanto contra NPCs enemigos como contra otros jugadores en la misma sala; el autoataque queda vetado.
+- **Motor gráfico enriquecido** — renderiza las 4 salas vecinas, barras de salud ASCII (`[###--] 3 !`), etiquetas `[ALLY]`/`[ENEMY]` en personajes y borde de color por jugador activo.
+- **Log de partida (F14)** — bandera `-l <fichero>` que registra cada comando con su resultado `OK`/`ERROR`.
+- **Inventario multi-objeto** — el jugador puede llevar varios objetos simultáneamente; `inspect` comprueba tanto el inventario como la sala actual.
+- **Memoria limpia** — 0 leaks/errores Valgrind, 0 advertencias con `-Wall -Wextra -Wpedantic`.
 
 ---
 
-## Estructura del repositorio
+## Estructura del proyecto
 
 ```
 .
-├── src/                  # Ficheros fuente (.c)
-│   ├── game_loop.c       # Bucle principal del juego
-│   ├── game.c            # Estado global del juego
-│   ├── game_actions.c    # Lógica de acciones/comandos
-│   ├── game_reader.c     # Carga del mundo desde .dat
-│   ├── graphic_engine.c  # Motor gráfico ASCII
-│   ├── space.c           # Salas del mapa
-│   ├── player.c          # Jugador
-│   ├── object.c          # Objetos
-│   ├── character.c       # Personajes NPC
-│   ├── inventory.c       # Inventario del jugador
-│   ├── set.c             # Conjunto de IDs
-│   ├── entity.c          # Entidad base (id + nombre)
-│   ├── links.c           # Conexiones entre salas
-│   └── command.c         # Lectura y parseo de comandos
-├── headers/              # Ficheros de cabecera (.h)
+├── src/                  # Código fuente (.c)
+│   ├── game.c
+│   ├── game_actions.c
+│   ├── game_loop.c
+│   ├── game_reader.c
+│   ├── graphic_engine.c
+│   ├── command.c
+│   ├── space.c
+│   ├── player.c
+│   ├── object.c
+│   ├── character.c
+│   ├── links.c
+│   ├── inventory.c
+│   ├── set.c
+│   └── entity.c
+├── headers/              # Cabeceras (.h)
+│   ├── game.h
+│   ├── game_actions.h
+│   ├── game_reader.h
+│   ├── graphic_engine.h
+│   ├── command.h
+│   ├── space.h
+│   ├── player.h
+│   ├── object.h
+│   ├── character.h
+│   ├── links.h
+│   ├── inventory.h
+│   ├── set.h
+│   ├── entity.h
+│   └── types.h
 ├── obj/                  # Objetos compilados (generado por make)
 ├── doc/                  # Documentación Doxygen (generada por make doc)
 ├── tests/                # Tests unitarios por módulo
@@ -68,13 +73,13 @@
 │   ├── command_test.c / command_test.h
 │   ├── links_test.c / links_test.h
 │   └── object_test.c / object_test.h
-├── otros/                # Logs, memoria de Ingit
+├── otros/                # Logs y memoria de Ingit
 │   ├── output.log
 │   └── memoria_ingit.txt
 ├── castle.dat            # Mapa principal (el castillo)
 ├── anthill.dat           # Mapa alternativo (el hormiguero)
 ├── *.cmd                 # Ficheros de comandos para pruebas de integración
-├── libscreen.a           # Librería de pantalla (proporcionada)
+├── libscreen.a           # Librería de pantalla (proporcionada, ASCII only)
 ├── Makefile
 ├── Doxyfile
 ├── Ingit.sh              # Asistente de Git del equipo
@@ -89,175 +94,108 @@
 
 | Entidad | Descripción |
 |---|---|
-| **Space** | Sala del mapa: hasta 4 conexiones (N/S/E/W via Links), objetos y personajes |
-| **Player** | Jugador con posición, salud e inventario de múltiples objetos |
+| **Space** | Sala del mapa: hasta 4 conexiones (N/S/E/W vía Links), conjunto de objetos, conjunto de personajes y flag de descubrimiento |
+| **Player** | Jugador con posición, salud, inventario de múltiples objetos y límite configurable de capacidad |
 | **Object** | Objeto que puede estar en un espacio o en el inventario de un jugador |
 | **Character** | Personaje NPC con salud, mensaje y atributo `friendly` (amistoso/enemigo) |
-| **Links** | Conexión **bidireccional** entre dos espacios con estado abierto/cerrado independiente por sentido |
+| **Links** | Conexión **bidireccional** entre dos espacios con estado abierto/cerrado independiente por sentido de travesía |
 
 ### Módulos (TADs)
 
 | Módulo | Responsabilidad |
 |---|---|
-| `game` | Estado global: arrays de espacios, objetos, personajes, jugadores y links; turno actual; flag de fin de partida |
-| `space` | Sala: gdesc (3 líneas ASCII), conjunto de objetos, conjunto de personajes, flag de descubierta |
-| `player` | Jugador: posición, salud, ataque, inventario (`Inventory`), nombre |
-| `object` | Objeto: id y nombre (extiende `entity`) |
-| `character` | NPC: id, nombre, salud, ataque, `friendly`, mensaje |
-| `inventory` | Inventario basado en `Set`; admite límite configurable de objetos |
-| `set` | Conjunto de `Id` sin duplicados; base de `inventory` y listas de objetos/personajes en espacios |
-| `entity` | Base común (id + nombre) reutilizada por `player`, `object` y `character` |
-| `links` | Enlace: id, nombre, espacios origen/destino, dirección, flags `open_orig_to_dest` y `open_dest_to_orig` |
-| `command` | Parseo de la entrada del usuario; guarda el código de comando y el argumento de objeto/personaje |
-| `game_actions` | Dispatcher de acciones: MOVE, TAKE, DROP, ATTACK, CHAT, INSPECT, EXIT |
-| `game_reader` | Carga completa desde fichero `.dat` (5 loaders: spaces, objects, characters, players, links) |
-| `game_loop` | Bucle principal: init → `command_get_user_input` → `game_actions_update` → `graphic_engine_paint_game` |
-| `graphic_engine` | Renderizado ASCII con `libscreen`: mapa (sala actual + 4 vecinas), panel de descripción, banner, ayuda y feedback |
-| `libscreen` | Librería de pintado de pantalla en terminal (proporcionada por los profesores) |
-
-### Decisiones de diseño destacadas
-
-- **Enfoque B:** se exponen punteros directamente (`Player*`, `Space*`, etc.) en lugar de operar siempre con IDs, lo que simplifica las llamadas entre módulos.
-- **Links bidireccionales:** cada `Links` almacena `open_orig_to_dest` y `open_dest_to_orig` separadamente, permitiendo pasillos de un solo sentido. Es una extensión sobre el enunciado unidireccional.
-- **`calloc` sobre `malloc`:** todos los contadores y arrays de punteros se inicializan a cero en la creación para evitar valores basura.
-- **`Set` como base de `Inventory` y de objetos/personajes en `Space`:** desacopla la gestión de colecciones del resto de módulos.
-- **Descubrimiento de espacios (F12):** una sala sólo muestra su `gdesc`, objetos y personajes si el jugador la ha visitado alguna vez.
+| `game` | Estado global: arrays de espacios, objetos, personajes, jugadores y links; turno activo; último comando y su resultado |
+| `game_reader` | Cinco loaders (`#s`, `#o`, `#c`, `#p`, `#l`) que pueblan el estado desde ficheros `.dat` pipe-delimitados |
+| `game_actions` | Dispatcher: mapea cada `CommandCode` a su handler privado (move, take, drop, attack, chat, inspect, exit) |
+| `game_loop` | Ciclo RENDER → INPUT → UPDATE → LOG → NEXT TURN; gestión del fichero de log |
+| `graphic_engine` | Renderizado ASCII con `libscreen`: sala actual + 4 vecinas, inventario, barras de salud, etiquetas de personajes, borde de color por jugador |
+| `command` | Parser de entrada: primer token → `CommandCode`, segundo token → nombre del objeto/objetivo |
+| `space` | TAD sala: `gdesc` (3 líneas × 9 chars), sets de objetos y personajes, 4 IDs de link, flag discovered |
+| `player` | TAD jugador: posición, salud, `Inventory*`, nombre, id |
+| `object` | TAD objeto: id, nombre |
+| `character` | TAD personaje: id, nombre, posición, salud, `friendly`, mensaje |
+| `links` | TAD enlace: id, nombre, id_orig, id_dest, dirección, `open_orig_to_dest`, `open_dest_to_orig` |
+| `inventory` | Wrapper de `Set` que añade límite máximo de capacidad (`max_objs`) |
+| `set` | Colección de IDs únicos (array dinámico); operaciones CRUD sobre `Id` |
+| `entity` | Base común (id + nombre) para Player, Object y Character |
 
 ---
 
 ## Compilación
 
-**Requisitos previos:** `gcc`, `make`, `valgrind` (opcional), `doxygen` (opcional).
+**Requisitos:** `gcc`, `make`
 
 ```bash
-# Compilación estándar
-make
-
-# Limpiar objetos y ejecutable
-make clean
-
-# Limpiar también obj/ y doc/
-make clean_all
+make          # compila todo → ejecutable ./castle
+make clean    # elimina objetos y ejecutable
+make clean_all  # elimina también obj/ y doc/
 ```
 
-> El Makefile compila con `-Wall -Wextra -Wpedantic -ansi -g -O0`. Se espera **0 warnings** en compilación limpia.
+Flags usados: `-g -Wall -Wextra -Wpedantic -O0 -DDEBUG`
 
 ---
 
 ## Ejecución
 
-```bash
-# Directamente con el mapa del castillo
-./castle castle.dat
+### Modos disponibles
 
-# Con el mapa del hormiguero
-./castle anthill.dat
-
-# Con LOG activado
-./castle castle.dat -l otros/output.log
-```
-
----
-
-## Targets del Makefile
-
-### Compilación
-
-| Target | Descripción |
+| Comando make | Descripción |
 |---|---|
-| `make` / `make all` | Compila el proyecto completo en `obj/` → ejecutable `castle` |
-| `make clean` | Elimina objetos, ejecutable y logs |
-| `make clean_all` | Ídem + elimina `obj/` y `doc/` |
-
-### Ejecución
-
-| Target | Descripción |
-|---|---|
-| `make run` | Ejecuta `castle.dat` sin log |
-| `make runv` | Ejecuta `castle.dat` bajo **Valgrind** |
-| `make run_log` | Ejecuta `castle.dat` con log en `otros/output.log` |
-| `make runv_log` | Ejecuta `castle.dat` con Valgrind + log |
-| `make run_custom BD=anthill.dat` | Ejecuta el `.dat` indicado |
-| `make run_custom_log BD=anthill.dat` | Ídem con log |
-| `make play` | **Interactivo:** lista los `.dat` disponibles, pide elección y opcionalmente activa log |
-| `make playv` | Igual que `play` pero bajo **Valgrind** |
-
-### Tests de integración
-
-```bash
-# Redirige un fichero .cmd como entrada estándar y genera el LOG
-make test_cmd CMD=game1.cmd
-```
-
-### Utilidades
-
-| Target | Descripción |
-|---|---|
-| `make doc` | Genera documentación Doxygen en `doc/` (requiere `Doxyfile`) |
+| `make run` | Ejecuta `./castle castle.dat` |
+| `make runv` | Lo mismo bajo Valgrind completo |
+| `make run_log` | Ejecuta con log en `otros/output.log` |
+| `make runv_log` | Valgrind + log |
+| `make play` | Menú interactivo: lista los `.dat` disponibles, permite elegir mapa y activar log |
+| `make playv` | Igual que `play` pero bajo Valgrind |
+| `make run_custom BD=anthill.dat` | Mapa personalizado por argumento |
+| `make test_cmd CMD=game1.cmd` | Alimenta un `.cmd` como stdin y vuelca el log |
+| `make doc` | Genera documentación Doxygen en `doc/` |
 | `make mandar` | Empaqueta el proyecto en `Game_mandar_RaVi.zip` para entrega |
-| `make mandar_rm` | Elimina el zip de entrega |
-| `make rm_log` | Elimina todos los ficheros `.log` |
-| `make Ingit` | Lanza el asistente de Git del equipo |
 
----
+### Ejecución directa
 
-## Comandos disponibles
-
-| Comando | Abreviatura | Descripción |
-|---|---|---|
-| `next` | `n` | Mover al **sur** |
-| `back` | `b` | Mover al **norte** |
-| `left` | `l` | Mover al **oeste** |
-| `right` | `r` | Mover al **este** |
-| `take <objeto>` | `t <objeto>` | Recoger un objeto de la sala actual |
-| `drop <objeto>` | `d <objeto>` | Soltar un objeto del inventario |
-| `attack <objetivo>` | `a <objetivo>` | Atacar a un personaje enemigo o a otro jugador |
-| `chat <personaje>` | `c <personaje>` | Hablar con un personaje amistoso |
-| `inspect <objetivo>` | `i <objetivo>` | Inspeccionar un objeto en la sala o en el inventario |
-| `exit` | `e` | Salir del juego |
-
----
-
-## Reglas de las acciones
-
-- **move (next/back/left/right):** el link en esa dirección debe existir y estar **abierto**. Al entrar en una sala por primera vez se marca como descubierta.
-- **take:** el objeto debe estar en la sala actual. El inventario admite múltiples objetos (hasta el límite configurado en el `.dat`).
-- **drop:** el jugador debe tener el objeto; se coloca en la sala actual.
-- **attack (NPC):** el personaje debe estar en la misma sala, ser **enemigo** (`friendly = FALSE`) y estar vivo. Se lanza un dado 0–9: valores 0–4 el enemigo gana (jugador −1 HP); valores 5–9 el jugador gana (enemigo −1 HP). Si la salud del jugador llega a 0, la partida termina.
-- **attack (PvP):** se puede atacar a otro jugador que esté en la misma sala. No se puede atacar a uno mismo.
-- **chat:** el personaje debe estar en la misma sala y ser **amistoso** (`friendly = TRUE`). El motor gráfico muestra su mensaje.
-- **inspect:** comprueba primero el inventario y después la sala actual; muestra la descripción del objeto.
-- **Links cerrados:** bloquean el movimiento en esa dirección; se informa al jugador.
-
----
-
-## Sistema multijugador por turnos
-
-El juego soporta varios jugadores cargados desde el fichero `.dat`. Cada turno pertenece a un jugador distinto, rotando en orden circular. La función `game_turn_update` avanza al siguiente jugador tras cada acción. El motor gráfico resalta al jugador activo con un color de borde distinto para cada jugador (hasta 6 colores: azul, verde, rojo, amarillo, morado, cian).
-
-Los personajes en la sala se etiquetan como `[ALLY]` o `[ENEMY]` en función de su atributo `friendly`.
-
----
-
-## Motor gráfico
-
-El motor gráfico renderiza el estado completo en cada turno mediante `libscreen`:
-
-```
-┌──────────────────────────────────────────────────────────────┐  ┌────────────────────┐
-│  [NORTE]          [ACTUAL]           [SUR]       [ESTE/OESTE] │  │ Descripción        │
-│  +-------+       +-------+       +-------+                    │  │ Objetos en sala    │
-│  |  ...  |       |  ...  |       |  ...  |                    │  │ Personajes         │
-│  +-------+       +-------+       +-------+                    │  │ Jugadores          │
-└──────────────────────────────────────────────────────────────┘  └────────────────────┘
-                   [ Turno: Jugador1 ]
-  next back left right take drop attack chat inspect exit
-  Resultado: OK
+```bash
+./castle castle.dat              # partida normal
+./castle castle.dat -l otros/output.log  # partida con log
+./castle anthill.dat             # mapa del hormiguero
 ```
 
-- Sólo se muestran `gdesc`, objetos y personajes de las salas **descubiertas**.
-- Las barras de salud son ASCII puro: `[###--] 3 !` (compatible con `libscreen`, sin Unicode).
-- Cada jugador tiene un color de borde distinto en la sala actual.
+---
+
+## Comandos disponibles en el juego
+
+| Comando | Abreviatura | Argumento | Descripción |
+|---|---|---|---|
+| `exit` | `e` | — | Termina la partida |
+| `move` | `m` | `north`/`south`/`east`/`west` | Mueve al jugador activo en la dirección indicada si el link está abierto |
+| `take` | `t` | `<nombre_objeto>` | Recoge un objeto de la sala y lo añade al inventario |
+| `drop` | `d` | `<nombre_objeto>` | Deposita un objeto del inventario en la sala actual |
+| `attack` | `a` | `<nombre_personaje_o_jugador>` | Ataca a un personaje enemigo o a otro jugador en la misma sala |
+| `chat` | `c` | `<nombre_personaje>` | Habla con un personaje amistoso en la misma sala |
+| `inspect` | `i` | `<nombre_objeto>` o `space` | Muestra la descripción de un objeto (inventario o sala) o de la sala actual |
+
+---
+
+## Mecánicas de juego
+
+### Movimiento
+El movimiento usa `Links`: se busca el link que une la sala actual con la sala destino en la dirección indicada. Si el link existe y `open_orig_to_dest == TRUE`, el movimiento se autoriza.
+
+### Combate (`attack`)
+Se lanza un dado 0–9:
+- **0–4** → el enemigo gana el intercambio: el jugador activo pierde 1 HP.
+- **5–9** → el jugador gana: el objetivo pierde 1 HP.
+
+Si la salud del jugador activo llega a 0, la partida termina. El PvP sigue las mismas reglas; el autoataque retorna `ERROR`.
+
+### Chat
+El personaje objetivo debe estar en la misma sala y ser `friendly = TRUE`. El motor gráfico muestra su mensaje en el panel de descripción.
+
+### Descubrimiento (F12)
+Las salas se marcan como descubiertas la primera vez que un jugador las visita. El motor gráfico oculta el `gdesc`, objetos y personajes de las salas no descubiertas.
+
+### Sistema multijugador por turnos
+`game_turn_update` avanza al siguiente jugador al final de cada acción, rotando en orden cíclico.
 
 ---
 
@@ -266,106 +204,84 @@ El motor gráfico renderiza el estado completo en cada turno mediante `libscreen
 ```
 #s:<id>|<nombre>|<gdesc1>|<gdesc2>|<gdesc3>
 #o:<id>|<nombre>|<space_id>
-#l:<id>|<nombre>|<origin_id>|<destiny_id>|<direction>|<open_orig_to_dest>|<open_dest_to_orig>
+#l:<id>|<nombre>|<origin_id>|<destiny_id>|<direction>|<open>
 #c:<id>|<nombre>|<space_id>|<health>|<friendly>|<message>
 #p:<id>|<nombre>|<space_id>|<health>
 ```
 
-- `<direction>`: `N`, `S`, `E` o `W`.
-- `<open_…>`: `1` (abierto) o `0` (cerrado).
-- El loader de links acepta también el formato **unidireccional** de 6 campos (compatibilidad con el enunciado base): en ese caso `open_dest_to_orig` toma el mismo valor que `open_orig_to_dest`.
+- `<direction>`: `N`, `S`, `E`, `W`
+- `<open>`: `1` (abierto) o `0` (cerrado)
+- Los links de 6 campos (formato unidireccional del enunciado) son compatibles; los de 7 campos añaden `<open_dest_to_orig>` para la extensión bidireccional.
 
 ---
 
 ## Tests unitarios
 
-El directorio `tests/` contiene tests unitarios para cada módulo principal.
+El directorio `tests/` contiene pruebas unitarias para todos los módulos.
 
 ```bash
-cd tests/
-
-# Compilar todos los tests
-make
-
-# Ejecutar un test concreto
-./set_test
-./player_test
-./game_test
+cd tests
+make            # compila todos los binarios de test
+make run_set    # ejecuta set_test
+make run_spc    # ejecuta space_test
+make run_ply    # ejecuta player_test
 # ... etc.
 
-# Ejecutar con Valgrind
-make vset
-make vply
-make vgam
+make vset       # set_test bajo Valgrind
+make vspc       # space_test bajo Valgrind
 # ... etc.
-
-# Limpiar
-make clean
 ```
-
-### Módulos con tests
-
-| Binario de test | Módulos cubiertos |
-|---|---|
-| `set_test` | `set` |
-| `entity_test` | `entity`, `set` |
-| `space_test` | `space`, `set` |
-| `player_test` | `player`, `entity`, `inventory`, `set` |
-| `character_test` | `character`, `entity` |
-| `game_test` | `game` completo |
-| `command_test` | `command` |
-| `links_test` | `links` |
-| `object_test` | `object` |
 
 ---
 
 ## Comprobación de memoria
 
 ```bash
-# Con el target de make
-make runv
-
-# Manualmente con todas las opciones
+make runv                        # Valgrind sobre castle.dat
+make playv                       # Valgrind con selección interactiva de mapa
 valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./castle castle.dat
 ```
 
-> **Estado actual:** 0 fugas y 0 errores confirmados con Valgrind en I3.
+Estado actual: **0 leaks, 0 errores** con todas las entidades cargadas desde `castle.dat`.
 
 ---
 
-## Documentación Doxygen
+## Ingit — Asistente para colaboradores
+
+El repositorio incluye `Ingit.sh`, un asistente interactivo en Bash pensado para simplificar el flujo de trabajo con Git en los **ordenadores compartidos de la uni**, donde las credenciales no persisten entre sesiones.
+
+### Primer uso
 
 ```bash
-make doc
-# La documentación HTML se genera en doc/
-```
-
-Todos los módulos están documentados con Doxygen (`@brief`, `@param`, `@return`, `@author`, `@version`, `@date`).
-
----
-
-## Herramienta Ingit
-
-`Ingit.sh` es el asistente de Git del equipo. Automatiza las operaciones habituales (login, push con rebase, gestión de conflictos) y mantiene estadísticas de uso en `otros/memoria_ingit.txt`.
-
-```bash
-make Ingit
-# o directamente:
+chmod +x Ingit.sh   # solo la primera vez
 ./Ingit.sh
 ```
 
-> ⚠️ No es necesario conocer los comandos de Git para usarla. Ingit guía el proceso paso a paso.
+La primera vez Ingit pide tu nombre y tu username de GitHub y los guarda en `otros/memoria_ingit.txt`.
+
+### Operaciones disponibles
+
+- **Pull** — actualiza la rama actual desde `origin`.
+- **Push** — sube los cambios con mensaje de commit personalizado.
+- **Status** — muestra el estado del repositorio.
+- **Log** — muestra el historial de commits.
+- **Checkout** — cambia de rama o crea una nueva.
+- **Merge** — fusiona una rama en la actual.
+- **Reset** — deshace el último commit (soft o hard).
 
 ---
 
 ## Notas de diseño
 
-- **`entity`** proporciona la base común (id + nombre) para `Player`, `Object` y `Character`, eliminando duplicación de código.
-- **`Set` e `Inventory`** desacoplan la gestión de colecciones del resto de módulos; `space` los usa internamente para sus listas de objetos y personajes.
-- **Links bidireccionales** separan la topología del mapa de los propios espacios y permiten pasillos con distintos estados de apertura según la dirección de tránsito.
-- **`graphic_engine`** está deliberadamente desacoplado del estado del juego (`game`) para mantener la separación de responsabilidades (MVC-like).
-- **`libscreen`** no admite códigos de escape ANSI dentro de `screen_area_puts` ni caracteres Unicode multibyte; todo el color se gestiona mediante `screen_paint(Frame_color)` y sólo se usan caracteres ASCII de un byte.
+- El módulo `entity` proporciona una base común (id + nombre) para `Player`, `Object` y `Character`, reduciendo la duplicación de código.
+- `Set` e `Inventory` desacoplan la gestión de colecciones del resto de módulos; `Inventory` añade la capa de límite de capacidad sobre `Set`.
+- Los **Links** separan la topología del mapa de los propios espacios, permitiendo puertas con estado abierto/cerrado **independiente por dirección** (extensión bidireccional consciente sobre el enunciado).
+- El motor gráfico (`graphic_engine`) está deliberadamente desacoplado del estado del juego (`game`) para mantener la separación de responsabilidades.
+- `calloc` en lugar de `malloc` para arrays de punteros y contadores, garantizando que todos los campos queden a cero desde la creación.
+- `libscreen` solo admite caracteres ASCII de un byte: ningún carácter multibyte (Unicode) debe usarse en `gdesc` ni en los buffers de pantalla.
 
 ---
 
-*PPROG — Programación — Grado en Ingeniería Informática, UAM — Curso 2025/2026*
+**Autores:** Violeta & Rafael & Salva & Javier
+**Asignatura:** Programación (PPROG) — Grado en Ingeniería Informática, UAM
+**Licencia:** GNU Public License
