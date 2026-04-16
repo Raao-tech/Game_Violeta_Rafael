@@ -2,9 +2,9 @@
  * @brief It implements the create struct
  *
  * @file character.c
- * @author Violeta y Rafael
- * @version 0
- * @date 04-02-2025
+ * @author Violeta, Rafael y Salvador
+ * @version 3
+ * @date 16-04-2025
  * @copyright GNU Public License
  */
 
@@ -21,6 +21,7 @@
 struct _Character{
   Entity *e_character;    /*<! It stores the entity*/
   Bool friendly;          /*<! It stores hether the character is friendly or not*/
+  Id following;           /*<! It stores the id of the character that this character is following*/
 };
 
 /* create or destroy */
@@ -38,6 +39,7 @@ Character *character_create(){
   };
 
   newCharacter->friendly = TRUE;
+  newCharacter->following = NO_ID;
 
   return newCharacter;
 }
@@ -144,8 +146,19 @@ Bool character_get_friendly(Character *character){
   return character->friendly;
 }
 
+/* following */
+Status character_set_following(Character *character, Id id_following)
+{
+  if(!character) return ERROR;
+  character->following=id_following;
+  return OK;
+}
 
-
+Id character_get_following(Character *character)
+{
+  if(!character) return NO_ID;
+  return character->following;
+}
 
 /* ================ PRINT ============================ */
 
@@ -167,6 +180,7 @@ Status character_print(Character *character){
   fprintf(stdout, "|| HEALTH:   %d\n", character_get_health(character));
   fprintf(stdout, "|| FRIENDLY: %s\n", character_get_friendly(character) == TRUE ? "YES" : "NO");
   fprintf(stdout, "|| MESSAGE:  %s\n", message ? message : "N/A");
+   fprintf(stdout, "|| FOLLOWING:  %ld\n", character_get_following(character)!=NO_ID ? character_get_following(character) : "N/A");
   fprintf(stdout, "-----------------\n");
 
   if(name) free(name);
