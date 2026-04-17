@@ -1,4 +1,4 @@
 Aperturas	1
 Ultimo_name	salva
-Ultimo_user	Ao6400
-ultima_fecha	15	19	10	04	2026
+Ultimo_user	Raao-tech
+ultima_fecha	13	28	17	04	2026
