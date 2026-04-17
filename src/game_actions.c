@@ -9,12 +9,14 @@
  */
 
 #include "game_actions.h"
+#include "raylib.h" /*esto es una prueba*/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <time.h>
+
 
 /**
  * Private function prototypes.
@@ -41,8 +43,15 @@ static Direction ge_parse_direction(const char *str);
 /* ========================================================================= */
 /*                          PUBLIC: DISPATCHER                               */
 /* ========================================================================= */
-
-Status game_actions_update(Game *game, Command *command) {
+/*
+* La idea seria que ahora no solo seactivaran las caciones ,por medio del teclado. esto se mantendrá, pero
+* el comando central tiene que ser el input del usario por medio del teclado,  player 1 y 2 pueden mverse 
+* gracias a "wasd" o a las flechas "Up, Down, Right, Left" y tendrànm posibildiad de hacer otras cosas con otras "KEYs" 
+* del teclado. Tal vez lo del Keyboards no es el tipo de dato, eso se pued equitar, era para no olvidar que ese cambio se tienme que hacer
+*  Pero ta,mbien hay que mantender ewl command porque las pruebas automatixadas se hacen atraves de texto, asi que eso se debe de jdjar
+* para los logs, luego veré como hago coo 
+*/
+Status game_actions_update(Game *game, Command *command, KeyboardKey KEY_O) {
   CommandCode cmd;
 
   if (!game || !command) return ERROR;
