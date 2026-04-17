@@ -1,90 +1,215 @@
 #######################################
-#  The Haunted Castle — Makefile I3
+#  Atlantic Quest — Makefile I4
 #  Violeta, Rafael, Salvador & Javier
 #######################################
 
-# =============== TOOLCHAIN ===============
-CC       = gcc
-FLAGS    = -g -Wall -O0 -Wextra -I ./headers -Wpedantic
-DFLAGS   = $(FLAGS) -DDEBUG
-PREFLAG  = valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s
+#Hola!, Esto es una pequeña explicación para que todos los colaboradores puedan entender la estructura del makefile
+# Todo lo que está presente en el makefile, cumple con un estandar dado por GNU Make / GCC 
+# Pueden echarle un vistazo al manual en https://www.gnu.org/software/make/manual/make.html
+#
+#
+#	Antes de empezar, tengan presente el siguiente esquema durante toda la lectura:
+#	Proceso de compilación (¿Qué ocurre en el momento en que gcc se activa?):
+#
+#			(PREPROCESADO)			 (PROCESP/COMPILACIÓN  Y ENSAMBLADO (*.o))							(LINKEADO)		
+#		headers (*.h) + files (*.c) --->  Todo .c es compilado y ensamblado en su respectivo .o -->  *.o se fusiona en un Ejecutable == ./atlantic_quest
+#
+# Estructura:
+#	TOOLCHAIN: Todas las flags que usamos en nuestra compilación
+#		CC			--> Compilador 
+#			Acá definimos si usamos gcc / cc o cualquier otro compilador, como estamos en linux y Windows es un virus (Se respetan todas las erradas opiniones posibles)
+#			no hablamos de MinGW o MSYS2, pero se podría crear una versión de este Makefile con el fin de integrar más OS.
+#		CPPFLAGS	--> Preprocesado (flags)
+#			Según el manual de GNU Make/gcc, esta constante es el hogar de toda flag relacioanda con el preprocesado del compilador C,
+#			para asegurarme de estar hablando el mismo idioma, les recuerdo que el preprocesado es esa parte de la compilación, en el que 
+#			los #includes "..." o #include <...> son fusionados en un sólo archivo, en otras palabras, todas las cabeceras (*.h) llaman a sus *.c 
+#			y los van "INCLUYENDO o definiendo" en su respectivo .c, luego los compila y crea un .o por cada .c compilado.
+#		CFLAGS		--> Procesado (flags)
+#			Ya con nuestros .h incluídos en sus .c, el compilador gcc/cc comenzará a leer, el objetico es ir crear los Objects (.o) de cada .c,
+#			esto implica una traducción del código en C pasado a otro lenguaje llamado Assembler, y éste a su vez pasa directo al binario.
+#			Dado el trabajo que tiene, es más razonable buscar errores de código antes de hacer la traducción, y ahí es donden entran nuestras flags,
+#			permitiendo  especificar que tan quisquilloso debe de ser, las flags deben de estar orientadas a la depuración, optimizacion, Alertas de 
+#			de la sintaxis y posibles errores, más no la inclusion de archivos, pues eso ya está en la anterior constante :
+#			|			-Wall (Warn All) : nos chiva Errores y odiosos Warnings, sin embargo no los activa todos (no confién tanto)
+#			|			-Wextra (Warn Extras) : Es una ayuda para Wall, se encarga de advertir cosas como comparaciones entre datos 
+#			|				con y sin signo o parámetros en funciones que no están siendo usadas
+#			|			-Wpedantic : Fuerxa al compilador a seguir el estándar de C o C++ de la ISO, evita que se use "extensiones" 
+#			|				o artilugios que normalmente aceptaria GCC pero tal vez otro compilador no, lo que nos obliga a escribir un código portátil
+#			|			-O0 (Optimización 0) : Esta flag asegura que el compilador no modificará tu código para optimizarlo, sino que permitirá  
+#			|			apreciar vuestras "metidas de pata" en tiempo real mientras que se ejecuta cualquier programa de debugueado.  
+#			|			-g (Debug) : Es la flag que se benefica de la nula optimización, está le dice al compilador gcc que deje "comentarios" en el archivo .o para 
+#			|			que herramientas como GDB o Valgrind puedan identificar la línea exacta en donde esta la razón de vuestras pesadillas.
+#			|____________________________________________________________________________________________________________________________________________________________>>>>
+#		LDFLAGS		--> Opciones del Linkeado  (flags)
+#			Se supone, según el manual, que es en ésta constante de makefile que le decimos al compilador cómo debería "linkear" todos los .o del proyecto,
+#			en un contexto normal, acá le diríamos algo del estilo: "Vete a tal directorio y espera a que te diga que lirebrias linkearas con estos .o",
+#			para ello escribiríamos algo como -L./directorio. Bien, la razón por la cual esta vacío, es porque no quería confiar en que cada sistema buscaría
+#			la librería estática correcta, por lo que decidí que LDLIBS tenga cada y una de las rutas de nustras librerías (libscreen.a, libraylib.a, etc)	
+#			por lo que LDFLAGS queda vacío, y esto es así sólo por respetar el estándar, pero podríamos quitarlo y todo compilaría tan fácil como lo hace el agua 
+#			agua por un río.  	
+#		PREFLAGS		--> Opciones debugueado (flags)
+#			En esta constante se llama a la herramienta que nos permitirá debuguear todo nuestro programa, en este caso es el fmaoso Valgrind, dejo un pequeño
+#			resumen de que hace cada flag de Valgrind:
+#			|		--leak-check=full: Le pide a Valgrind que te dé el detalle completo de cada bloque de memoria que no liberaste (usando free), diciéndote dónde se reservó originalmente.
+#			|		--show-leak-kinds=all: Muestra todos los tipos de fugas: las que "definitivamente se perdieron", las que son "indirectamente inalcanzables" y las que "posiblemente se perdieron". No deja nada oculto.
+#			|		--track-origins=yes: Esta es vital. Si usas una variable sin haberle dado un valor inicial (memoria no inicializada), Valgrind te dirá exactamente dónde se creó esa variable. Es perfecta para rastrear errores de tipo "Conditional jump depends on uninitialised value".
+#			|		-s (Summary): Al final de la ejecución, muestra un resumen detallado de todos los errores y listas de fugas encontrados.
+#			|_______________________________________________________________________________________________________________________________________________________________>>>>>>>>
+#			Esta constante es usada para debugueado, así que, si la queires usar, activa make runv, playv o runv_log.
+#
+#	DIRECTORIES: Acá tenemos definido el nombre de todos los directorios que usamos en este proyecto.
+#		SRC_DIR  = src  		--> ubicación de todos nuestros .*c
+#		HDR_DIR  = headers  	--> ubicación de todos nuestros .*h
+#		OBJ_DIR  = obj  		--> ubicación de todos nuestros .*o
+#		LIB_DIR  = lib			--> ubicación de nuestras librerías estáticas *.a
+#		DOC_DIR  = doc			--> ubicación de lo que sea que haga Doxygien (cosas raras)
+#		LOG_DIR  = otros		--> ubicación de documentos no relacionados con  el funcionamiento del juego
+#
+#	FILES: Acá tenemos el nombre de los archivos con ciertas reglas que ya explicaré: 
+#
+#		SRCS     = $(wildcard $(SRC_DIR)/*.c)
+#					Esta constante lo que tenrá será todos los nombres de los .c en el directorio src/
+#
+#		OBJS     = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS)) 
+#					Esta constante lo que tiene es que relaciona el nombre  de todos los .c (%.c) que haya en el directorio src/
+#					luego, los guardan sustituyendo el ".c" por un ".o". La estructura de la función usada es:
+#					patsubst ( patrón, Nuevo patrón, los archvios donde buscara el patron)
+#
+#		TARGET   = atlantic_quest
+#					Nombre del ejecutable
+#
+#		LOG_FILE ?= $(LOG_DIR)/output.log
+#					Dirección del archivo de logs por defecto. Lo puedes probar ejecutando make run_log runv_log playv play test_cmd etc 
+#					
+#	DATA FILES: Acá tenemos los archivos donde se guardará y/o leerá información necesaria para el jeugo (GameLoad, *.dat, .cmd. etc)
+#		BD       --> Es el archivo que leera game_reader.c, ahḉi estará definido todo lo relacioando con los espacios, players, objects, numens, etc
+#		CMD		 --> Acá estarán los comandos que se usarán en las pruebas automatizadas de integración.
+#
+#
+#==============================================| RayLib es una librería usada en la creación  de videojuegos, usa otras librerías que le permiten gestionar
+#											   | gráficos (OpenGL), inputs (X11), texturas, texto, sombras, audio, etc.  Dada su versatilidad, se requeire tener 
+#											   | ciertas dependencias para que raylib nos sirva. Les invito a chequear su arquitectura, la convención que usa y en general, 
+#	RECURSOS PARA EL CORRECTO USO DE RAYLIB	   | trastear antes de codear:  
+#											   | Arquitectura: https://github.com/raysan5/raylib/wiki/raylib-architecture
+#											   | Web Page: https://github.com/raysan5
+#==============================================|
+# LOCAL STATIC LIBRARIES
+#	LIBSCREEN_A  >>>> Guarda la libería que hemos usado durante las anteriores iteraciones
+#	RAYLIB_A	 >>>> Guardar la ubicación de la librería estatica (.a) que usaremos para la definición de raylib
+#
+# POSIBLES DEPENDECIAS PARA LINUX
+#	No siempre las dependencias que usa raylib están en nuestros computadores, lo cual es raro pues son dependencias
+#	muy usadas en la industria (OpenGL, X11, etc), pero puede ocurrir que aunque estén instaldas, se tenga discrepancia en el 
+#	nombre, este es el problema con el que me tope en los ordenadores de la uni;  al parecer el nombre de ciertas librerías dinámicas,
+#	(identificadas por su temrinación ".so") tienen incluído por alguna razón que desconozco un "*.so.1" o .2 o lo algo que no coincide con
+#	el patrón exacto que busca el compialdor cuando se le manda a linkear con -name_of_genericLib, devolviendo error.  Para evitar esos problemas
+#	he definido la ruta exacta en la que se encuentra cada librería, veamos cuales son para que son usadas por raylib: 
+#
+#		GL_LIB     ̣---> librería de OpenGL: Es una librería o API de renderizado gráfico 2D y 3D, muchos juegos como Minecraft (versión java) u Angry Birds (para Pc s) lo usarón
+#		X11_LIB    ---> librería X11: Es la librería que usa Ubuntu para gestionar la creación de su interfaz gráfica.  (abrir ventanas, detectar clicks del ratón o teclado, lo irémos viendo en raylib)
+#		DL_LIB     ---> librería Dynamic Linker Library: es un a lirebria que permite llamar cargar librerias dinamicas (.so) en tiempo de ejecución, se suelen usar en proyectos grandes como este para reducir el tiempo de compilación
+#		RT_LIB     ---> librería Real-time Extensions: basicamente nos trae una precisiónm absurda del tiempo, lo que nos permite hacer animaciones fluidas a 60 fps
+#		M_LIB      ---> librería Math Library: Esta librería la hemos usado con anterioridad, trae funciones matemáticas para poder calcular potencias, raíces cuadradas, y otros artilugios
+#						matemáticos que pdormeos uar para cañlcular el moódulo del vector "distancia enemigo", área de efecto de las habildiades, etc. 
+#
+#
+#		                    --------------------------------------------------------------
+#		
+#		LDLIBS ------> ÉSTE SERÁ LA CONMSTANTE USADA EN ORDENADORES DE LA UNI PARA COMPILAR NUESTRO CÓDIGO
+#		
+#		RAYLIB_SYS_LIBS  Esta constante guarda todas las librerías, pero hay una flag especial que usa, a la cual me gustaría dedicarle un pequeño inciso:
+#				-pthread   ---> Esta flag le dice al compilador que pueda ejecutar múltiples cosas en paralelo.  El audio, debe sonar mientras que la imágen se mueve.
+#				
+#		                    --------------------------------------------------------------
+#
+#		
+## =============== TOOLCHAIN ===============
+CC       	= gcc 	#Compilador
+CPPFLAGS	= -I ./headers -DDEBUG #Preprocesado
+CFLAGS  	= -g -Wall -O0 -Wextra  -Wpedantic  #flags para Warnings, Debug, optimizacion en general
+LDFLAGS   	=  
+PREFLAG  	= valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s
+
 
 # =============== DIRECTORIES ===============
 SRC_DIR  = src
 HDR_DIR  = headers
 OBJ_DIR  = obj
+LIB_DIR  = lib
 DOC_DIR  = doc
-DOC_OTR  = otros
+LOG_DIR  = otros
 
 # =============== FILES ===============
-SRCS     = $(wildcard $(SRC_DIR)/*.c)
-OBJS     = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
-TARGET   = castle
+SRCS     = $(wildcard $(SRC_DIR)/*.c)	#compilamos todo lo que tenga .c en SRC_DIR
+OBJS     = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS)) #patsubst ( patrón, Nuevo patrón, los archvios donde buscara el patron)
+TARGET   = atlantic_quest
+LOG_FILE ?= $(LOG_DIR)/output.log
 
 # =============== DATA FILES ===============
-BD       = castle.dat
-LOG_FILE = otros/output.log
+BD       ?= atlantic_quest.dat
+CMD		 ?= game1.cmd
 
-# =============== LIBRARIES ===============
-LIBS     = -L./lib -lscreen
+# =============== LOCAL STATIC LIBRARIES ===============
+LIBSCREEN_A = $(LIB_DIR)/libscreen.a
+RAYLIB_A	= $(LIB_DIR)/libraylib.a
+
+# =============== POSIBLES DEPENDECIAS PARA LINUX ======
+GL_LIB      = /usr/lib/x86_64-linux-gnu/libGL.so.1
+X11_LIB     = /usr/lib/x86_64-linux-gnu/libX11.so
+DL_LIB      = /usr/lib/x86_64-linux-gnu/libdl.so.2
+RT_LIB      = /usr/lib/x86_64-linux-gnu/librt.so.1
+M_LIB       = /usr/lib/x86_64-linux-gnu/libm.so
+
+#Solo debe ser usado en casos de no tener las dependencias en otras ubicaciones no usuales
+RAYLIB_SYS_LIBS = $(GL_LIB) $(X11_LIB) $(DL_LIB) $(RT_LIB) $(M_LIB) -pthread
+
+#Cuando raylib y sus dependencias existe (*.so o *.a) (más usual)
+LDLIBS = $(LIBSCREEN_A) $(RAYLIB_A) $(RAYLIB_SYS_LIBS)
 
 #######################################
 #            BUILD TARGETS
 #######################################
 
-all: $(OBJ_DIR) $(TARGET)
+all: $(TARGET)
 
-# Create obj/ directory if it doesn't exist
 $(OBJ_DIR):
 	@mkdir -p $(OBJ_DIR)
 
-# Link all objects into the executable
-$(TARGET): $(OBJS)
-	$(CC) $(DFLAGS) $^ $(LIBS) -o $@
+$(LOG_DIR):
+	@mkdir -p $(LOG_DIR)
 
-# Pattern rule: compile each .c from src/ into obj/
+$(TARGET): $(OBJ_DIR) $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS) $(LDLIBS) -o $@
+
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) -c $(DFLAGS) $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 #######################################
 #           RUN TARGETS
 #######################################
 
-# --- Simple run (default .dat) ---
 run: $(TARGET)
 	./$(TARGET) $(BD)
 
-# --- Run with Valgrind ---
 runv: $(TARGET)
 	$(PREFLAG) ./$(TARGET) $(BD)
 
-# --- Run with LOG (F14) ---
-#   Usage:  make run_log
-#   Produces output.log with all commands and results
-run_log: $(TARGET)
+run_log: $(TARGET) $(LOG_DIR)
 	./$(TARGET) $(BD) -l $(LOG_FILE)
 
-# --- Run with LOG + Valgrind ---
-runv_log: $(TARGET)
+runv_log: $(TARGET) $(LOG_DIR)
 	$(PREFLAG) ./$(TARGET) $(BD) -l $(LOG_FILE)
 
-# --- Run with custom .dat via argument ---
-#   Usage:  make run_custom BD=anthill.dat
 run_custom: $(TARGET)
 	./$(TARGET) $(BD)
 
-# --- Run with custom .dat + LOG ---
-#   Usage:  make run_custom_log BD=anthill.dat LOG_FILE=anthill.log
-run_custom_log: $(TARGET)
+run_custom_log: $(TARGET) $(LOG_DIR)
 	./$(TARGET) $(BD) -l $(LOG_FILE)
 
-# --- Interactive: ask the user which .dat to use ---
-#   Usage:  make play
-#   Shows available .dat files and lets the user pick one
-play: $(TARGET)
+play: $(TARGET) $(LOG_DIR)
 	@echo ""
 	@echo "======================================"
-	@echo "   The Haunted Castle — Select Map"
+	@echo "   Atlantic Quest — Select Map"
 	@echo "======================================"
 	@echo ""
 	@echo "Available data files:"
@@ -111,18 +236,17 @@ play: $(TARGET)
 	if [ "$$logyn" = "y" ] || [ "$$logyn" = "Y" ]; then \
 		read -p "Log filename [output.log]: " logname; \
 		logname=$${logname:-output.log}; \
-		echo "Running: ./$(TARGET) $$file -l ./logs/$$logname"; \
-		./$(TARGET) "$$file" -l "./logs/$$logname"; \
+		echo "Running: ./$(TARGET) $$file -l $(LOG_DIR)/$$logname"; \
+		./$(TARGET) "$$file" -l "$(LOG_DIR)/$$logname"; \
 	else \
 		echo "Running: ./$(TARGET) $$file"; \
 		./$(TARGET) "$$file"; \
 	fi
 
-# --- Interactive with Valgrind ---
-playv: $(TARGET)
+playv: $(TARGET) $(LOG_DIR)
 	@echo ""
 	@echo "======================================"
-	@echo "   The Haunted Castle — Select Map"
+	@echo "   Atlantic Quest — Select Map"
 	@echo "======================================"
 	@echo ""
 	@echo "Available data files:"
@@ -149,8 +273,8 @@ playv: $(TARGET)
 	if [ "$$logyn" = "y" ] || [ "$$logyn" = "Y" ]; then \
 		read -p "Log filename [output.log]: " logname; \
 		logname=$${logname:-output.log}; \
-		echo "Running with Valgrind: ./$(TARGET) $$file -l ./logs/$$logname"; \
-		$(PREFLAG) ./$(TARGET) "$$file" -l "./logs/$$logname"; \
+		echo "Running with Valgrind: ./$(TARGET) $$file -l $(LOG_DIR)/$$logname"; \
+		$(PREFLAG) ./$(TARGET) "$$file" -l "$(LOG_DIR)/$$logname"; \
 	else \
 		echo "Running with Valgrind: ./$(TARGET) $$file"; \
 		$(PREFLAG) ./$(TARGET) "$$file"; \
@@ -160,10 +284,7 @@ playv: $(TARGET)
 #         INTEGRATION TESTS (P2)
 #######################################
 
-# Run a .cmd file as input and produce a LOG
-#   Usage:  make test_cmd CMD=game1.cmd
-CMD      = game1.cmd
-test_cmd: $(TARGET)
+test_cmd: $(TARGET) $(LOG_DIR)
 	@if [ ! -f "$(CMD)" ]; then \
 		echo "Error: file '$(CMD)' not found."; exit 1; \
 	fi
@@ -176,8 +297,6 @@ test_cmd: $(TARGET)
 #          DOCUMENTATION (C3)
 #######################################
 
-# Generate Doxygen documentation
-#   Requires: doxygen installed, Doxyfile in project root
 doc:
 	@mkdir -p $(DOC_DIR)
 	@if [ -f Doxyfile ]; then \
@@ -191,13 +310,9 @@ doc:
 #             UTILITIES
 #######################################
 
-# Ingit assistant 
-#She is your greatest friend (enemy if you provoke her),she is supposed  
-#to be our ally, but if misused she will be our worst nightmare
 Ingit: Ingit.sh
 	./Ingit.sh
 
-# Package for submission
 mandar: clean
 	zip -r Game_mandar_RaVi.zip ./
 	@echo "Packaged into Game_mandar_RaVi.zip"
@@ -205,22 +320,5 @@ mandar: clean
 mandar_rm:
 	rm -f Game_mandar_RaVi.zip
 
-# Remove log files
 rm_log:
-	rm -f *.log
-
-#######################################
-#             CLEANUP
-#######################################
-
-clean:
-	rm -f $(OBJ_DIR)/*.o $(TARGET) *.gch *.log
-	rm -f $(SRC_DIR)/*.o
-	rm -f Game_mandar_RaVi.zip
-
-clean_all: clean
-	rm -rf $(OBJ_DIR) $(DOC_DIR)
-
-.PHONY: all run runv run_log runv_log run_custom run_custom_log \
-        play playv test_cmd doc Ingit mandar mandar_rm rm_log \
-        clean clean_all
+	rm -f $(LOG_DIR)/*.log *.log

@@ -14,6 +14,7 @@
 #include <time.h>
 
 #include "command.h"
+#include "raylib.h"
 #include "game.h"
 #include "game_reader.h"
 #include "game_actions.h"
