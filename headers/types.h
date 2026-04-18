@@ -48,7 +48,9 @@ typedef enum
     ERROR_take,
     ERROR_drop,
     FULL_OF_LOVE,
-    ERROR_inspect
+    ERROR_inspect,
+    ERROR_use,
+    ERROR_open
 } Status;
 
 typedef enum

@@ -363,6 +363,29 @@ Id game_get_player_location(Game *game, Id player_id);
  */
 int game_get_turn(Game *game);
 
+/* ========================================================================= */
+/*                         SEARCH: LINKS                                     */
+/* ========================================================================= */
+
+/**
+ * @brief It finds a link by its id
+ * @author Salvador
+ *
+ * @param game a pointer to the game
+ * @param id the id of the link to find
+ * @return pointer to the link, or NULL if not found
+ */
+Links *game_get_link_by_id(Game *game, Id id);
+
+/**
+ * @brief It finds a link by its name
+ * @author Salvador
+ *
+ * @param game a pointer to the game
+ * @param name the name of the link to find
+ * @return pointer to the link, or NULL if not found
+ */
+Links *game_get_link_by_name(Game *game, char *name);
 
 /* ========================================================================= */
 /*                     ACCESS BY INDEX (for iteration)                       */

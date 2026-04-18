@@ -343,6 +343,27 @@ Id game_get_player_location(Game *game, Id player_id) {
   return NO_ID;
 }
 
+/* ========================================================================= */
+/*                         SEARCH: LINKS                                     */
+/* ========================================================================= */
+Links *game_get_link_by_id(Game *game, Id id) {
+  int i;
+  if (!game || id == NO_ID) return NULL;
+  for (i = 0; i < game->n_links; i++) {
+    if (link_get_id(game->links[i]) == id)
+      return game->links[i];
+  }
+  return NULL;
+}
+Links *game_get_link_by_name(Game *game, char *name) {
+  int i;
+  if (!game || !name) return NULL;
+  for (i = 0; i < game->n_links; i++) {
+    if (link_has_name(game->links[i], name) == TRUE)
+      return game->links[i];
+  }
+  return NULL;
+}
 
 /* ========================================================================= */
 /*                     ACCESS BY INDEX (for iteration)                       */

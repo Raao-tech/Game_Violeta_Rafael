@@ -26,7 +26,9 @@ char *cmd_to_str[N_CMD][N_CMDT] = {
   {"d", "Drop"},
   {"a", "Attack"},
   {"c", "Chat"},
-  {"i","Inspect"}
+  {"i","Inspect"},
+  {"u","Use"},
+  {"o","Open"}
 };
 
 struct _Command {
@@ -94,7 +96,7 @@ Status command_get_user_input(Command *command){
       else  i++;
     }
 
-    /* Second token: the object/target name (for take, drop, attack, chat, inspect) */
+    /* Second token: the object/target name (for take, drop, attack, chat, inspect, use) */
     token = strtok(NULL, " \n");
     if (token)  command->obj = strdup(token);
     return command_set_code(command, cmd);
