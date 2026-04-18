@@ -48,7 +48,10 @@ Object *obj_create() {
   newObj->id = NO_ID;
   newObj->name[0] = '\0';
   newObj->description[0] = '\0';  /* FIX: initialize description too */
-
+  newObj->health = 0;
+  newObj->movable = FALSE;
+  newObj->open = NO_ID;
+  newObj->dependency = NO_ID;
   return newObj;
 }
 
