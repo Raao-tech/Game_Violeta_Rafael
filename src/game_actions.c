@@ -9,12 +9,13 @@
  */
 
 #include "game_actions.h"
-
+#include "raylib.h" /*esto es una prueba*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <time.h>
+
 
 /**
  * Private function prototypes.
@@ -29,6 +30,7 @@ static void game_actions_attack(Game *game);
 static void game_actions_chat(Game *game);
 static void game_actions_inspect(Game *game);
 static void game_actions_use(Game *game);
+static void game_actions_open(Game *game);
 
 /**
  * @brief Converts a direction string to a Direction enum value
@@ -38,98 +40,139 @@ static void game_actions_use(Game *game);
  */
 static Direction ge_parse_direction(const char *str);
 
-
 /* ========================================================================= */
 /*                          PUBLIC: DISPATCHER                               */
 /* ========================================================================= */
 
-Status game_actions_update(Game *game, Command *command) {
+/*
+* La idea seria que ahora no solo seactivaran las caciones ,por medio del teclado. esto se mantendrá, pero
+* el comando central tiene que ser el input del usario por medio del teclado,  player 1 y 2 pueden mverse 
+* gracias a "wasd" o a las flechas "Up, Down, Right, Left" y tendrànm posibildiad de hacer otras cosas con otras "KEYs" 
+* del teclado. Tal vez lo del Keyboards no es el tipo de dato, eso se pued equitar, era para no olvidar que ese cambio se tienme que hacer
+*  Pero ta,mbien hay que mantender ewl command porque las pruebas automatixadas se hacen atraves de texto, asi que eso se debe de jdjar
+* para los logs, luego veré como hago coo 
+*/
+Status game_actions_update(Game *game, Command *command, KeyboardKey KEY_O)
+{
   CommandCode cmd;
 
-  if (!game || !command) return ERROR;
-  if (game_set_last_command(game, command) == ERROR) return ERROR;
+  if (!game || !command)
+    return ERROR;
+  if (game_set_last_command(game, command) == ERROR)
+    return ERROR;
 
   cmd = command_get_code(command);
 
-  switch (cmd) {
-    case UNKNOWN: game_actions_unknown(game); break;
-    case EXIT:    game_actions_exit(game);    break;
-    case MOVE:    game_actions_move(game);    break;
-    case TAKE:    game_actions_take(game);    break;
-    case DROP:    game_actions_drop(game);    break;
-    case ATTACK:  game_actions_attack(game);  break;
-    case CHAT:    game_actions_chat(game);    break;
-    case INSPECT: game_actions_inspect(game); break;
-    case USE:     game_actions_use(game);     break;
-    default:      break;
+  switch (cmd)
+  {
+  case UNKNOWN:
+    game_actions_unknown(game);
+    break;
+  case EXIT:
+    game_actions_exit(game);
+    break;
+  case MOVE:
+    game_actions_move(game);
+    break;
+  case TAKE:
+    game_actions_take(game);
+    break;
+  case DROP:
+    game_actions_drop(game);
+    break;
+  case ATTACK:
+    game_actions_attack(game);
+    break;
+  case CHAT:
+    game_actions_chat(game);
+    break;
+  case INSPECT:
+    game_actions_inspect(game);
+    break;
+  case USE:
+    game_actions_use(game);
+    break;
+  case OPEN:
+    game_actions_open(game);
+    break;
+  default:
+    break;
   }
 
   return OK;
 }
-
 
 /* ========================================================================= */
 /*                       PRIVATE: ACTION HANDLERS                            */
 /* ========================================================================= */
 
 /* ---- UNKNOWN ---- */
-static void game_actions_unknown(Game *game) {
-  if (!game) return;
+static void game_actions_unknown(Game *game)
+{
+  if (!game)
+    return;
   game_set_last_cmd_status(game, ERROR);
 }
 
 /* ---- EXIT ---- */
-static void game_actions_exit(Game *game) {
-  if (!game) return;
+static void game_actions_exit(Game *game)
+{
+  if (!game)
+    return;
   game_set_last_cmd_status(game, OK);
 }
-
 
 /* ========================================================================= */
 /*                    MOVE (F8): move <direction>                             */
 /* ========================================================================= */
 
+static void game_actions_move(Game *game)
+{
+  Player *player = NULL;
+  Space *dest_sp = NULL;
+  char *dir_str = NULL;
+  Direction dir;
+  Id origin, dest;
 
-static void game_actions_move(Game *game) {
-  Player    *player  = NULL;
-  Space     *dest_sp = NULL;
-  char      *dir_str = NULL;
-  Direction  dir;
-  Id         origin, dest;
-
-  if (!game) return;
-
+  if (!game)
+    return;
   player = game_get_player_by_turn(game);
-  if (!player) {
+  if (!player)
+  {
     game_set_last_cmd_status(game, ERROR_dir);
     return;
   }
 
   origin = player_get_location(player);
-  if (origin == NO_ID) {
+  if (origin == NO_ID)
+  {
     game_set_last_cmd_status(game, ERROR_dir);
     return;
   }
 
   dir_str = command_get_obj(game_get_last_command(game));
-  if (!dir_str) {
+  if (!dir_str)
+  {
     game_set_last_cmd_status(game, ERROR_dir);
     return;
   }
 
   dir = ge_parse_direction(dir_str);
-  if (dir == U) {
+  if (dir == U)
+  {
     game_set_last_cmd_status(game, ERROR_dir);
     return;
   }
 
   dest = game_get_connection(game, origin, dir);
-  if (dest == NO_ID) {
+  if (dest == NO_ID)
+  {
     game_set_last_cmd_status(game, ERROR_dir);
     return;
   }
 
-  if (game_connection_is_open(game, origin, dir) == FALSE) {
+  if (game_connection_is_open(game, origin, dir) == FALSE)
+  {
     game_set_last_cmd_status(game, ERROR_dir);
     return;
   }
@@ -137,59 +180,83 @@ static void game_actions_move(Game *game) {
   player_set_location(player, dest);
 
   dest_sp = game_get_space(game, dest);
-  if (dest_sp) space_set_discovered(dest_sp, TRUE);
+  if (dest_sp)
+    space_set_discovered(dest_sp, TRUE);
 
   game_set_last_cmd_status(game, OK);
 }
 
-
 /* ========================================================================= */
 /*                    TAKE (F10): take <object_name>                          */
 /* ========================================================================= */
-static void game_actions_take(Game *game) {
-  Player *player   = NULL;
-  Space  *space    = NULL;
-  Object *obj      = NULL;
-  char   *obj_name = NULL;
-  Id      space_id, obj_id;
+static void game_actions_take(Game *game)
+{
+  Player *player = NULL;
+  Space *space = NULL;
+  Object *obj = NULL;
+  char *obj_name = NULL;
+  Id space_id, obj_id, dependency_id;
+  Bool movable;
 
-  if (!game) return;
+  if (!game)
+    return;
 
   player = game_get_player_by_turn(game);
-  if (!player) {
+  if (!player)
+  {
     game_set_last_cmd_status(game, ERROR_take);
     return;
   }
 
   space_id = player_get_location(player);
-  if (space_id == NO_ID) {
+  if (space_id == NO_ID)
+  {
     game_set_last_cmd_status(game, ERROR_take);
     return;
   }
 
   obj_name = command_get_obj(game_get_last_command(game));
-  if (!obj_name) {
+  if (!obj_name)
+  {
     game_set_last_cmd_status(game, ERROR_take);
     return;
   }
 
   obj = game_get_object_by_name(game, obj_name);
-  if (!obj) {
+  if (!obj)
+  {
     game_set_last_cmd_status(game, ERROR_take);
     return;
   }
 
   obj_id = obj_get_id(obj);
-  space  = game_get_space(game, space_id);
+  space = game_get_space(game, space_id);
 
-  if (space_contains_object(space, obj_id) == FALSE) {
+  if (space_contains_object(space, obj_id) == FALSE)
+  {
     game_set_last_cmd_status(game, ERROR_take);
     return;
   }
+  movable = obj_get_movable(obj);
+  if (movable == FALSE)
+  {
 
+    dependency_id = obj_get_dependency(obj);
+    if (dependency_id != NO_ID && player_contains_object(player, dependency_id) == TRUE)
+    {
+      /* The object is not movable, but the player has the required dependency in inventory */
+      /* Allow taking the object */
+    }
+    else
+    {
+      game_set_last_cmd_status(game, ERROR_take);
+      return;
+    }
+  }
   space_remove_object(space, obj_id);
 
-  if (player_add_object(player, obj_id) != OK) {
+  if (player_add_object(player, obj_id) != OK)
+  {
     /* Inventory full — put the object back */
     space_set_object(space, obj_id);
     game_set_last_cmd_status(game, ERROR_take);
@@ -199,46 +266,52 @@ static void game_actions_take(Game *game) {
   game_set_last_cmd_status(game, OK);
 }
 
-
 /* ========================================================================= */
 /*                    DROP: drop <object_name>                          */
 /* ========================================================================= */
-static void game_actions_drop(Game *game) {
-  Player *player   = NULL;
-  Space  *space    = NULL;
-  Object *obj      = NULL;
-  char   *obj_name = NULL;
-  Id      space_id, obj_id;
+static void game_actions_drop(Game *game)
+{
+  Player *player = NULL;
+  Space *space = NULL;
+  Object *obj = NULL;
+  char *obj_name = NULL;
+  Id space_id, obj_id;
 
-  if (!game) return;
+  if (!game)
+    return;
 
   player = game_get_player_by_turn(game);
-  if (!player) {
+  if (!player)
+  {
     game_set_last_cmd_status(game, ERROR_drop);
     return;
   }
 
   space_id = player_get_location(player);
-  if (space_id == NO_ID) {
+  if (space_id == NO_ID)
+  {
     game_set_last_cmd_status(game, ERROR_drop);
     return;
   }
 
   obj_name = command_get_obj(game_get_last_command(game));
-  if (!obj_name) {
+  if (!obj_name)
+  {
     game_set_last_cmd_status(game, ERROR_drop);
     return;
   }
 
   obj = game_get_object_by_name(game, obj_name);
-  if (!obj) {
+  if (!obj)
+  {
     game_set_last_cmd_status(game, ERROR_drop);
     return;
   }
 
   obj_id = obj_get_id(obj);
 
-  if (player_contains_object(player, obj_id) == FALSE) {
+  if (player_contains_object(player, obj_id) == FALSE)
+  {
     game_set_last_cmd_status(game, ERROR_drop);
     return;
   }
@@ -249,7 +322,6 @@ static void game_actions_drop(Game *game) {
 
   game_set_last_cmd_status(game, OK);
 }
-
 
 /* ========================================================================= */
 /*            ATTACK: attack <name>  (NPC or PvP)                            */
@@ -264,33 +336,38 @@ static void game_actions_drop(Game *game) {
  *  2. PvP combat (NEW):
  *     "attack witch" -> if no Character found with that name,
  *     search for a Player with that name → must be in same space,
- *     cannot be yourself -> random roll anddd game_turn_update can whit all 
+ *     cannot be yourself -> random roll anddd game_turn_update can whit all
  *     trust sjsj
  */
-static void game_actions_attack(Game *game) {
-  Player    *player    = NULL;
-  Space     *space     = NULL;
-  Character *ch        = NULL;
-  char      *name      = NULL;
-  Id         space_id;
-  int        roll;
+static void game_actions_attack(Game *game)
+{
+  Player *player = NULL;
+  Space *space = NULL;
+  Character *ch = NULL;
+  char *name = NULL;
+  Id space_id;
+  int roll;
 
-  if (!game) return;
+  if (!game)
+    return;
 
   player = game_get_player_by_turn(game);
-  if (!player) {
+  if (!player)
+  {
     game_set_last_cmd_status(game, ERROR_Attack);
     return;
   }
 
   space_id = player_get_location(player);
-  if (space_id == NO_ID) {
+  if (space_id == NO_ID)
+  {
     game_set_last_cmd_status(game, ERROR_Attack);
     return;
   }
 
   name = command_get_obj(game_get_last_command(game));
-  if (!name) {
+  if (!name)
+  {
     game_set_last_cmd_status(game, ERROR_Attack);
     return;
   }
@@ -300,23 +377,27 @@ static void game_actions_attack(Game *game) {
   /* ========== PHASE 1: Try as NPC (Character) ========== */
   ch = game_get_character_by_name(game, name);
 
-  if (ch) {
+  if (ch)
+  {
     Id char_id = character_get_id(ch);
 
     /* Must be in the same space */
-    if (space_contains_character(space, char_id) == FALSE) {
+    if (space_contains_character(space, char_id) == FALSE)
+    {
       game_set_last_cmd_status(game, ERROR_Attack);
       return;
     }
 
     /* Must NOT be friendly */
-    if (character_get_friendly(ch) == TRUE) {
+    if (character_get_friendly(ch) == TRUE)
+    {
       game_set_last_cmd_status(game, ERROR_Attack);
       return;
     }
 
     /* Must be alive */
-    if (character_get_health(ch) <= 0) {
+    if (character_get_health(ch) <= 0)
+    {
       game_set_last_cmd_status(game, ERROR_Attack);
       return;
     }
@@ -324,16 +405,21 @@ static void game_actions_attack(Game *game) {
     /* NPC Combat roll */
     roll = rand() % 10;
 
-    if (roll < 5) {
+    if (roll < 5)
+    {
       /* Enemy wins: player loses 1 HP */
       player_set_health(player, player_get_health(player) - 1);
-      if (player_get_health(player) <= 0) {
+      if (player_get_health(player) <= 0)
+      {
         game_set_finished(game, TRUE);
       }
-    } else {
+    }
+    else
+    {
       /* Player wins: enemy loses 1 HP */
       character_set_health(ch, character_get_health(ch) - 1);
-      if (character_get_health(ch) <= 0) {
+      if (character_get_health(ch) <= 0)
+      {
         space_remove_character(space, char_id);
       }
     }
@@ -344,7 +430,7 @@ static void game_actions_attack(Game *game) {
 
   /*Inciiamos nuestro ambioto local. Toda variable declarada dentri de los {}  sólo existe ahí*/
   /*
-    Se suele usar para evitar tener que declarar target arriba de todo.  
+    Se suele usar para evitar tener que declarar target arriba de todo.
     -Wependatic es muyyyy pedante y obliga a declarar todas las variables
     según el estandar c99.   Lamentando lo mucho, no lo tenemos así, y me da pereza
     cambiar todo desde cero, (incluyendo lógica), pero también es muy útil para evitar errores de
@@ -352,28 +438,32 @@ static void game_actions_attack(Game *game) {
     Se les quiere!!! besitosss ;D
   */
   /* ========== PHASE 2: Try as Player (PvP) ========== */
-   {
+  {
     Player *target = game_get_player_by_name(game, name);
 
-    if (!target) {
+    if (!target)
+    {
       game_set_last_cmd_status(game, ERROR_Attack);
       return;
     }
 
     /* Cannot attack yourself */
-    if (player_get_id(target) == player_get_id(player)) {
+    if (player_get_id(target) == player_get_id(player))
+    {
       game_set_last_cmd_status(game, ERROR_Attack);
       return;
     }
 
     /* Target must be in the same space */
-    if (player_get_location(target) != space_id) {
+    if (player_get_location(target) != space_id)
+    {
       game_set_last_cmd_status(game, ERROR_Attack);
       return;
     }
 
     /* Target must be alive */
-    if (player_get_health(target) <= 0) {
+    if (player_get_health(target) <= 0)
+    {
       game_set_last_cmd_status(game, ERROR_Attack);
       return;
     }
@@ -381,10 +471,13 @@ static void game_actions_attack(Game *game) {
     /* PvP Combat roll */
     roll = rand() % 20;
 
-    if (roll < 5) {
+    if (roll < 5)
+    {
       player_set_health(player, player_get_health(player) - 1);
       /*game_turn_update saltará al muerto */
-    } else {
+    }
+    else
+    {
       player_set_health(target, player_get_health(target) - 1);
       /*game_turn_update saltará al muerto */
     }
@@ -394,109 +487,122 @@ static void game_actions_attack(Game *game) {
   }
 }
 
-
 /* ========================================================================= */
 /*                    CHAT: chat <character_name>                             */
 /* ========================================================================= */
-static void game_actions_chat(Game *game) {
-  Player    *player    = NULL;
-  Space     *space     = NULL;
-  Character *ch        = NULL;
-  char      *char_name = NULL;
-  Id         char_id, space_id;
+static void game_actions_chat(Game *game)
+{
+  Player *player = NULL;
+  Space *space = NULL;
+  Character *ch = NULL;
+  char *char_name = NULL;
+  Id char_id, space_id;
 
-  if (!game) return;
+  if (!game)
+    return;
 
   player = game_get_player_by_turn(game);
-  if (!player) {
+  if (!player)
+  {
     game_set_last_cmd_status(game, ERROR_Chat);
     return;
   }
 
   space_id = player_get_location(player);
-  if (space_id == NO_ID) {
+  if (space_id == NO_ID)
+  {
     game_set_last_cmd_status(game, ERROR_Chat);
     return;
   }
 
   char_name = command_get_obj(game_get_last_command(game));
-  if (!char_name) {
+  if (!char_name)
+  {
     game_set_last_cmd_status(game, ERROR_Chat);
     return;
   }
 
   ch = game_get_character_by_name(game, char_name);
-  if (!ch) {
+  if (!ch)
+  {
     game_set_last_cmd_status(game, ERROR_Chat);
     return;
   }
 
   char_id = character_get_id(ch);
-  space   = game_get_space(game, space_id);
+  space = game_get_space(game, space_id);
 
-  if (space_contains_character(space, char_id) == FALSE) {
+  if (space_contains_character(space, char_id) == FALSE)
+  {
     game_set_last_cmd_status(game, ERROR_Chat);
     return;
   }
 
-  if (character_get_friendly(ch) == FALSE) {
+  if (character_get_friendly(ch) == FALSE)
+  {
     game_set_last_cmd_status(game, ERROR_Chat);
     return;
   }
 
   game_set_last_cmd_status(game, OK);
 }
-
 
 /* ========================================================================= */
 /*           INSPECT (F9): inspect <object_name>                             */
 /* ========================================================================= */
 /*
  */
-static void game_actions_inspect(Game *game) {
-  Player *player   = NULL;
-  Space  *space    = NULL;
-  Object *obj      = NULL;
-  char   *obj_name = NULL;
-  Id      obj_id, space_id;
-  Bool    in_space, in_inventory;
+static void game_actions_inspect(Game *game)
+{
+  Player *player = NULL;
+  Space *space = NULL;
+  Object *obj = NULL;
+  char *obj_name = NULL;
+  Id obj_id, space_id;
+  Bool in_space, in_inventory;
 
-  if (!game) return;
+  if (!game)
+    return;
 
   player = game_get_player_by_turn(game);
-  if (!player) {
+  if (!player)
+  {
     game_set_last_cmd_status(game, ERROR_inspect);
     return;
   }
 
   obj_name = command_get_obj(game_get_last_command(game));
-  if (!obj_name) {
+  if (!obj_name)
+  {
     game_set_last_cmd_status(game, ERROR_inspect);
     return;
   }
 
   obj = game_get_object_by_name(game, obj_name);
-  if (!obj) {
+  if (!obj)
+  {
     game_set_last_cmd_status(game, ERROR_inspect);
     return;
   }
 
-  obj_id   = obj_get_id(obj);
+  obj_id = obj_get_id(obj);
   space_id = player_get_location(player);
-  space    = game_get_space(game, space_id);
+  space = game_get_space(game, space_id);
 
   /* Object must be accessible: in current space OR in inventory */
-  in_space     = (space && space_contains_object(space, obj_id));
+  in_space = (space && space_contains_object(space, obj_id));
   in_inventory = player_contains_object(player, obj_id);
 
-  if (in_space == FALSE && in_inventory == FALSE) {
+  if (in_space == FALSE && in_inventory == FALSE)
+  {
     game_set_last_cmd_status(game, ERROR_inspect);
     return;
   }
 
   /* Object must have a description */
   if (obj_get_description(obj) == NULL ||
-      obj_get_description(obj)[0] == '\0') {
+      obj_get_description(obj)[0] == '\0')
+  {
     game_set_last_cmd_status(game, ERROR_inspect);
     return;
   }
@@ -505,44 +611,48 @@ static void game_actions_inspect(Game *game) {
 }
 
 /* ========================================================================= */
-/*           USE: use <object_name>                             */
+/*           USE: use <object_name>                                          */
 /* ========================================================================= */
 static void game_actions_use(Game *game)
 {
-  Player *player   = NULL;
-  Space  *space    = NULL;
-  Object *obj      = NULL;
-  char   *obj_name = NULL;
-  Id      obj_id, space_id;
-  Bool    in_inventory=FALSE;
-  int     obj_health=0;
-  if (!game) return;
+  Player *player = NULL;
+  Object *obj = NULL;
+  char *obj_name = NULL;
+  Id obj_id;
+  Bool in_inventory = FALSE;
+  int obj_health = 0;
+  if (!game)
+    return;
 
   player = game_get_player_by_turn(game);
-  if (!player) {
+  if (!player)
+  {
     game_set_last_cmd_status(game, ERROR_use);
     return;
   }
-  
+
   obj_name = command_get_obj(game_get_last_command(game));
-  if (!obj_name) {
+  if (!obj_name)
+  {
     game_set_last_cmd_status(game, ERROR_use);
     return;
   }
 
   obj = game_get_object_by_name(game, obj_name);
-  if (!obj) {
+  if (!obj)
+  {
     game_set_last_cmd_status(game, ERROR_use);
     return;
   }
 
-  obj_id   = obj_get_id(obj);
+  obj_id = obj_get_id(obj);
 
   /* Object must be accessible: in inventory */
 
   in_inventory = player_contains_object(player, obj_id);
 
-  if (in_inventory == FALSE) {
+  if (in_inventory == FALSE)
+  {
     game_set_last_cmd_status(game, ERROR_use);
     return;
   }
@@ -550,31 +660,110 @@ static void game_actions_use(Game *game)
   obj_health = obj_get_health(obj);
 
   /*Object of health or damage*/
-  if (obj_health != 0) { 
-  player_set_health(player, player_get_health(player) + obj_health);
-  player_delete_object(player, obj_id);
-  game_set_last_cmd_status(game, OK);
-  return;
+  if (obj_health != 0)
+  {
+    player_set_health(player, player_get_health(player) + obj_health);
+    player_delete_object(player, obj_id);
+    game_set_last_cmd_status(game, OK);
+    return;
   }
   /*****************************/
-  
+
   game_set_last_cmd_status(game, OK);
   return;
+}
+/* ========================================================================= */
+/*                      OPEN: open <link_name> with <object_name>            */
+/* ========================================================================= */
+static void game_actions_open(Game *game)
+{
+  Player *player = NULL;
+  Object *obj = NULL;
+  char *obj_name = NULL;
+  Id obj_id, space_id, link_id = NO_ID;
+  Bool in_inventory = FALSE;
+  int obj_health = 0;
+  Links *link = NULL;
+
+  if (!game)
+    return;
+
+  player = game_get_player_by_turn(game);
+  if (!player)
+  {
+    game_set_last_cmd_status(game, ERROR_use);
+    return;
+  }
+
+  obj_name = command_get_obj(game_get_last_command(game));
+  if (!obj_name)
+  {
+    game_set_last_cmd_status(game, ERROR_use);
+    return;
+  }
+
+  obj = game_get_object_by_name(game, obj_name);
+  if (!obj)
+  {
+    game_set_last_cmd_status(game, ERROR_use);
+    return;
+  }
+
+  obj_id = obj_get_id(obj);
+
+  /* Object must be accessible: in inventory */
+
+  in_inventory = player_contains_object(player, obj_id);
+
+  if (in_inventory == FALSE)
+  {
+    game_set_last_cmd_status(game, ERROR_use);
+    return;
+  }
+
+  space_id = player_get_location(player);
+ 
+  link_id = obj_get_open(obj);
+  link = game_get_link_by_id(game, link_id);
+  if (!link)
+  {
+    game_set_last_cmd_status(game, ERROR_use);
+    return;
+  }
+
+  if (game_link_is_open(link) == TRUE)
+  {
+    game_set_last_cmd_status(game, ERROR_use);
+    return;
+  }
+
+  if(link_get_origin_id(link)!=space_id && link_get_destination_id(link)!=space_id)
+  {
+    game_set_last_cmd_status(game, ERROR_use);
+    return;
+  }
+
+  game_link_set_open(link, TRUE);
+  game_set_last_cmd_status(game, OK);
+  return;
+
 }
 /* ========================================================================= */
 /*                      HELPER: PARSE DIRECTION                              */
 /* ========================================================================= */
 
-static Direction ge_parse_direction(const char *str) {
-  if (!str) return U;
+static Direction ge_parse_direction(const char *str)
+{
+  if (!str)
+    return U;
 
   if (strcasecmp(str, "north") == 0 || strcasecmp(str, "n") == 0)
     return N;
   if (strcasecmp(str, "south") == 0 || strcasecmp(str, "s") == 0)
     return S;
-  if (strcasecmp(str, "east") == 0  || strcasecmp(str, "e") == 0)
+  if (strcasecmp(str, "east") == 0 || strcasecmp(str, "e") == 0)
     return E;
-  if (strcasecmp(str, "west") == 0  || strcasecmp(str, "w") == 0)
+  if (strcasecmp(str, "west") == 0 || strcasecmp(str, "w") == 0)
     return W;
 
   return U;

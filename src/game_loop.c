@@ -2,7 +2,7 @@
  * @brief It defines the game loop
  *
  * @file game_loop.c
- * @author Profesores PPROG and Javier Jarque
+ * @author Profesores PPROG, Rafael, Salvador and Javier Jarque
  * @version 3
  * @date 08-04-2026
  * @copyright GNU Public License
@@ -145,6 +145,14 @@ int main(int argc, char *argv[]) {
           break;
         case INSPECT:
           fprintf(log_file, "inspect %s: %s\n",
+                  obj_name ? obj_name : "", result_str);
+          break;
+        case USE:
+          fprintf(log_file, "use %s: %s\n",
+                  obj_name ? obj_name : "", result_str);
+          break;
+        case OPEN:
+          fprintf(log_file, "open %s: %s\n",
                   obj_name ? obj_name : "", result_str);
           break;
         default:
