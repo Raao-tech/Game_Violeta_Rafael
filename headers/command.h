@@ -2,9 +2,9 @@
  * @brief It defines the command interpreter interface
  *
  * @file command.h
- * @author Profesores PPROG
- * @version 2
- * @date 27-01-2025
+ * @author Profesores PPROG, Rafael, Javier and Salvador
+ * @version 5
+ * @date 18-04-2025
  * @copyright GNU Public License
  */
 
@@ -14,7 +14,7 @@
 #include "types.h"
 
 #define N_CMDT 2
-#define N_CMD 9
+#define N_CMD 11
 
 typedef enum {
   CMDS,
@@ -30,7 +30,9 @@ typedef enum {
   DROP,
   ATTACK,
   CHAT,
-  INSPECT
+  INSPECT,
+  USE,
+  OPEN
 } CommandCode;
 
 typedef struct _Command Command;
