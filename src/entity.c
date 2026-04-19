@@ -10,13 +10,6 @@
 
 #include "entity.h"
 
-typedef struct
-{
-  float x;
-  float y;
-}Position;
-
-
 /**
  * @brief Entity
  *

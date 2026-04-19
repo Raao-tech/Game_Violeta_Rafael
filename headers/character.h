@@ -137,7 +137,24 @@ Status character_set_health(Character *character, int life);
  * @return the health value, or ERROR_LIFE if character is NULL
  */
 int character_get_health(Character *character);
+/**
+ * @brief It sets the energy value of a character
+ * @author Rafa
+ *
+ * @param character a pointer to the character
+ * @param value the energy value to set
+ * @return OK, if everything goes well, or ERROR if there was some mistake
+ */
+Status character_set_energy(Character *character, int energy);
 
+/**
+ * @brief It gets the attack value of a character
+ * @author Violeta y Rafa
+ *
+ * @param character a pointer to the character
+ * @return the energy value, or ERROR_ATTACK if character is NULL
+ */
+int character_get_energy(Character *character);
 /**
  * @brief It sets the attack value of a character
  * @author Violeta y Rafa

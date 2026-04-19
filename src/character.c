@@ -171,7 +171,7 @@ Status character_set_energy(Character* character, int energy){
   character->stats.energy =energy;
   return OK
 }
-int character_get_attack(Character *character){
+int character_get_energy(Character *character){
   if(!character) return ERROR_ENGY;
   return character->stats.energy;
 }
