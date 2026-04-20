@@ -1,26 +1,26 @@
-#s:11|Entry|    _ !# |[_]--'---|!'!""`""!|! ! /^\ !|!_!_!I!_!|
-#s:12|Corridor|!-------!|! . . !|! . . !|! . . !|!-------!|
-#s:13|Dinning Room| .-===-. |! . . !|! .'. !|() _____()|II_____II|
-#s:14|Kitchen|  [_]_[_] |  ! T !  |  !___!  | _!___!_ |!_______!|
-#s:15|Courtyard|  . * .  |  * . *  |  . * .  |  * . *  |_________|
-#s:16|Garden| /\ /\ /\|//\\/\\/\|//\\/\\/\| II II II|---------|
-#s:121|Dungeon| _!_!_!_ |!  o o  !|! (___) !|!  ~~~  !|!_______!|
-#s:131|Bedroom|    _    |   ! !   |___! !   |(   .'   |)  (     |
-#s:132|Bathroom|  _____  | !  _  !| ! !_! ! | ! !   ! | !_____! |
+#s:11|Entry|./img_src/background/r.jpg
+#s:12|Corridor|./img_src/background/s.jpg
+#s:13|Dinning Room|./img_src/background/t.jpg
+#s:14|Kitchen|
+#s:15|Courtyard|./img_src/background/r.jpg
+#s:16|Garden|./img_src/background/s.jpg
+#s:121|Dungeon|./img_src/background/t.jpg
+#s:131|Bedroom|./img_src/background/r.jpg
+#s:132|Bathroom|
 
-#o:21|Sword|11|A sharp blade, rusty but deadly
-#o:22|Chest|14|An old wooden chest, locked tight
-#o:23|Tapestry|13|A faded tapestry depicting a battle scene
-#o:24|Candelabra|12|A silver candelabra, still warm
+#o:21|Sword|11|A sharp blade, rusty but deadly|./img_src
+#o:22|Chest|14|An old wooden chest, locked tight|./img_src
+#o:23|Tapestry|13|A faded tapestry depicting a battle scene|./img_src
+#o:24|Candelabra|12|A silver candelabra, still warm|./img_src|1|0|0|0|0
 
-#c:51|Ghost|(o)|12|5|1|Welcome to my castle... beware!
-#c:52|Skeleton|^M*|13|5|0|What a beautiful watch you're wearing, come on over
+Nota(no debería obstruir):
+ Estructura de object: o:Id|Nombre|localización|descripción|sprite|consumible|vida|energía|ataque|velocidad
 
-#p:1|knight|^C>|11|5|3
-#p:2|witch|*u*|12|5|3
-#p:3|Luigi|=0D|12|5|5
-#p:3|Maria Lionza|_M_|12|25|25
-#p:3|Neton|<z>|12|25|25
+#c:51|Ghost|./img_src|12|5|1|Welcome to my castle... beware!|
+#c:52|Skeleton|./img_src|13|5|0|What a beautiful watch you're wearing, come on over|
+
+#p:1|knight|./img_src/sprites/players/knighty.png|11|5|3
+
 
 #l:31|Hall_Entry|11|12|1|1|1
 #l:32|Dungeon_Gate|12|121|3|0|0
