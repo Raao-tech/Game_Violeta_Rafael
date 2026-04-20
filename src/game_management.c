@@ -566,7 +566,7 @@ Status game_save_file(Game **game)
   Links *link = NULL;
   Id id = NO_ID;
   int check = 0, bucle;
-  char *name=NULL;
+  char *name=NULL, *gdesc=NULL, *OST=NULL;
   FILE *new_sfile = NULL;
   if (!game)
     return ERROR;
@@ -578,6 +578,14 @@ Status game_save_file(Game **game)
   {
     id = game_get_space_id_at(game, bucle);
     space = game_get_space(*game, id);
-    fprintf(new_sfile, "#s: %d|", (int)id);
+    name = space_get_name(space);
+    gdesc = space_get_gdesc(space); /*Hay que cambialo por una ruta string*/
+    OST = space_get_ost(space);     /*Hay que implementarlo*/
+
+    fprintf(new_sfile, "#s:%d|%s|%s|%s|\n", (int)id, name, 
+    gdesc==NULL ? "" : gdesc, OST==NULL ? "" : OST );
+    free(name);
+    free(gdesc);
+    free(OST);
   }
 }
