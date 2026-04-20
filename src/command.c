@@ -26,9 +26,10 @@ char *cmd_to_str[N_CMD][N_CMDT] = {
   {"d", "Drop"},
   {"a", "Attack"},
   {"c", "Chat"},
-  {"i","Inspect"},
-  {"u","Use"},
-  {"o","Open"}
+  {"i", "Inspect"},
+  {"u", "Use"},
+  {"o", "Open"},
+  {"s", "Save"}
 };
 
 struct _Command {

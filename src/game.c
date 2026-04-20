@@ -379,6 +379,16 @@ Id game_get_space_id_at(Game *game, int position) {
   return space_get_id(game->spaces[position]);
 }
 
+Numen *game_get_numen__at(Game *game, int position) {
+  if (!game || position < 0 || position >= game->n_numens) return NULL;
+  return game->numens[position];
+}
+
+Links *game_get_link_at(Game *game, int position) {
+  if (!game || position < 0 || position >= game->n_links) return NULL;
+  return game->links[position];
+}
+
 int game_get_n_spaces(Game *game) {
   if (!game) return -1;
   return game->n_spaces;

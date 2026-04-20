@@ -8,6 +8,7 @@
  * @copyright GNU Public License
  */
 
+#include "game_management.h"
 #include "game_actions.h"
 #include "raylib.h" /*esto es una prueba*/
 #include <stdio.h>
@@ -15,7 +16,6 @@
 #include <string.h>
 #include <strings.h>
 #include <time.h>
-
 
 /**
  * Private function prototypes.
@@ -31,7 +31,8 @@ static void game_actions_chat(Game *game);
 static void game_actions_inspect(Game *game);
 static void game_actions_use(Game *game);
 static void game_actions_open(Game *game);
-
+static void game_actions_save(Game *game);
+static void game_actions_load(Game *game);
 /**
  * @brief Converts a direction string to a Direction enum value
  *
@@ -45,24 +46,24 @@ static Direction ge_parse_direction(const char *str);
 /* ========================================================================= */
 
 /*
-* La idea seria que ahora no solo seactivaran las caciones ,por medio del teclado. esto se mantendrá, pero
-* el comando central tiene que ser el input del usario por medio del teclado,  player 1 y 2 pueden mverse 
-* gracias a "wasd" o a las flechas "Up, Down, Right, Left" y tendrànm posibildiad de hacer otras cosas con otras "KEYs" 
-* del teclado. Tal vez lo del Keyboards no es el tipo de dato, eso se pued equitar, era para no olvidar que ese cambio se tienme que hacer
-*  Pero ta,mbien hay que mantender ewl command porque las pruebas automatixadas se hacen atraves de texto, asi que eso se debe de jdjar
-* para los logs, luego veré como hago coo 
-*
-*   Punto importante:                         Modo de Juego (SourceInput)
-*       Modo Test                                     Modo Juego
-*  (Textual, no visual)                         (keys de Keyboard, Visual)
-*  (comandos por player, No en paralelo)        (comandos dependientes de "wasd" o flechas, en paralelo)
-*
-*  Una posible propuesta de adaptación es la siguiente:
-*      la estrctura de command tendrá : {}
-*
-*
-*
-*/
+ * La idea seria que ahora no solo seactivaran las caciones ,por medio del teclado. esto se mantendrá, pero
+ * el comando central tiene que ser el input del usario por medio del teclado,  player 1 y 2 pueden mverse
+ * gracias a "wasd" o a las flechas "Up, Down, Right, Left" y tendrànm posibildiad de hacer otras cosas con otras "KEYs"
+ * del teclado. Tal vez lo del Keyboards no es el tipo de dato, eso se pued equitar, era para no olvidar que ese cambio se tienme que hacer
+ *  Pero ta,mbien hay que mantender ewl command porque las pruebas automatixadas se hacen atraves de texto, asi que eso se debe de jdjar
+ * para los logs, luego veré como hago coo
+ *
+ *   Punto importante:                         Modo de Juego (SourceInput)
+ *       Modo Test                                     Modo Juego
+ *  (Textual, no visual)                         (keys de Keyboard, Visual)
+ *  (comandos por player, No en paralelo)        (comandos dependientes de "wasd" o flechas, en paralelo)
+ *
+ *  Una posible propuesta de adaptación es la siguiente:
+ *      la estrctura de command tendrá : {}
+ *
+ *
+ *
+ */
 Status game_actions_update(Game *game, Command *command)
 {
   CommandCode cmd;
@@ -212,12 +213,11 @@ static void game_actions_take(Game *game)
   if (!game)
     return;
 
-
-    /*
-    * Este tipo de comprobaciones hay que ponerlas en mira, para la solución del multijugador
-    * en paralelo, hay que ver que jugador esta haciendo la ccion, pero no es por turnos. Hay una cantida
-    * n de jugadores establecida en alguna macro que dependerá de la enumaercaicon de tipos de datos PLY
-    */
+  /*
+   * Este tipo de comprobaciones hay que ponerlas en mira, para la solución del multijugador
+   * en paralelo, hay que ver que jugador esta haciendo la ccion, pero no es por turnos. Hay una cantida
+   * n de jugadores establecida en alguna macro que dependerá de la enumaercaicon de tipos de datos PLY
+   */
   player = game_get_player_by_turn(game);
   if (!player)
   {
@@ -690,7 +690,7 @@ static void game_actions_use(Game *game)
   return;
 }
 /* ========================================================================= */
-/*                      OPEN: open <link_name> with <object_name>            */
+/*                      OPEN: open with <object_name>                        */
 /* ========================================================================= */
 static void game_actions_open(Game *game)
 {
@@ -708,21 +708,21 @@ static void game_actions_open(Game *game)
   player = game_get_player_by_turn(game);
   if (!player)
   {
-    game_set_last_cmd_status(game, ERROR_use);
+    game_set_last_cmd_status(game, ERROR_open);
     return;
   }
 
   key_name = command_get_target(game_get_last_command(game));
   if (!key_name)
   {
-    game_set_last_cmd_status(game, ERROR_use);
+    game_set_last_cmd_status(game, ERROR_open);
     return;
   }
 
   key = game_get_object_by_name(game, key_name);
   if (!key)
   {
-    game_set_last_cmd_status(game, ERROR_use);
+    game_set_last_cmd_status(game, ERROR_open);
     return;
   }
 
@@ -734,63 +734,65 @@ static void game_actions_open(Game *game)
 
   if (in_inventory == FALSE)
   {
-    game_set_last_cmd_status(game, ERROR_use);
+    game_set_last_cmd_status(game, ERROR_open);
     return;
   }
 
   space_id = player_get_location(player);
- 
+
   link_id = obj_get_open(key);
   link = game_get_link_by_id(game, link_id);
   if (!link)
   {
-    game_set_last_cmd_status(game, ERROR_use);
+    game_set_last_cmd_status(game, ERROR_open);
     return;
   }
 
-    /*
-    Esta linea de codigo no la vi en la iteracion 3, Es un error de lógica
-    Antes de mi modficación solo comprobaba que el space en el que estoy sea el 
-    "Origin" del link, pero eso es un error de semántica,  un link bidireccional
-    no tiene origine ni destino, tiene "extremos A y B"  y puedes estar en uno de }
-    los extremos, por ejemplo A, y moverte a B, o vicerversa. Por eso hay que hacer
-    la comprobación de sis estoy en el supuesto "origen" o estoy en el "destino"
-  */
-  /*
-    Preguntas si está abierto, pero, ¿en qué sentido está abierto?
-      desde   origin ---> destiny     destiny ---> origin 
-    cambie la funcion que habia link_is_open   por game_connection_is_open que verifca
-    si esta abierto tanto ṕor el origen como por el destino, porque puedes
-    estar en cualqueira de los dos extremos
-  */
   if (game_connection_is_open(game, space_id, link_get_direction(link_id)) == TRUE)
   {
     game_set_last_cmd_status(game, ERROR_use);
     return;
   }
 
-
-  if(link_get_origin_id(link)!=space_id && link_get_destination_id(link)!=space_id)
+  if (link_get_origin_id(link) != space_id && link_get_destination_id(link) != space_id)
   {
     game_set_last_cmd_status(game, ERROR_use);
     return;
   }
 
-  /*
-    Como key no dice en cuál de los sentidos se abre el link 
-    (dest -> orig) o (orig -> dest) , lo abro en los dos sentidos
-    pero esto es momentaneo, debería de haber un atributo o algo en key
-    para saber en cuál de los setnido se abre el link.    
-      Alguien puede ir de l space 4 al space 5 pero al llegar al 5
-      no puede regresaar al 4, por lo que debe de buscar un key que 
-      pueda abrir en el sentido opuesto (link_get_opposite_dir)
-  */
-  link_set_open_dest_to_origin(link, TRUE);
-  link_set_open_origin_to_dest(link, TRUE);
+  if (link_get_destination_id(link) == space_id)
+  {
+    link_set_open_dest_to_origin(link, TRUE);
+  }
+  else if (link_get_origin_id(link) == space_id)
+  {
+    link_set_open_origin_to_dest(link, TRUE);
+  }
   game_set_last_cmd_status(game, OK);
   return;
-
 }
+
+
+/* ========================================================================= */
+/*                      SAVE: save                                           */
+/* ========================================================================= */
+static void game_actions_save(Game *game)
+{
+  if(!game)
+  {
+    game_set_last_cmd_status(game, ERROR_save);
+    return;
+  }
+
+  if(game_save_file(game)==OK)
+  game_set_last_cmd_status(game, OK);
+  else{
+    game_set_last_cmd_status(game, ERROR_save);
+  }
+  return;
+}
+
+
 /* ========================================================================= */
 /*                      HELPER: PARSE DIRECTION                              */
 /* ========================================================================= */

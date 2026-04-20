@@ -16,7 +16,7 @@
 #include "command.h"
 #include "raylib.h"
 #include "game.h"
-#include "game_reader.h"
+#include "game_management.h"
 #include "game_actions.h"
 #include "graphic_engine.h"
 
@@ -154,6 +154,9 @@ int main(int argc, char *argv[]) {
         case OPEN:
           fprintf(log_file, "open %s: %s\n",
                   obj_name ? obj_name : "", result_str);
+          break;
+        case SAVE:
+          fprintf(log_file, "save: %s\n", result_str);
           break;
         default:
           break;
