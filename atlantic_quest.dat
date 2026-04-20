@@ -16,13 +16,13 @@
 Nota(no debería obstruir):
  Estructura de object: o:Id|Nombre|localización|pos x|pos y|descripción|sprite|consumible|vida|energía|ataque|velocidad
 
-#c:51|Ghost|./img_src|12|5|1|Welcome to my castle... beware!|
-#c:52|Skeleton|./img_src|13|5|0|What a beautiful watch you're wearing, come on over|
+#c:51|Ghost||602|480|./img_src|12|5|1|Welcome to my castle... beware!|
+#c:52|Skeleton||492|125|./img_src|13|5|0|What a beautiful watch you're wearing, come on over|
 
 #n:800|mamacoco|12|492|125|./img_src|0|0|0|0|1|2|||
  Estructura de numen: n:Id|Nombre|localización|pos x| pos y|sprite|vida|energía|ataque|velocidad|skill 1| skill 2| skill 3| skill 4|
 
-#p:1|knight|./img_src/sprites/players/knighty.png|11|5|3
+#p:1|knight|100|150|./img_src/sprites/players/knighty.png|11|5|3
 
 
 #l:31|Hall_Entry|11|12|1|1|1
