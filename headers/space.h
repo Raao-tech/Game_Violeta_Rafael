@@ -199,11 +199,10 @@ Bool space_get_discovered(Space *space);
  * @author Violeta y Rafa
  *
  * @param space a pointer to the space
- * @param line the line number (0 to MAX_LINE-1)
  * @param desc a string with the content for that line (max MAX_CHAR chars)
  * @return OK, if everything goes well or ERROR if there was some mistake
  */
-Status space_set_gdesc_line(Space *space, int line, char *desc);
+Status space_set_gdesc(Space *space, char *desc);
 
 /**
  * @brief It prints the full graphic description of a space to an output stream
@@ -220,10 +219,9 @@ Status space_print_gdesc(FILE *output, Space *space);
  * @author Violeta y Rafa
  *
  * @param space a pointer to the space
- * @param line the line number (0 to MAX_LINE-1)
- * @return a pointer to the line string, or NULL if error
+ * @return a pointer to copy of the string, or NULL if error
  */
-char *space_get_gdesc(Space *space, int line);
+char *space_get_gdesc(Space *space);
 
 /* ========== Print ========== */
 

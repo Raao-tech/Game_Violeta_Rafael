@@ -24,7 +24,8 @@
 struct _Space {
   Id    id;                             /*!< Id number of the space, must be unique */
   char  name[WORD_SIZE + 1];            /*!< Name of the space */
-  char  gdesc[MAX_LINE][MAX_CHAR + 1];  /*!< Graphic description, 5 lines x 9 chars */
+  char  gdesc[WORD_SIZE +1];            /*!< Graphic description, solo un filename */
+  int   grid[WIDHT_SCREEN][HIGHT_SCREEN];/*!< Grid of graphi engine*/
   Set  *objs_id;                        /*!< Set of object IDs in this space */
   Set  *characters_id;                  /*!< Set of character IDs in this space */
   Bool  discovered;                     /*!< Has this space been visited by a player? */
@@ -34,24 +35,26 @@ struct _Space {
 
 Space *space_create() {
   Space *newSpace = NULL;
-  int i;
+  int i,j;
 
   newSpace = (Space *)calloc(1, sizeof(Space));
   if (!newSpace) return NULL;
 
   newSpace->id = NO_ID;
   newSpace->name[0] = '\0';
+  newSpace->gdesc[0] ='\0';
   newSpace->discovered = FALSE;
-
-  for (i = 0; i < MAX_LINE; i++) {
-    newSpace->gdesc[i][0] = '\0';
-  }
-
   newSpace->objs_id = set_creat();
   if (!newSpace->objs_id) {
     free(newSpace);
     return NULL;
   }
+
+  /*Creamos la cuadrilla "grid" para la movilidad intra-space (Walk)*/
+  for (i = 0; i < WIDHT_SCREEN; i++){
+    for (j = 0; j < HIGHT_SCREEN; j++) newSpace->grid[i][j]=0;
+  }
+  
 
   newSpace->characters_id = set_creat();
   if (!newSpace->characters_id) {
@@ -174,31 +177,23 @@ Bool space_get_discovered(Space *space) {
 
 /* ========== Graphic description ========== */
 
-Status space_set_gdesc_line(Space *space, int line, char *desc) {
+Status space_set_gdesc(Space *space, char *desc) {
   if (!space || !desc) return ERROR;
-  if (line < 0 || line >= MAX_LINE) return ERROR;
-  if ((int)strlen(desc) > MAX_CHAR) return ERROR;
-
-  strncpy(space->gdesc[line], desc, MAX_CHAR);
-  space->gdesc[line][MAX_CHAR] = '\0';
+  strncpy(space->name, desc, WORD_SIZE);
+  space->gdesc[WORD_SIZE] = '\0';
   return OK;
 }
 
 Status space_print_gdesc(FILE *output, Space *space) {
-  int i;
   if (!output || !space) return ERROR;
 
-  for (i = 0; i < MAX_LINE; i++) {
-    if (fprintf(output, "%s\n", space->gdesc[i]) < 0) return ERROR;
-  }
-
+  fprintf(output, "Img of space: %s\n", space->gdesc);
   return OK;
 }
 
-char *space_get_gdesc(Space *space, int line) {
+char *space_get_gdesc(Space *space) {
   if (!space) return NULL;
-  if (line < 0 || line >= MAX_LINE) return NULL;
-  return space->gdesc[line];
+  return strdup(space->gdesc);
 }
 
 /* ========== Print ========== */

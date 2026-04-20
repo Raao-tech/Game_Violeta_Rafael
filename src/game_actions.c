@@ -570,11 +570,11 @@ Status game_save_file(Game **game)
   Bool friendly, open_otd, open_dto, consumable;
   char *name = NULL, *gdesc = NULL, *OST = NULL, *message = NULL;
   FILE *new_sfile = NULL;
-  if (!game)
-    return ERROR;
+
+  if (!game) return ERROR;
   new_sfile = fopen("../savefile/savefile.dat", "w");
-  if (!new_sfile)
-    return ERROR;
+  if (!new_sfile) return ERROR;
+
   check = game_get_n_spaces(*game);
   for (bucle = 0; bucle < check; bucle++)
   {
@@ -634,7 +634,21 @@ Status game_save_file(Game **game)
     skills[3] = numen_get_skill(numen, 3);
     following = numen_get_following(numen);
 
-    fprintf(new_sfile, "#n:%d|%s|%d|%d|%d|%s|%d|%d|%d|%d|%d|%d|%d|%d|%d|\n", (int)id, name, (int)location, pos_x, pos_y, gdesc == NULL ? "" : gdesc, health, energy, attack, speed, skills[0], skills[1], skills[2], skills[3], following == NO_ID ? "" : (int)following);
+    fprintf(new_sfile, "#n:%d|%s|%d|%d|%d|%s|%d|%d|%d|%d|%d|%d|%d|%d|%ld|\n", 
+      (int)id, name, 
+      (int)location, 
+      pos_x, 
+      pos_y, 
+      gdesc == NULL ? "" : gdesc, 
+      health, 
+      energy, 
+      attack, 
+      speed, 
+      skills[0], 
+      skills[1], 
+      skills[2], 
+      skills[3], 
+      following);
     free(name);
     free(gdesc);
   }

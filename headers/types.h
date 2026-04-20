@@ -16,6 +16,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*Dimensiones de la pantalla del graphic Engine*/
+#define WIDHT_SCREEN 950
+#define HIGHT_SCREEN 650
+
 /* Consts to numbers */
 #define WORD_SIZE 1000
 #define NO_ID -1
@@ -29,6 +33,9 @@
 #define AZUL        "\033[0;34m"
 #define MORADO      "\033[0;35m"
 #define RESET       "\033[0m"
+
+/*<! Max_heald of skills*/
+#define MAX_HELD_SKILLS 4
 
 typedef long Id;
 
