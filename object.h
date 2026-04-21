@@ -14,6 +14,7 @@
 #include "space.h"
 #include "types.h"
 #include "player.h"
+#include "entity.h"
 
 typedef struct _Object Object;
 
@@ -109,16 +110,24 @@ char *obj_get_description(Object *obj);
  */
 Id obj_get_id(Object *obj);
 
+ /* ========== Position ========== */
+Status obj_set_position (Object *obj, int x, int y);
+int obj_get_pos_x (Object *obj);
+int obj_get_pos_y (Object *obj);
+
+
  /* =============Health============= */
  /**
  * @brief It sets the health of an object
- * @author Salvador 
+ * @author Javier Jarque 
  *
  * @param obj a pointer to the object
  * @param health the health to set
  * @return OK  if all good, ERROR if pointer is NULL or other case not good
  */
 Status obj_set_health(Object *obj, int health);
+
+int obj_get_health(Object *obj);
 
 /**
  * @brief It gets the health of an object
@@ -187,6 +196,25 @@ Status obj_set_dependency(Object *obj, Id dependency);
  * @return the Id of the object that this object depends on, NO_ID in case of mistake
  */
 Id obj_get_dependency(Object *obj);
+
+Status obj_set_stats(Object *obj, int speed, int health, int energy, int attack);
+Status obj_set_health(Object *obj, int health);
+int obj_get_health(Object *obj);
+Status obj_set_speed(Object *obj, int speed);
+int obj_get_speed(Object *obj);
+Status obj_set_attack(Object *obj, int attack);
+int obj_get_attack(Object *obj);
+Status obj_set_energy(Object *obj, int energy);
+int obj_get_energy(Object *obj);
+
+/* ========== Consumable ========== */
+Bool obj_get_consumable (Object *obj);
+Status obj_set_consumable (Object *obj, Bool consumable);
+
+
+
+
+
 
 /**
  * @brief It prints the object information
