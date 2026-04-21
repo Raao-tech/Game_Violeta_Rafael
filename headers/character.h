@@ -206,7 +206,7 @@ Status character_print(Character *character);
 
 
 
-/* /**
+/** 
  * @brief It defines the character module interface
  *
  * @file character.h

@@ -146,11 +146,11 @@ int character_get_energy(Character *character){
 /* Speed */
 Status character_set_speed(Character* character, int speed){
   if(!character) return ERROR;
-  return entity_set_spedd(character->e_character, speed);
+  return entity_set_speed(character->e_character, speed);
 }
 int character_get_speed(Character *character){
   if(!character) return 0;
-  return entity_set_spedd(character->e_character);
+  return entity_get_speed(character->e_character);
 }
 
 

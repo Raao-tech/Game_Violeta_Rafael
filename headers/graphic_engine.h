@@ -16,6 +16,8 @@
 
 #define POS_X_INIT 0
 #define POS_Y_INIT 0
+#define MARGIN_WIDHT 125
+#define MARGIN_HIGHT 100
 /**
  * @brief Graphic_engine ADT (opaque type)
  *
@@ -61,5 +63,19 @@ void graphic_engine_destroy(Graphic_engine *ge);
  * @param game pointer to the game state
  */
 void graphic_engine_paint_game(Graphic_engine *ge, Game *game);
+
+/**
+ * @brief It paints the  main menu of game
+ * @author Rafael
+ *
+ * This show the main menu to the player with the option 
+ *  New Game
+ *  Load Game
+ *  Exit 
+ *
+ * @param ge pointer to the graphic engine
+ * @param game pointer to the game state
+ */
+void graphic_engine_menu_init(Graphic_engine *ge, Game *game);
 
 #endif

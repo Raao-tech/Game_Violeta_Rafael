@@ -178,7 +178,8 @@ Status obj_set_open(Object *obj, Id open);
 Id obj_get_open(Object *obj);
 
  /* =============Dependency============= */
-  /**
+
+ /**
  * @brief It sets the Id of the object that this object depends on
  * @author Salvador 
  *
@@ -197,13 +198,24 @@ Status obj_set_dependency(Object *obj, Id dependency);
  */
 Id obj_get_dependency(Object *obj);
 
+/**
+ * @brief It gets the int of the stats
+ * @author Salvador
+ *
+ * @param obj a pointer to the object
+ * @return the Id of the object that this object depends on, NO_ID in case of mistake
+*/
 Status obj_set_stats(Object *obj, int speed, int health, int energy, int attack);
+
 Status obj_set_health(Object *obj, int health);
 int obj_get_health(Object *obj);
+
 Status obj_set_speed(Object *obj, int speed);
 int obj_get_speed(Object *obj);
+
 Status obj_set_attack(Object *obj, int attack);
 int obj_get_attack(Object *obj);
+
 Status obj_set_energy(Object *obj, int energy);
 int obj_get_energy(Object *obj);
 

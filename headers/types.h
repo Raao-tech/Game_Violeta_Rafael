@@ -38,6 +38,7 @@
 /*<! Max_heald of skills*/
 #define MAX_HELD_SKILLS 4
 
+
 typedef long Id;
 
 typedef enum

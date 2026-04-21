@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
   /* ---- Validate minimum arguments ---- */
   if (argc < 2) {
-    fprintf(stderr, "Use: %s <game_data_file> [-l <log_file>]\n", argv[0]);
+    fprintf(stderr, "Use: %s <game_data_file> [-l <log_file>] [-d <log_file>]\n", argv[0]);
     return 1;
   }
 
@@ -98,21 +98,30 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  /* ========== GAME LOOP ========== */
+/*===========  MENU INIT   GAME =====================*/
+graphic_engine_menu_init(gengine, game);
+
+/*===========  MENU NUMENS GAME =====================*/
+
+
+/* ===========  GAME LOOP   ================= */
+  InitWindow(WIDHT_SCREEN, HIGHT_SCREEN, "Atlantitc Quest");
   while (command_get_code(last_cmd) != EXIT &&
          game_get_finished(game) == FALSE) {
 
-    /* 1. RENDER — paint the current state */
-    graphic_engine_paint_game(gengine, game);
 
-    /* 2. INPUT — read the next command from stdin */
-    command_get_user_input(last_cmd);
 
-    /* 3. UPDATE — apply the command to the game state */
-    game_actions_update(game, last_cmd);
 
-    /* 4. LOG — if enabled, write the command and its result */
-    if (log_enabled && log_file) {
+    while (!WindowShouldClose())
+    {
+      /* 1. RENDER — paint the current state */
+      graphic_engine_paint_game(gengine, game);
+      /* 2. INPUT — read the next command from stdin */
+      command_get_user_input(last_cmd);
+      /* 3. UPDATE — apply the command to the game state */
+      game_actions_update(game, last_cmd);
+      /* 4. LOG — if enabled, write the command and its result */
+      if (log_enabled && log_file) {
       Status      status   = game_get_last_cmd_status(game);
       CommandCode cmd_code = command_get_code(last_cmd);
       char       *obj_name = command_get_obj(last_cmd);
@@ -162,13 +171,14 @@ int main(int argc, char *argv[]) {
           break;
       }
     }
-
-    /* 5. TURN — advance to the next player (F11 multiplayer) */
-    game_turn_update(game);
+      /* 5. TURN — advance to the next player (F11 multiplayer) */
+      game_turn_update(game);
+    }
   }
-
-  /* ---- Cleanup ---- */
+    /* ---- Cleanup ---- */
   game_loop_cleanup(game, gengine, log_file);
+  CloseWindow();
+
 
   return 0;
 }
