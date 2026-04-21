@@ -24,6 +24,7 @@ struct _Object {
   Bool movable;                       /*!< Whether the object can be taken or not */
   Id open;                            /*!< Id of the link that this object can open (for use command) */
   Id dependency;                      /*!< Id of the object that this object depends on (for use command) */
+  Bool consumable;                    /*!< If the object could be consumable or not */
 
 };
 
@@ -43,6 +44,7 @@ Object *obj_create() {
   newObj->movable = FALSE;
   newObj->open = NO_ID;
   newObj->dependency = NO_ID;
+  newObj->consumable = FALSE;
   return newObj;
 }
 
@@ -93,7 +95,40 @@ char *obj_get_description(Object *obj) {
   if (!obj) return NULL;
   return entity_get_message(obj->e_obj);
 }
+
+/* ========== Position ========== */
+
+Status obj_set_position (Object *obj, int x, int y)
+{
+  if (!obj) return ERROR;
+  return entity_set_Position(obj, x, y);
+}
+
+int obj_get_pos_x (Object *obj)
+{
+  if (!obj) return ERROR_POSITION;
+  return enetity_get_x_position(obj->e_obj);
+}
+
+int obj_get_pos_y (Object *obj)
+{
+  if (!obj) return ERROR_POSITION;
+  return enetity_get_y_position (obj->e_obj);
+}
+
 /* ========== Health ========== */
+
+Status obj_set_health (Object *obj, int health)
+{
+  if (!obj) return ERROR;
+  return entity_set_health;
+}
+
+int obj_get_health(Object *obj)
+{
+  if (!obj) return ERROR_LIFE;
+  return entity_get_health (obj);
+}
 
 /* ========== Movable ========== */
 
@@ -183,6 +218,23 @@ int obj_get_energy(Object *obj){
   if(!obj) return ERROR;
   return entity_get_energy(obj->e_obj);
 }
+
+
+/* ========== Consumable ========== */
+
+Bool obj_get_consumable (Object *obj)
+{
+  if (!obj) return -1;
+  return obj->consumable;
+}
+
+Status obj_set_consumable (Object *obj, Bool consumable)
+{
+  if (!obj||consumable == -1) return ERROR;
+  obj->consumable = consumable;
+  return OK;
+}
+
 
 /* ========== Print ========== */
 

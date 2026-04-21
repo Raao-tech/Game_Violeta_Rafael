@@ -25,6 +25,7 @@
 #define NO_ID -1
 #define ERROR_MAIN -1
 #define ERROR_GAME -1
+#define ERROR_POSITION -9999
 
 /* Colors to prints */
 #define ROJO        "\033[0;31m"
