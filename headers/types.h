@@ -41,6 +41,7 @@
 
 typedef long Id;
 
+
 typedef enum
 {
     FALSE,
@@ -61,7 +62,7 @@ typedef enum
     ERROR_use,
     ERROR_open,
     ERROR_save
-   } Status;
+} Status;
 
 typedef enum
 {

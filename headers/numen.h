@@ -11,8 +11,9 @@
 #ifndef NUMEN_H
 #define NUMEN_H
 
-#include "character.h"
 #include "types.h"
+#include "character.h"
+#include "skills.h"
 
 typedef struct _Numen Numen;
 

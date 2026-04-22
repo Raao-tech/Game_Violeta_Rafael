@@ -8,13 +8,16 @@
 #s:131|Bedroom|./img_src/background/r.jpg|
 #s:132|Bathroom||./msc_src/OST|
 
+Estructura de space: s:Id|Nombre|gdesc|OST|
+
+
 #o:21|Sword|11|492|325|A sharp blade, rusty but deadly|./img_src|1|-5|0|0|0|0|
 #o:22|Chest|14|215|215|An old wooden chest, locked tight|./img_src|0|0|0|0|0|0|
 #o:23|Tapestry|13|215|215|A faded tapestry depicting a battle scene|./img_src|1|0|0|0|0|0|
 #o:24|Candelabra|12|300|302|A silver candelabra, still warm|./img_src|1|0|0|0|0|0|
 
 Nota(no debería obstruir):
- Estructura de object: o:Id|Nombre|localización|pos x|pos y|descripción|sprite|consumible|vida|energía|ataque|velocidad|Id de dependencia
+ Estructura de object: o:Id|Nombre|localización|pos x|pos y|descripción|sprite|consumible|vida|energía|ataque|velocidad|Id de dependencia|movable
 
 #c:51|Ghost||602|480|./img_src|12|5|1|Welcome to my castle... beware!|
 #c:52|Skeleton||492|125|./img_src|13|5|0|What a beautiful watch you're wearing, come on over|
@@ -22,8 +25,9 @@ Nota(no debería obstruir):
 #n:800|mamacoco|12|492|125|./img_src|0|0|0|0|1|2|||
  Estructura de numen: n:Id|Nombre|localización|pos x| pos y|sprite|vida|energía|ataque|velocidad|skill 1| skill 2| skill 3| skill 4|Id_following|
 
-#p:1|knight|100|150|./img_src/sprites/players/knighty.png|11|5|3
+#p:1|knight|11|100|150|./img_src/sprites/players/knighty.png|5|3
 
+Estructura de player: p:Id|Nombre|localización|pos x|pos y|sprite|max_bag|max_numen|
 
 #l:31|Hall_Entry|11|12|1|1|1
 #l:32|Dungeon_Gate|12|121|3|0|0
@@ -35,3 +39,4 @@ Nota(no debería obstruir):
 #l:38|Garden_Path|15|16|1|1|1
 #l:39|Escape_Tunnel|121|16|1|1|0
 
+Estructura de links: l:Id|Nombre|id_orig|Id_dest|direction|open_orig_to_dest|open_dest_to_orig|

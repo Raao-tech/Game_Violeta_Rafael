@@ -12,6 +12,7 @@
 struct _Numen
 {
   Character* c_numen; 
+  Skills*	skills[MAX_HELD_SKILLS];
 };
 
 /*========= (Create/Destroy) Numen ================*/
@@ -81,13 +82,14 @@ Status numen_set_corrupt(Numen *numen, Bool corrupt){
   if(!numen) return ERROR;
   return character_set_friendly(numen->c_numen, corrupt);
 }
-
 Bool numen_get_corrupt(Numen *numen){
   if(!numen) return FALSE;
   return character_get_friendly(numen->c_numen);
 }
 
-Status numen_print(Numen *numen) {
+
+Status numen_print(Numen *numen) 
+{
   if (!numen) return ERROR;
   return character_print(numen->c_numen);
 }

@@ -9,8 +9,20 @@
  */
 
 #include "skills.h"
-struct _Skils
+
+/*============== PUBLIC FUNCTION ======================*/
+Status skill_active(Numen * sender, Numen* receiver, Id id_skill)
 {
-    Id id;
- 
-};
+    if(!sender || !receiver || id_skill == NO_ID) return ERROR;
+
+    switch (id_skill)
+    {
+    case constant expression:
+        /* code */
+        break;
+    
+    default:
+        break;
+    }
+
+}
