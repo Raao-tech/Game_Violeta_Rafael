@@ -2,9 +2,9 @@
  * @brief It implements the game update through user actions
  *
  * @file game_actions.c
- * @author Profesores PPROG, Violeta, Rafael and Javier
- * @version 4
- * @date 11-04-2026
+ * @author Profesores PPROG, Violeta, Rafael, Salvador and Javier
+ * @version 5
+ * @date 23-04-2026
  * @copyright GNU Public License
  */
 
@@ -16,6 +16,7 @@
 #include <string.h>
 #include <strings.h>
 #include <time.h>
+#include <math.h>
 
 /**
  * Private function prototypes.
@@ -33,6 +34,8 @@ static void game_actions_use(Game *game);
 static void game_actions_open(Game *game);
 static void game_actions_save(Game *game);
 static void game_actions_load(Game *game);
+static void game_actions_recruit(Game *game);
+static void game_actions_kick(Game *game);
 /**
  * @brief Converts a direction string to a Direction enum value
  *
@@ -68,24 +71,59 @@ Status game_actions_update(Game *game, Command *command)
 {
   CommandCode cmd;
 
-  if (!game || !command) 								return ERROR;
-  if (game_set_last_command(game, command) == ERROR)	return ERROR;
+  if (!game || !command)
+    return ERROR;
+  if (game_set_last_command(game, command) == ERROR)
+    return ERROR;
 
   cmd = command_get_code(command);
 
   switch (cmd)
   {
-	case UNKNOWN: 	game_actions_unknown(game);	break;
-	case EXIT:		game_actions_exit(game);	break;
-	case MOVE:		game_actions_move(game);	break;
-	case TAKE:		game_actions_take(game);	break;
-	case DROP:		game_actions_drop(game);	break;
-	case ATTACK:	game_actions_attack(game);	break; /*Comando ingresado:   attack  my_numen other_numen skill_active  (sin player pues jugaremos con uno)*/
-	case CHAT:    	game_actions_chat(game);	break;
-	case INSPECT:	game_actions_inspect(game);	break;
-	case USE:		game_actions_use(game);		break;
-	case OPEN:		game_actions_open(game);	break;
-	default:									break;
+  case UNKNOWN:
+    game_actions_unknown(game);
+    break;
+  case EXIT:
+    game_actions_exit(game);
+    break;
+  case MOVE:
+    game_actions_move(game);
+    break;
+  case TAKE:
+    game_actions_take(game);
+    break;
+  case DROP:
+    game_actions_drop(game);
+    break;
+  case ATTACK:
+    game_actions_attack(game);
+    break;
+  case CHAT:
+    game_actions_chat(game);
+    break;
+  case INSPECT:
+    game_actions_inspect(game);
+    break;
+  case USE:
+    game_actions_use(game);
+    break;
+  case OPEN:
+    game_actions_open(game);
+    break;
+  case SAVE:
+    game_actions_save(game);
+    break;
+  case LOAD:
+    game_actions_load(game);
+    break;
+  case RECRUIT:
+    game_actions_recruit(game);
+    break;
+  case KICK:
+    game_actions_kick(game);
+    break;
+  default:
+    break;
   }
   return OK;
 }
@@ -97,14 +135,16 @@ Status game_actions_update(Game *game, Command *command)
 /* ---- UNKNOWN ---- */
 static void game_actions_unknown(Game *game)
 {
-  if (!game) return;
+  if (!game)
+    return;
   game_set_last_cmd_status(game, ERROR);
 }
 
 /* ---- EXIT ---- */
 static void game_actions_exit(Game *game)
 {
-  if (!game) return;
+  if (!game)
+    return;
   game_set_last_cmd_status(game, OK);
 }
 
@@ -120,7 +160,8 @@ static void game_actions_move(Game *game)
   Direction dir;
   Id origin, dest;
 
-  if (!game) return;
+  if (!game)
+    return;
   player = game_get_player_by_turn(game);
   if (!player)
   {
@@ -183,7 +224,8 @@ static void game_actions_take(Game *game)
   Id space_id, obj_id, dependency_id;
   Bool movable;
 
-  if (!game) return;
+  if (!game)
+    return;
 
   /*
    * Este tipo de comprobaciones hay que ponerlas en mira, para la solución del multijugador
@@ -332,37 +374,106 @@ static void game_actions_attack(Game *game)
 {
   Player *player = NULL;
   Space *space = NULL;
-  Numen *num = NULL;
-  char *name_target = NULL;
-  Skills	skill = TAKLE;
-  Id space_id;
-  int roll;
+  Numen *num = NULL, *enemy_num = NULL;
+  char *skill_indx_ch = NULL;
+  Skills skill = TAKLE;
+  Id space_id, num_id, *space_numens = NULL;
+  int roll, distance, skill_indx, radio, active_pos_x, active_pos_y, enemy_pos_x, enemy_pos_y, num_enemies, i;
 
-  if (!game) return;
-/*
+  if (!game)
+    return;
 
-        Player necesita una variable active_numen              y su funcion correspondiente 
-	*Pseudocódigo:
-	*	Player = player actual
-	*   Numen del ply = Numen que está siguiendo a Player y no está en el inventory de Player (el que está en escena)
-	*	Numen objetivo = numen obtenido del nombre pasado por command (accion name_numen  who_player)
-	*	
-	*    -->SI  (space contiene a numen del ply y al numen objetivo)  THEN
-	*		    SI		skill_active(numen_del_ply, numen_target, skill) == ERROR THEN
-	*					game_last_cmd_(ERROR);
-	*			ENDIF
-	*		ENDI
-    spaces.grid
-    numen.positon
+  player = game_get_player(game); /*Por implementar, ahora solo hay un player*/
+  if (!player)
+  {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
+  num_id = player_get_active_numen(player); /*Por implementar: el numen activo del player, el que está en escena, no el que está en el inventario*/
+  if (num_id == NO_ID)
+  {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
+  space_id = player_get_zone(player); 
+  if (space_id == NO_ID)
+  {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
 
-               skills distancia 50
-()) *                         xy          xy
-  *            p         Numen_own ---   Numne_enemigo
-	*		 
-	*
-	* 
-	* 
-*/
+  skill_indx_ch = command_get_target(game_get_last_command(game));
+  if (!skill_indx)
+  {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
+
+  skill_indx = atoi(skill_indx_ch);
+  if (skill_indx < 0 || skill_indx >= MAX_HELD_SKILLS)
+  {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
+
+  space = game_get_space(game, space_id);
+  num = game_get_numen_by_id(game, num_id); 
+  if (!space || !num)
+  {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
+  active_pos_x = numen_get_pos_x(num); 
+  active_pos_y = numen_get_pos_y(num); 
+
+  if (numen_get_health(num) <= 0)
+  {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
+
+  skill = numen_find_skill_by_index(num, skill_indx); /*por implementar*/
+  if (skill == NO_SKILL)
+  {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
+
+  radio = skill_get_radio(skill); /*por implementar*/
+
+  space_numens = space_get_numens(space); /*por implementar*/
+  if (!space_numens)
+  {
+    game_set_last_cmd_status(game, ERROR_Attack);
+    return;
+  }
+
+  num_enemies = space_get_n_numens(space); /*por implementar*/
+
+ /* For simplicity, we apply the skill effect to all valid targets in range. */
+  for (i = 0; i < num_enemies; i++)
+  {
+    enemy_num = game_get_numen_by_id(game, space_numens[i]); /*Por implementar*/
+    if (enemy_num && enemy_num && numen_get_id(enemy_num) != num_id && numen_get_corrupt(enemy_num) == FALSE)
+    {
+      enemy_pos_x = numen_get_pos_x(enemy_num);
+      enemy_pos_y = numen_get_pos_y(enemy_num);
+      distance = sqrt(pow(active_pos_x - enemy_pos_x, 2) + pow(active_pos_y - enemy_pos_y, 2));
+      if (distance <= radio)
+      {
+        if(skill_apply_effect(skill, num, enemy_num) == ERROR)  /*por implementar status skill_apply_effect*/
+        {
+          game_set_last_cmd_status(game, ERROR_Attack);
+          return;
+        }
+      }
+    }
+  }
+
+  game_set_last_cmd_status(game, OK);
+  return;
+
+
 }
 
 /* ========================================================================= */
@@ -535,19 +646,19 @@ static void game_actions_use(Game *game)
     return;
   }
 
-  consumable = obj_get_consumable (obj);
- 
+  consumable = obj_get_consumable(obj);
+
   obj_health = obj_get_health(obj);
 
   /*Object of health or damage*/
   if (obj_health != 0)
   {
-    player_set_health(player, player_get_health(player) + obj_health); 
+    player_set_health(player, player_get_health(player) + obj_health);
     if (consumable == TRUE)
-  {
-     player_delete_object(player, obj_id);
-  }
-  
+    {
+      player_delete_object(player, obj_id);
+    }
+
     game_set_last_cmd_status(game, OK);
     return;
   }
@@ -639,26 +750,25 @@ static void game_actions_open(Game *game)
   return;
 }
 
-
 /* ========================================================================= */
 /*                      SAVE: save                                           */
 /* ========================================================================= */
 static void game_actions_save(Game *game)
 {
-  if(!game)
+  if (!game)
   {
     game_set_last_cmd_status(game, ERROR_save);
     return;
   }
 
-  if(game_save_file(&game)==OK)
-  game_set_last_cmd_status(game, OK);
-  else{
+  if (game_save_file(&game) == OK)
+    game_set_last_cmd_status(game, OK);
+  else
+  {
     game_set_last_cmd_status(game, ERROR_save);
   }
   return;
 }
-
 
 /* ========================================================================= */
 /*                      HELPER: PARSE DIRECTION                              */

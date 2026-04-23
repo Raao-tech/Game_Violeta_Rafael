@@ -29,7 +29,10 @@ char *cmd_to_str[N_CMD][N_CMDT] = {
   {"i", "Inspect"},
   {"u", "Use"},
   {"o", "Open"},
-  {"s", "Save"}
+  {"s", "Save"},
+  {"l", "Load"},
+  {"r", "Recruit"},
+  {"k", "Kick"}
 };
 
 struct _Command {
@@ -76,7 +79,6 @@ Status command_set_code(Command *command, CommandCode code){
   return OK;
 }
 
-/*======= Obtener el tipo de accion (attack, take, move, drop, use, capture .....) ============*/
 CommandCode command_get_code(Command *command){
   if (!command) return NO_CMD;
   return command->code;
@@ -114,7 +116,7 @@ Status command_get_user_input(Command *command){
       else  i++;
     }
 
-    /* Second token: the target name (for take, drop, attack, chat, inspect, use) */
+    /* Second token: the target name (for take, drop, attack, chat, inspect, use, load, recruit, kick) */
     token = strtok(NULL, " \n");
     if (token)  command->target = strdup(token);
     return command_set_code(command, cmd);
