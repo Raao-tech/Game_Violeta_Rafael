@@ -22,7 +22,27 @@
 
 #define	FLAG_DET 	"-d"
 #define	FLAG_LOG 	"-l"
-#define	FLAG_TEST	"-t"
+#define	FLAG_TEST	"-t"  /*<! Print permite imprimir el mesaje de log en el file indicado*/
+#define print(file, cmd, targ, Skill, res) do { \ 
+    if (file) { \
+        if (Skill != NO_ID) { \
+            fprintf(file, "%s: %s    Used_Skill: %ld  Result: %s\n", \
+                (cmd)   ? (cmd)   : "Unknown", \
+                (targ)  ? (targ)  : "Target_unknown", \
+                (long)(Skill), \
+                (res)   ? (res)   : "Strange_Answer"); \
+        } else { \
+            fprintf(file, "%s: %s Result: %s\n", \
+                (cmd)   ? (cmd)   : "Unknown", \
+                (targ)  ? (targ)  : "Target_unknown", \
+                (res)   ? (res)   : "Strange_Answer"); \
+        } \
+        fflush(file); \
+    } \
+} while(0)
+
+
+	/*Se podría pedir la hora y la ínea en la que se ejecutó el comando y mostrarlo*/
 
 /**
  * @brief Initializes the game and the graphic engine from a data file
@@ -33,7 +53,7 @@
  * @param file_name path to the .dat file
  * @return 0 on success, 1 if game init fails, 2 if graphic engine fails
  */
-int game_loop_init(Game **game, Graphic_engine **gengine, char *file_name);
+int game_loop_init(Game **game, Graphic_engine **gengine, char *file_name, Bool test_mode);
 
 /**
  * @brief Frees the game, graphic engine and closes the log file
@@ -44,6 +64,17 @@ int game_loop_init(Game **game, Graphic_engine **gengine, char *file_name);
  * @param log_file pointer to the log FILE (may be NULL)
  */
 void game_loop_cleanup(Game *game, Graphic_engine *gengine, FILE *log_file);
+
+
+/**
+ * @brief print on file log
+ * @author Rafael
+ *
+ * @param game pointer to the game
+ * @param last_cmd pointer to the last command on game
+ * @param log_file pointer to the log FILE (may be NULL)
+ */
+void game_loop_print_log(Game *game, Command* last_cmd, FILE* log_file);
 
 
 /* ========================================================================= */
@@ -72,12 +103,12 @@ int main(int argc, char *argv[]) {
 	/*Aca se hará la pregunta de las flags -l , -d  o -t*/
 	if(argc >= 3)
 	{
-		for (i_flag = 1; i_flag < argc; i_flag++)
+		for (i_flag = 2; i_flag < argc; i_flag++)
 		{
 			/*Si existe -l debe de existir el namefile_log*/
 			if((i_flag+1) < argc && argv[i_flag] && strcmp(FLAG_LOG, argv[i_flag]) == 0)
 			{
-				if((argv+i_flag+1) != NULL)
+				if(argv[i_flag+1] != NULL)
 				{
 					log_file = fopen(argv[++i_flag], "w");
 					if(!log_file)
@@ -161,55 +192,8 @@ int main(int argc, char *argv[]) {
 		command_get_user_input(last_cmd);           /* 2. Input   */
 		game_actions_update(game, last_cmd);     
 		/* 4. LOG — if enabled, write the command and its result */
-		if (log_enabled && log_file) {
-			Status      status   = game_get_last_cmd_status(game);
-			CommandCode cmd_code = command_get_code(last_cmd);
-			char       *obj_name = command_get_target(last_cmd);
-			const char *result_str = (status == OK) ? "OK" : "ERROR";
+		if (log_enabled && log_file) game_loop_print_log(game, last_cmd, log_file);
 
-
-			switch (cmd_code) {
-				case EXIT:
-				fprintf(log_file, "exit: %s\n", result_str);
-				break;
-				case MOVE:
-				fprintf(log_file, "move %s: %s\n",
-						obj_name ? obj_name : "", result_str);
-				break;
-				case TAKE:
-				fprintf(log_file, "take %s: %s\n",
-						obj_name ? obj_name : "", result_str);
-				break;
-				case DROP:
-				fprintf(log_file, "drop %s: %s\n",
-						obj_name ? obj_name : "", result_str);
-				break;
-				case ATTACK:
-				fprintf(log_file, "attack %s: %s\n",
-						obj_name ? obj_name : "", result_str);
-				break;
-				case CHAT:
-				fprintf(log_file, "chat %s: %s\n",
-						obj_name ? obj_name : "", result_str);
-				break;
-				case INSPECT:
-				fprintf(log_file, "inspect %s: %s\n",
-						obj_name ? obj_name : "", result_str);
-				break;
-				case USE:
-				fprintf(log_file, "use %s: %s\n",
-						obj_name ? obj_name : "", result_str);
-				break;
-				case OPEN:
-						fprintf(log_file, "open %s: %s\n",
-							obj_name ? obj_name : "", result_str);		
-				break;
-				case SAVE: 
-					fprintf(log_file, "save: %s\n", result_str); 
-				break;
-				default:	break;
-			}
-		}
 			/* 5. TURN — advance to the next player (F11 multiplayer) */
 			game_turn_update(game);
 	}
@@ -226,7 +210,7 @@ int main(int argc, char *argv[]) {
 /* ========================================================================= */
 
 int game_loop_init(Game **game, Graphic_engine **gengine, char *file_name, Bool test_enabled) {
-	if (game_create_from_file(game, file_name) == ERROR) return 1;
+	if (game_management_create_from_file(game, file_name) == ERROR) return 1;
 
 	*gengine = graphic_engine_create();
 	if (*gengine == NULL) {
@@ -242,4 +226,37 @@ void game_loop_cleanup(Game *game, Graphic_engine *gengine, FILE *log_file) {
 	graphic_engine_destroy(gengine);
 
 	if (log_file) fclose(log_file);
+}
+
+
+/* ======================================================================== */
+/*                               Print LOG                                  */
+/* ======================================================================== */
+
+void game_loop_print_log(Game *game, Command* last_cmd, FILE* log_file){
+	if(!game || !last_cmd ) return;
+	if (log_file) {
+			Status      status   = game_get_last_cmd_status(game);
+			CommandCode cmd_code = command_get_code(last_cmd);
+			Id			skill_id = command_get_skill(last_cmd); /*Falta implementar esta función para saber que skill ha usado el numen del player*/
+			char       *target_name = command_get_target(last_cmd);
+			const char *result_str = (status == OK) ? "OK" : "ERROR";
+
+			target_name = target_name ? target_name : "UNKNOW";
+
+			switch (cmd_code) {
+				case EXIT: 		print(log_file, "Exit", "Generic",   NO_ID,    result_str);		break;
+				case MOVE: 		print(log_file, "Move", target_name, skill_id, result_str);		break;
+				case TAKE: 		print(log_file, "Take", target_name, skill_id, result_str);		break;
+				case DROP: 		print(log_file, "Drop", target_name, skill_id, result_str);		break;
+				case ATTACK: 	print(log_file, "Attack", target_name, skill_id, result_str);	break;
+				case CHAT: 		print(log_file, "Chat", target_name, skill_id, result_str);		break;
+				case INSPECT: 	print(log_file, "Inspect", target_name, skill_id, result_str);	break;
+				case USE: 		print(log_file, "Use", 	target_name, skill_id, result_str);		break;
+				case OPEN: 		print(log_file, "Open", target_name, skill_id, result_str);		break;	
+				case SAVE: 		print(log_file, "Save", target_name, skill_id, result_str);		break;
+				default:		print(log_file, "UNKNOW", "???", NO_ID, "ERROR");				break;
+			}
+	}
+	return;
 }
