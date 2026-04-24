@@ -42,28 +42,48 @@
 } while(0)
 
 
+typedef struct _Game_loop
+{
+	Graphic_engine* gp_raylib;
+	Game*			game;
+	Command*		last_cmd;
+}GameLoop;
+
+
 	/*Se podría pedir la hora y la ínea en la que se ejecutó el comando y mostrarlo*/
 
 /**
- * @brief Initializes the game and the graphic engine from a data file
- * @author Profesores PPROG
+ * @brief Initializes the game and the graphic engine from a data file on mode visual to commun user
+ * @author Rafael
  *
  * @param game pointer to pointer to the game (will be allocated)
  * @param gengine pointer to pointer to the graphic engine (will be allocated)
  * @param file_name path to the .dat file
  * @return 0 on success, 1 if game init fails, 2 if graphic engine fails
  */
-int game_loop_init(Game **game, Graphic_engine **gengine, char *file_name, Bool test_mode);
+int game_loop_init_user(GameLoop *game_loop, char *file_name);
+
+
+/**
+ * @brief Initializes the game and the graphic engine from a data file on mode Test to other devs
+ * @author Rafael
+ *
+ * @param game pointer to pointer to the game (will be allocated)
+ * @param gengine pointer to pointer to the graphic engine (will be allocated)
+ * @param file_name path to the .dat file
+ * @return 0 on success, 1 if game init fails, 2 if graphic engine fails
+ */
+int game_loop_init_test(GameLoop* game_loop, char *file_name);
 
 /**
  * @brief Frees the game, graphic engine and closes the log file
- * @author Profesores PPROG
+ * @author Profesores PPROG y Rafael
  *
  * @param game pointer to the game
  * @param gengine pointer to the graphic engine
  * @param log_file pointer to the log FILE (may be NULL)
  */
-void game_loop_cleanup(Game *game, Graphic_engine *gengine, FILE *log_file);
+void game_loop_cleanup(GameLoop* gameloop, FILE *log_file);
 
 
 /**
@@ -82,10 +102,8 @@ void game_loop_print_log(Game *game, Command* last_cmd, FILE* log_file);
 /* ========================================================================= */
 
 int main(int argc, char *argv[]) {
-	Graphic_engine *gengine     = 	 NULL;		/*<! puntero al Graphic_engine_raylib, desactivado en test mode*/
+	GameLoop*		game_Loop =		 NULL;
 	FILE           *log_file    = 	 NULL;		/*<! puntero al file, desactivado en test mode*/
-	Game           *game        = 	 NULL;
-	Command        *last_cmd    = 	 NULL;
 	Bool            log_enabled = 	 FALSE;
 	Bool			test_enabled = 	 FALSE;
 	Bool			is_determinist = FALSE;
@@ -138,11 +156,6 @@ int main(int argc, char *argv[]) {
 	else {srand(time(NULL));}
 
 
-	/*
-		Esto es loq ue ahra determinista o aleatroio nuestro juego.
-		Propongo que sea una variable dada a GameRule.c
-	*/
-
 	/*==========================================================*/
 
 	/*============== Inicialización del JUEGO (LLAMADA A GAME_MANAGMENT  y Graphic_engine ) =======================*/
@@ -167,7 +180,7 @@ int main(int argc, char *argv[]) {
 	 *                command_raylib_user_input();
 	 *
 	*/
-	last_cmd = game_get_last_command(game);
+	last_cmd = game_get_last_command(game_loop->last);
 	if (!last_cmd)
 	{
 		game_loop_cleanup(game, gengine, log_file);
@@ -206,12 +219,41 @@ int main(int argc, char *argv[]) {
 
 
 /* ========================================================================= */
-/*                            INIT / CLEANUP                                 */
+/*                            CREATE/ INIT / CLEANUP                                 */
 /* ========================================================================= */
+GameLoop* 	game_loop_create()
+{
+	GameLoop* new_game_Loop = (GameLoop*) malloc(sizeof(GameLoop));
+	if(!new_game_Loop) return NULL;
 
-int game_loop_init(Game **game, Graphic_engine **gengine, char *file_name, Bool test_enabled) {
+	new_game_Loop->game = 		game_create();
+	if(!new_game_Loop->game)
+	{
+		free(new_game_Loop);
+		return NULL;
+	}
+	new_game_Loop->last_cmd = 	NULL;
+	new_game_Loop->gp_raylib = 	NULL;
+
+	return new_game_Loop;
+}
+int game_loop_init_test(GameLoop* game_loop, char *file_name)
+{
+	if(!game_loop) return 1; 														/*ERROR 1 : NO existe GameLoop con el que trabajar*/
+	if (game_management_create_from_file(game_loop->game, file_name) == ERROR) return 2;		/*ERROR 2 : NO existe GameLoop con el que trabajar*/
+}
+
+int game_loop_init_user(GameLoop *game_loop, char *file_name)
+{
+	Graphic_engine *gengine     = 	 NULL;		/*<! puntero al Graphic_engine_raylib, desactivado en test mode*/
+	Game           *game        = 	 NULL;
+	Command        *last_cmd    = 	 NULL;
+
+	
+
 	if (game_management_create_from_file(game, file_name) == ERROR) return 1;
 
+	if()
 	*gengine = graphic_engine_create();
 	if (*gengine == NULL) {
 		game_destroy(*game);
@@ -221,11 +263,13 @@ int game_loop_init(Game **game, Graphic_engine **gengine, char *file_name, Bool 
 	return 0;
 }
 
-void game_loop_cleanup(Game *game, Graphic_engine *gengine, FILE *log_file) {
-	game_destroy(game);
-	graphic_engine_destroy(gengine);
-
-	if (log_file) fclose(log_file);
+void game_loop_cleanup(GameLoop* gameloop, FILE *log_file) {
+	if(gameloop){
+		if(gameloop->game) 		game_destroy(gameloop->game);
+		if(gameloop->gp_raylib) graphic_engine_destroy(gameloop->gp_raylib);
+		free(gameloop);
+	}
+	if (log_file) 			fclose(log_file);
 }
 
 

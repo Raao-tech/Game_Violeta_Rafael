@@ -54,12 +54,10 @@ static Status game_load_spaces(Game *game, char *filename)
   int tam_format;
   int i;
 
-  if (!game || !filename)
-    return ERROR;
+  if (!game || !filename) return ERROR;
 
   file = fopen(filename, "r");
-  if (file == NULL)
-    return ERROR;
+  if (file == NULL) return ERROR;
 
   tam_format = strlen(F_SPAC);
 
@@ -70,35 +68,26 @@ static Status game_load_spaces(Game *game, char *filename)
 
       /* --- id --- */
       toks = strtok(line + tam_format, "|");
-      if (!toks)
-        continue;
+      if (!toks) continue;
       id = atol(toks);
 
       /* --- name --- */
       toks = strtok(NULL, "|");
-      if (!toks)
-        continue;
+      if (!toks) continue;
       strcpy(name, toks);
       /* --- gdesc (optional) --- */
       toks = strtok(NULL, "|");
-      if (!toks)
-      {
-        strcpy(gdesc, "./img_src/background/default.jpg"); /*default gdesc */
-      }
-      else
-      {
-        strcpy(gdesc, toks);
-      }
+
+      if (!toks) 	{strcpy(gdesc, "./img_src/background/default.jpg");} /*default gdesc */
+      else 			{strcpy(gdesc, toks);}
+  
+
       /* --- OST (optional) --- */
       toks = strtok(NULL, "|\n");
-      if (toks)
-      {
-        strcpy(OST, toks);
-      }
-      else
-      {
-        OST[0] = '\0';
-      }
+
+      if (toks) {strcpy(OST, toks);}
+      else 		{OST[0] = '\0';}
+    
 
 #ifdef DEBUG
       printf("Leido space: s:%ld|%s\n", id, name);
@@ -110,10 +99,7 @@ static Status game_load_spaces(Game *game, char *filename)
         space_set_id(space, id);
         space_set_name(space, name);
         space_set_gdesc(space, gdesc);
-        if (OST[0] != '\0')
-        {
-          space_set_ost(space, OST);
-        }
+        if (OST[0] != '\0') space_set_ost(space, OST);
 
         game_add_space(game, space);
       }
@@ -129,22 +115,21 @@ static Status game_load_spaces(Game *game, char *filename)
 
 static Status game_load_objects(Game *game, char *filename)
 {
-  FILE *file = NULL;
-  char line[WORD_SIZE] = "";
-  char name[WORD_SIZE] = "";
-  char description[WORD_SIZE] = "";
-  char gdesc[WORD_SIZE] = "";
-  char *toks = NULL;
-  Id id = NO_ID, space_id = NO_ID, dependency = NO_ID;
-  Object *obj = NULL;
-  Space *space = NULL;
-  Player *player = NULL, *players_game[MAX_OBJECTS];
-  Status status = OK;
-  Bool consumable, movable;
-  int tam_format, health, attack, energy, speed, pos_x, pos_y, check, bucle, n_play;
+	FILE *file = NULL;
+	char line[WORD_SIZE] = "";
+	char name[WORD_SIZE] = "";
+	char description[WORD_SIZE] = "";
+	char gdesc[WORD_SIZE] = "";
+	char *toks = NULL;
+	Id id = NO_ID, space_id = NO_ID, dependency = NO_ID;
+	Object *obj = NULL;
+	Space *space = NULL;
+	Player *player = NULL, *players_game[MAX_OBJECTS];
+	Status status = OK;
+	Bool consumable, movable;
+	int tam_format, health, attack, energy, speed, pos_x, pos_y, check, bucle, n_play;
 
-  if (!game || !filename)
-    return ERROR;
+  if (!game || !filename) return ERROR;
 
   tam_format = strlen(F_OBJE);
   file = fopen(filename, "r");
