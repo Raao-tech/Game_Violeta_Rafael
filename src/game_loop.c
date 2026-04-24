@@ -40,7 +40,16 @@
         fflush(file); \
     } \
 } while(0)
+#define print_error(mssg, md_test) if(mssg) fprintf(stderr, "%s   Modo: %s\n", mssg, (md_test == TRUE) ? "Test" : "User"); 
 
+typedef enum{
+	OK,
+	ERR_gloop,
+	ERR_game,
+	ERR_file,
+	ERR_graph,
+	ERR_unknow
+}Status_init;
 
 typedef struct _Game_loop
 {
@@ -61,7 +70,7 @@ typedef struct _Game_loop
  * @param file_name path to the .dat file
  * @return 0 on success, 1 if game init fails, 2 if graphic engine fails
  */
-int game_loop_init_user(GameLoop *game_loop, char *file_name);
+Status_init game_loop_init_user(GameLoop *game_loop, char *file_name);
 
 
 /**
@@ -73,7 +82,7 @@ int game_loop_init_user(GameLoop *game_loop, char *file_name);
  * @param file_name path to the .dat file
  * @return 0 on success, 1 if game init fails, 2 if graphic engine fails
  */
-int game_loop_init_test(GameLoop* game_loop, char *file_name);
+Status_init game_loop_init_test(GameLoop* game_loop, char *file_name);
 
 /**
  * @brief Frees the game, graphic engine and closes the log file
@@ -102,13 +111,13 @@ void game_loop_print_log(Game *game, Command* last_cmd, FILE* log_file);
 /* ========================================================================= */
 
 int main(int argc, char *argv[]) {
-	GameLoop*		game_Loop =		 NULL;
+	GameLoop*		game_loop =		 NULL;
 	FILE           *log_file    = 	 NULL;		/*<! puntero al file, desactivado en test mode*/
 	Bool            log_enabled = 	 FALSE;
 	Bool			test_enabled = 	 FALSE;
 	Bool			is_determinist = FALSE;
-	int             result;
-	int             i_flag;
+	Status_init     result = 		 ERR_unknow;
+	int             i_flag = 		 0;
 	unsigned int	seed = 			 0;
 
 	/*=============== COMPROBACION DE recursos Minimos (programa y .dat) =========================*/
@@ -131,7 +140,7 @@ int main(int argc, char *argv[]) {
 					log_file = fopen(argv[++i_flag], "w");
 					if(!log_file)
 					{
-						fprintf(stderr, "ERROR: Cann't open the log file\n");
+						print_error("Error: Cann't open the file pass");
 						return 1;
 					}
 					log_enabled = TRUE;
@@ -154,18 +163,26 @@ int main(int argc, char *argv[]) {
 	/*Existe -d ---->  Activa el Modo Determinista*/
 	if(is_determinist == TRUE)  {srand(seed);}
 	else {srand(time(NULL));}
-
-
 	/*==========================================================*/
 
 	/*============== Inicialización del JUEGO (LLAMADA A GAME_MANAGMENT  y Graphic_engine ) =======================*/
-
-	result = game_loop_init(&game, &gengine, argv[1], test_enabled);
-	if (result != 0) 
+	
+	game_loop = game_loop_create();
+	if(!game_loop)
 	{
-		fprintf(stderr, "Error inizialiting game (%d)\n", result);
-		if (log_file) fclose(log_file); /*Si hemos abierto el archvio log, (flag -l), cierralo*/
+		print_error("ERROR: Cann't create game_loop", test_enabled); 
 		return 1;
+	}
+
+	if(test_enabled == TRUE) result = game_loop_init_test(game_loop, log_file);	/*Si el modo test esta activo*/
+	else result = game_loop_init_user(game_loop, log_file);						/*Si el modo test desactivado*/
+
+	switch (result)
+	{
+		case ERR_game: 	print_error("ERROR: Cann't init game", 				test_enabled); 									break;
+		case ERR_file: 	print_error("ERROR: Anysomething wrong whit file", 	test_enabled); 									break;
+		case ERR_graph: print_error("ERROR: Cann't init graph", 			test_enabled); 									break;
+		default:  		print_error("ERROR: Unknow this error, please, contact to we for we can help you", test_enabled); 	break;
 	}
 	/*==========================================================*/
 
@@ -180,7 +197,7 @@ int main(int argc, char *argv[]) {
 	 *                command_raylib_user_input();
 	 *
 	*/
-	last_cmd = game_get_last_command(game_loop->last);
+	last_cmd = game_get_last_command(game_loop->game);
 	if (!last_cmd)
 	{
 		game_loop_cleanup(game, gengine, log_file);
@@ -237,20 +254,15 @@ GameLoop* 	game_loop_create()
 
 	return new_game_Loop;
 }
-int game_loop_init_test(GameLoop* game_loop, char *file_name)
+Status_init game_loop_init_test(GameLoop* game_loop, char *file_name)
 {
-	if(!game_loop) return 1; 														/*ERROR 1 : NO existe GameLoop con el que trabajar*/
-	if (game_management_create_from_file(game_loop->game, file_name) == ERROR) return 2;		/*ERROR 2 : NO existe GameLoop con el que trabajar*/
+	if(!game_loop) return ERR_gloop; 																/*ERROR 1 : NO existe GameLoop con el que trabajar*/
+	if (game_management_create_from_file(game_loop->game, file_name) == ERROR) return ERR_game;		/*ERROR 2 : No se pudo guardar info del .dat en game*/
 }
 
-int game_loop_init_user(GameLoop *game_loop, char *file_name)
+Status_init game_loop_init_user(GameLoop *game_loop, char *file_name)
 {
-	Graphic_engine *gengine     = 	 NULL;		/*<! puntero al Graphic_engine_raylib, desactivado en test mode*/
-	Game           *game        = 	 NULL;
-	Command        *last_cmd    = 	 NULL;
-
-	
-
+	if(!game_loop) return ERR_gloop;
 	if (game_management_create_from_file(game, file_name) == ERROR) return 1;
 
 	if()
