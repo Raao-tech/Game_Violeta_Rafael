@@ -15,7 +15,7 @@
     *JAVIER AGREGA MÁS SKILLS:  llamarada, chorro de agua, 
     *puño hielo, lo que sea, pero que hayan aunque sea 18 habilidades distitntas, 
     *4 habilidades por tipo de numen*
-/
+*/
 static const Skills skill_table[NUM_SKILLS] = {
     /* [NO_SKILL]       */ { NO_SKILL,      "Ninguna",        0, 0,  0,  0 },
     /* [TAKLE]          */ { TAKLE,          "Tackle",         3, 1,  5,  2 },
