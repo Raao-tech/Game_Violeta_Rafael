@@ -1,35 +1,51 @@
 #include "./headers/raylib.h"
-#include <stdio.h>
+#define RAYGUI_IMPLEMENTATION
+#include "headers/raygui.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 int main(int argn, char* argv[]){
-    int ancho = 0;
-    int alto = 0;
-    int x, y, speed, ancho_cuadrado, alto_cuadrado;
-    if(argn < 3 || !argv) return 1;
-    if(!(argv+1) ||  !(argv+2)) return 1;
+    if(argn < 3) return 1;
 
-    ancho = atoi(*(argv+1));
-    alto = atoi(*(argv+2));
+    int ancho = atoi(argv[1]);
+    int alto = atoi(argv[2]);
     
-    InitWindow(ancho, alto, "Ventana de prueba para la resolucion");
-    x = y = 0;
-    ancho_cuadrado = alto_cuadrado = 5;
-    speed = ancho_cuadrado;
+    InitWindow(ancho, alto, "Proyecto Raylib");
+    SetTargetFPS(60); // Importante para que el movimiento sea fluido
+
+    int x = 10, y = 10;
+    int ancho_cuadrado = 20, alto_cuadrado = 20;
+    int speed = 5;
+    int currentMenu = 0;
+
     while (!WindowShouldClose())
     {
-        if(x < ancho_cuadrado || y < alto_cuadrado){
-            x += speed;
-            y +=speed;
-        }else {x = y = 0;}
+        // --- Lógica de Actualización ---
+        if (currentMenu == 1) {
+            if (IsKeyDown(KEY_RIGHT) && (x + ancho_cuadrado < ancho)) x += speed;
+            if (IsKeyDown(KEY_LEFT) && (x > 0)) x -= speed;
+            if (IsKeyDown(KEY_UP) && (y > 0)) y -= speed;
+            if (IsKeyDown(KEY_DOWN) && (y + alto_cuadrado < alto)) y += speed;
+        }
 
+        // --- Renderizado ---
         BeginDrawing();
             ClearBackground(RAYWHITE);
-            DrawRectangle(x,y,ancho_cuadrado,alto_cuadrado, RED);
-            DrawText("HOLAA, ESTO ES UNA PRUEBA DE RESOLUCIÓN DE PANTALLITASS", 100, 100,10, BLACK);
+
+            if (currentMenu == 0) {
+                DrawText("MENU PRINCIPAL", ancho/2 - 70, 100, 20, DARKGRAY);
+                if (GuiButton((Rectangle){ ancho/2 - 100, 150, 200, 50 }, "Jugar")) currentMenu = 1;
+                if (GuiButton((Rectangle){ ancho/2 - 100, 220, 200, 50 }, "Salir")) break;
+            } 
+            else if (currentMenu == 1) {
+                DrawRectangle(x, y, ancho_cuadrado, alto_cuadrado, RED);
+                DrawText("Usa las flechas para moverte", 10, 10, 20, LIGHTGRAY);
+                
+                if (GuiButton((Rectangle){ ancho - 110, 10, 100, 30 }, "Volver")) currentMenu = 0;
+            }
         EndDrawing();
     }
     
     CloseWindow();
+    return 0;
 }

@@ -112,9 +112,23 @@ char* graphic_engine_menu_init(char* name_game_default)
   /*Muestro el menú con todas las opciones posibles {New Game, Load Game, Exit}*/
   InitWindow(WIDHT_SCREEN, HIGHT_SCREEN, TITLE);
   SetTargetFPS(FPS);
+
   while (!WindowShouldClose && exit_on == FALSE)
   {
-    z
+    BeginDrawing();
+      ClearBackground(RAYWHITE);
+
+      // --- Lógica del Menú ---
+      if (currentMenu == 0) {
+        DrawText("MENU PRINCIPAL", 300, 100, 20, DARKGRAY);
+        if (GuiButton((Rectangle){ 300, 150, 200, 50 }, "Jugar")) currentMenu = 1;
+        if (GuiButton((Rectangle){ 300, 220, 200, 50 }, "Salir")) break;
+      } else if (currentMenu == 1) {
+        DrawText("JUEGO EN CURSO", 300, 100, 20, DARKGRAY);
+        if (GuiButton((Rectangle){ 300, 300, 200, 50 }, "Volver")) currentMenu = 0;
+      }
+
+    EndDrawing();
   }
   
   CloseWindow()

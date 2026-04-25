@@ -191,6 +191,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 #           RUN TARGETS
 #######################################
 
+prueba_rbl: window_prueba.c
+	gcc window_prueba.c       -o programa -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 run: $(TARGET)
 	./$(TARGET) $(BD)
 
