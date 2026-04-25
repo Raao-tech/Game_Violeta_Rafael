@@ -29,7 +29,16 @@
 
 /*file of data for default*/
 #define	F_DATA_N		"new_game.dat"
-#define	F_DATA_S		"./Save_old_games/"
+#define	F_DATA_S_1		"./Save_old_games/game_1.dat"
+#define	F_DATA_S_2		"./Save_old_games/game_3.dat"
+
+
+
+/*Los Ids de los numens serán impuestos, en pokemon Bulbasaur siempre es el #1 de la pokedex incluso pasando a otro juego*/
+/*Id de los Numens inciales*/
+#define First_numen     1
+#define Second_numen    2
+#define third_numen     3
 
 /*Name of game*/
 #define	TITLE		"Atlantic Quest"

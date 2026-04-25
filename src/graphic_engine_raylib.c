@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "graphic_engine.h"
 #include "raylib.h"
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h" /*Esto es una extension de raylib para hacer la interfaz grafica*/
 
 /* ------------------------------------------------------------------ */
 /*  Tipos privados                                                      */
@@ -96,15 +98,16 @@ void graphic_engine_destroy(Graphic_engine *ge) {
 }
 
 
-char* graphic_engine_menu_init(char* name_game_default)
+char* graphic_engine_menu_init(char* name_game_default, Id* numen_initial)
 {
   Bool  exit_on   = FALSE;
   char* name_game = NULL;
+  int   currentMenu = 0;
   int   w_boton     = 250;
   int   h_boton     = 50;
   int   intra_space = 10;
 
-  if(!name_game_default ) return NULL;
+  if(!name_game_default || !numen_create) return NULL;
   name_game = (char*) calloc(WORD_SIZE+1,sizeof(char));
   if(!name_game) return NULL;
 
@@ -113,33 +116,63 @@ char* graphic_engine_menu_init(char* name_game_default)
   InitWindow(WIDHT_SCREEN, HIGHT_SCREEN, TITLE);
   SetTargetFPS(FPS);
 
-  while (!WindowShouldClose && exit_on == FALSE)
+  while (!WindowShouldClose() && exit_on == FALSE)
   {
     BeginDrawing();
       ClearBackground(RAYWHITE);
-
       // --- Lógica del Menú ---
       if (currentMenu == 0) {
-        DrawText("MENU PRINCIPAL", 300, 100, 20, DARKGRAY);
-        if (GuiButton((Rectangle){ 300, 150, 200, 50 }, "Jugar")) currentMenu = 1;
-        if (GuiButton((Rectangle){ 300, 220, 200, 50 }, "Salir")) break;
-      } else if (currentMenu == 1) {
-        DrawText("JUEGO EN CURSO", 300, 100, 20, DARKGRAY);
-        if (GuiButton((Rectangle){ 300, 300, 200, 50 }, "Volver")) currentMenu = 0;
-      }
+        DrawText("ATLANTIC QUEST", (int)(WIDHT_SCREEN*(3.0/8.0)), 100, 20, DARKGRAY);
+        if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 150, 200, 50 }, "NEW GAME"))  currentMenu = 1;
+        if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "LOAD GAME")) currentMenu = 2;
+        if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 290, 200, 50 }, "Exit"))      exit_on = TRUE;
+      } else if (currentMenu == 2) {
+        DrawText("WHITCH YOUR GAME?", 300, 100, 20, DARKGRAY);
+		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(6.0/8.0)), 10, 100, 30 }, "BACK"))       currentMenu = 0;
+		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 150, 200, 50 }, "LOAD GAME #1"))  {
+		strncpy(name_game, F_DATA_S_1, WORD_SIZE);
+		name_game[WORD_SIZE] ='\0';
+		exit_on = TRUE;
+		}
+		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "LOAD GAME #2"))  {
+		strncpy(name_game, F_DATA_S_2, WORD_SIZE);
+		name_game[WORD_SIZE] ='\0';
+		exit_on = TRUE;
+		}
+      }else if(currentMenu == 1){
+		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(6.0/8.0)), 10, 100, 30 }, "BACK"))       currentMenu = 0;
+        DrawText("Choose your Initial Numen", (int)(WIDHT_SCREEN*(3.0/8.0)), 100, 20, DARKGRAY);
+		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 150, 200, 50 }, "BULBASAUR"))  {
+		strncpy(name_game, F_DATA_S_1, WORD_SIZE);
+		name_game[WORD_SIZE] ='\0';
+		*(numen_initial) = First_numen;
+		exit_on = TRUE;
+		}
+		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "SQUIRTLE"))  {
+		strncpy(name_game, F_DATA_S_2, WORD_SIZE);
+		name_game[WORD_SIZE] ='\0';
+		*(numen_initial) = Second_numen;
+		exit_on = TRUE;
+		}
+		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "CHARMANDER"))  {
+		strncpy(name_game, F_DATA_S_2, WORD_SIZE);
+		name_game[WORD_SIZE] ='\0';
+		*(numen_initial) = third_numen;
+		exit_on = TRUE;
+		}
+	  }
 
     EndDrawing();
   }
   
-  CloseWindow()
+  CloseWindow();
 
   /*Escucho que opcion ha escogido {New_game, Load_game_1, (Load_game_2) esta segunda opcion es contignente, empezaremos con una sola opcion de guardado}*/
 
   /*si es New  Game ---> devuelvo el valor de F_DATA_N*/
   /*si es Load Game ---> devuelvo el valor de F_DATA_S*/
   /*si es Exit      ---> devuelvo el valor NULL       */
-
-
+  if(name_game[0] == '\0') {free(name_game); return NULL;} /*Esto es en el caso de que se de a Exit*/
   return name_game;
 }
 
