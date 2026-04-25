@@ -96,57 +96,37 @@ void graphic_engine_destroy(Graphic_engine *ge) {
 }
 
 
-void graphic_engine_menu_init(Graphic_engine *ge, Game *game) {
-  Bool menu_active = TRUE;
+char* graphic_engine_menu_init(char* name_game_default)
+{
+  Bool  exit_on   = FALSE;
+  char* name_game = NULL;
+  int   w_boton     = 250;
+  int   h_boton     = 50;
+  int   intra_space = 10;
 
-  int w_boton     = 250;
-  int h_boton     = 50;
-  int intra_space = 10;
+  if(!name_game_default ) return NULL;
+  name_game = (char*) calloc(WORD_SIZE+1,sizeof(char));
+  if(!name_game) return NULL;
 
-  if (!ge || !game) return;
 
-  /* La ventana ya está abierta desde game_loop */
-  while (!WindowShouldClose() && menu_active) {
-    BeginDrawing();
-      ClearBackground(RAYWHITE);
-
-      /* Fondo del área de trabajo */
-      DrawRectangle(MARGIN_WIDHT, MARGIN_HIGHT,
-                    WIDHT_SCREEN - MARGIN_WIDHT,
-                    HIGHT_SCREEN - MARGIN_HIGHT, SKYBLUE);
-
-      /* Botón New Game */
-      DrawRectangle(MARGIN_WIDHT + intra_space,
-                    MARGIN_HIGHT + intra_space,
-                    w_boton, h_boton, LIGHTGRAY);
-      DrawText("New Game",
-               MARGIN_WIDHT + intra_space + 10,
-               MARGIN_HIGHT + intra_space + 15, 20, BLACK);
-
-      /* Botón Load Game */
-      DrawRectangle(MARGIN_WIDHT + intra_space,
-                    MARGIN_HIGHT + intra_space * 2 + h_boton,
-                    w_boton, h_boton, LIGHTGRAY);
-      DrawText("Load Game",
-               MARGIN_WIDHT + intra_space + 10,
-               MARGIN_HIGHT + intra_space * 2 + h_boton + 15, 20, BLACK);
-
-      /* Botón Exit */
-      DrawRectangle(MARGIN_WIDHT + intra_space,
-                    MARGIN_HIGHT + intra_space * 3 + h_boton * 2,
-                    w_boton, h_boton, RED);
-      DrawText("Exit",
-               MARGIN_WIDHT + intra_space + 10,
-               MARGIN_HIGHT + intra_space * 3 + h_boton * 2 + 15, 20, WHITE);
-
-    EndDrawing();
-
-    /* Detección de clicks — por ahora, cualquier click inicia el juego */
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-      menu_active = FALSE;
-    }
+  /*Muestro el menú con todas las opciones posibles {New Game, Load Game, Exit}*/
+  InitWindow(WIDHT_SCREEN, HIGHT_SCREEN, TITLE);
+  SetTargetFPS(FPS);
+  while (!WindowShouldClose && exit_on == FALSE)
+  {
+    z
   }
-  /* Al salir del while, el control regresa a game_loop que seguirá con su bucle */
+  
+  CloseWindow()
+
+  /*Escucho que opcion ha escogido {New_game, Load_game_1, (Load_game_2) esta segunda opcion es contignente, empezaremos con una sola opcion de guardado}*/
+
+  /*si es New  Game ---> devuelvo el valor de F_DATA_N*/
+  /*si es Load Game ---> devuelvo el valor de F_DATA_S*/
+  /*si es Exit      ---> devuelvo el valor NULL       */
+
+
+  return name_game;
 }
 
 void graphic_engine_paint_game(Graphic_engine *ge, Game *game) {

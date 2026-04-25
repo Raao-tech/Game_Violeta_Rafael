@@ -12,9 +12,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#include "command.h"
 #include "raylib.h"
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h" /*Esto es una extension de raylib para hacer la interfaz grafica*/
+#include "command.h"
 #include "game.h"
 #include "game_management.h"
 #include "game_actions.h"
@@ -39,8 +40,11 @@
         } \
         fflush(file); \
     } \
-} while(0)
-#define print_error(mssg, md_test) if(mssg) fprintf(stderr, "%s   Modo: %s\n", mssg, (md_test == TRUE) ? "Test" : "User"); 
+} while(0);
+#define print_error(mssg, md_test) do { \
+    if(mssg) fprintf(stderr, "%s   Modo: %s\n", mssg, \
+        (md_test == TRUE) ? "Test" : "User"); \
+} while(0);
 
 typedef enum{
 	OK,
@@ -111,27 +115,29 @@ void game_loop_print_log(Game *game, Command* last_cmd, FILE* log_file);
 /* ========================================================================= */
 
 int main(int argc, char *argv[]) {
-	GameLoop*		game_loop =		 NULL;
-	FILE           *log_file    = 	 NULL;		/*<! puntero al file, desactivado en test mode*/
-	Bool            log_enabled = 	 FALSE;
-	Bool			test_enabled = 	 FALSE;
-	Bool			is_determinist = FALSE;
-	Status_init     result = 		 ERR_unknow;
-	int             i_flag = 		 0;
-	unsigned int	seed = 			 0;
+	GameLoop*		game_loop =		 		NULL;
+	FILE           *log_file    = 	 		NULL;		/*<! puntero al file, desactivado en test mode*/
+	Bool            log_enabled = 	 		FALSE;
+	Bool			test_enabled = 	 		FALSE;
+	Bool			is_determinist = 		FALSE;
+	Status_init     result = 		 		ERR_unknow;
+	char			name_file_data[WORD_SIZE+1]= ""; 		/*<! Espacio para guardar la direccion del file con info de la partida*/
+	int             i_flag = 		 		0;
+	unsigned int	seed = 			 		0;
 
 	/*=============== COMPROBACION DE recursos Minimos (programa y .dat) =========================*/
 	/*Posible meora, podemos dejar como opcional el que s eingrese un .dat, al fin y al cabo, el jeugo se creara cuando se haya dado un menu que diga si leer el newgameo no*/
-	if (argc < 2) {
-		fprintf(stderr, "Use: %s <game_data_file> [-l <log_file>]\n", argv[0]);
+	if (argc < 1) {
+		fprintf(stderr, "Use: %s  [-l <log_file>][-d <seed>][-t <game_data_file>]\n", argv[0]);
 		return 1;
 	}
 
+
 	/*============= FLAGS -l -d -t =================================*/
 	/*Aca se hará la pregunta de las flags -l , -d  o -t*/
-	if(argc >= 3)
+	if(argc >= 2)
 	{
-		for (i_flag = 2; i_flag < argc; i_flag++)
+		for (i_flag = 1; i_flag < argc; i_flag++)
 		{
 			/*Si existe -l debe de existir el namefile_log*/
 			if((i_flag+1) < argc && argv[i_flag] && strcmp(FLAG_LOG, argv[i_flag]) == 0)
@@ -141,21 +147,23 @@ int main(int argc, char *argv[]) {
 					log_file = fopen(argv[++i_flag], "w");
 					if(!log_file)
 					{
-						print_error("Error: Cann't open the file pass");
+						print_error("Error: Cann't open the file pass", test_enabled);
 						return 1;
 					}
 					log_enabled = TRUE;
 				}
 			}
-			/*Si existe -d se hará determinista el juego*/
+			/*Si existe -d debe existir el <seed> para hacer determinista el juego*/
 			if(((i_flag+1) < argc) && argv[i_flag] && strcmp(FLAG_DET, argv[i_flag]) == 0)
 			{
 				is_determinist = TRUE;
-				seed = atoi(argv[++i_flag]);
+				seed = (unsigned int) atoi(argv[++i_flag]);
 			}
-			/*Si existe -t se ejecutará el modo test*/
-			if(argv[i_flag] && strcmp(FLAG_TEST, argv[i_flag]) == 0)
+			/*Si existe -t  debe existir <game_data_file> para que se ejecute el modo test*/
+			if(((i_flag+1) < argc) && argv[i_flag] && strcmp(FLAG_TEST, argv[i_flag]) == 0)
 			{
+				strncpy(name_file_data,argv[++i_flag],WORD_SIZE );
+				name_file_data[WORD_SIZE] = '\0';
 				test_enabled = TRUE;
 			}
 		}
@@ -175,15 +183,27 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	if(test_enabled == TRUE) result = game_loop_init_test(game_loop, argv[1]);	/*Si el modo test esta activo*/
-	else result = game_loop_init_user(game_loop, argv[1]);						/*Si el modo test desactivado*/
+	if(test_enabled == TRUE) 	/*Si el modo test esta activo*/
+	{
+		result = game_loop_init_test(game_loop, name_file_data);
+	}
+	else						/*Si el modo test desactivado*/
+	{
+		char *temp = graphic_engine_menu_init(name_file_data);
+		/*Copiamos la dirección por default de una nueva partida en name_file_data*/
+		strncpy(name_file_data, F_DATA_N, WORD_SIZE);
+		name_file_data[strlen(F_DATA_N)] = '\0';
+
+		result = game_loop_init_user(game_loop, name_file_data);	
+	}
 
 	switch (result)
 	{
-		case ERR_game: 	print_error("ERROR: Cann't init game", 				test_enabled); 	game_loop_cleanup(game_loop,log_file);	break;
-		case ERR_file: 	print_error("ERROR: Anysomething wrong whit file", 	test_enabled); 	game_loop_cleanup(game_loop,log_file);  break;
-		case ERR_graph: print_error("ERROR: Cann't init graph", 			test_enabled); 	game_loop_cleanup(game_loop,log_file);	break;
-		default:  		print_error("ERROR: Unknow this error, please, contact to we for we can help you", test_enabled); game_loop_cleanup(game_loop,log_file); break;
+		case ERR_unknow: print_error("ERROR: Unknow this error, please, contact to we for we can help you", test_enabled) game_loop_cleanup(game_loop,log_file); 	return 1;
+		case ERR_game: 	 print_error("ERROR: Cann't init game", 				test_enabled); 	game_loop_cleanup(game_loop,log_file);	return 1;
+		case ERR_file: 	 print_error("ERROR: Anysomething wrong whit file", 	test_enabled); 	game_loop_cleanup(game_loop,log_file);  return 1;
+		case ERR_graph:  print_error("ERROR: Cann't init graph", 				test_enabled); 	game_loop_cleanup(game_loop,log_file);	return 1;
+		default:																														break;
 	}
 	/*==========================================================*/
 

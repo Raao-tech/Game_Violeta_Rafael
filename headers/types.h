@@ -27,6 +27,17 @@
 #define ERROR_GAME -1
 #define ERROR_POSITION -9999
 
+/*file of data for default*/
+#define	F_DATA_N		"new_game.dat"
+#define	F_DATA_S		"./Save_old_games/"
+
+/*Name of game*/
+#define	TITLE		"Atlantic Quest"
+/*Number of FPS*/
+#define	FPS	60
+
+
+
 /* Colors to prints */
 #define ROJO        "\033[0;31m"
 #define VERDE       "\033[0;32m"
