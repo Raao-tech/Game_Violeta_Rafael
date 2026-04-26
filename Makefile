@@ -124,54 +124,70 @@
 #
 #		
 ## =============== TOOLCHAIN ===============
-CC       	= gcc 	#Compilador
-CPPFLAGS 	= -I ./headers -DDEBUG -MMD -MP
-CFLAGS  	= -g -Wall -O0 -Wextra  -Wpedantic  #flags para Warnings, Debug, optimizacion en general
-LDFLAGS   	=  
-PREFLAG  	= valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s
+# Compilador
+CC = gcc
+# Preprocesado: include path, define DEBUG, dependencias automaticas
+CPPFLAGS = -I ./headers -DDEBUG -MMD -MP
+# Procesado: warnings, debug, sin optimizacion, C89 estricto (exigido por I4)
+CFLAGS = -g -Wall -Wextra -Wpedantic -ansi -O0
+# Linkeado: vacio (ver LDLIBS)
+LDFLAGS =
+# Valgrind: para targets *_v y debug de fugas de memoria
+PREFLAG = valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s
+
+
 
 
 # =============== DIRECTORIES ===============
-SRC_DIR  = src
-HDR_DIR  = headers
-OBJ_DIR  = obj
-LIB_DIR  = lib
-DOC_DIR  = doc
-LOG_DIR  = otros
+SRC_DIR = src
+HDR_DIR = headers
+OBJ_DIR = obj
+LIB_DIR = lib
+DOC_DIR = doc
+LOG_DIR = otros
+
 
 # =============== FILES ===============
-SRCS     = $(wildcard $(SRC_DIR)/*.c)	#compilamos todo lo que tenga .c en SRC_DIR
-OBJS     = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS)) #patsubst ( patrón, Nuevo patrón, los archvios donde buscara el patron)
-TARGET   = atlantic_quest
+# Compilamos todo lo que tenga .c en SRC_DIR
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+# patsubst (patron, nuevo patron, archivos): src/x.c -> obj/x.o
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
+# Nombre del ejecutable principal
+TARGET = atlantic_quest
+# Log por defecto. Sobreescribible: make run_log LOG_FILE=otra.log
 LOG_FILE ?= $(LOG_DIR)/output.log
 
 # =============== DATA FILES ===============
-BD       ?= atlantic_quest.dat
-CMD		 ?= game1.cmd
+BD  ?= atlantic_quest.dat
+CMD ?= game1.cmd
+
 
 # =============== LOCAL STATIC LIBRARIES ===============
 LIBSCREEN_A = $(LIB_DIR)/libscreen.a
-RAYLIB_A	= $(LIB_DIR)/libraylib.a
+RAYLIB_A    = $(LIB_DIR)/libraylib.a
 
-# =============== POSIBLES DEPENDECIAS PARA LINUX ======
-GL_LIB      = /usr/lib64/libGL.so.1
-X11_LIB     = /usr/lib64/libX11.so
-DL_LIB      = /usr/lib64/libdl.so.2
-RT_LIB      = /usr/lib64/librt.so.1
-M_LIB       = /usr/lib64/libm.so
 
-#Solo debe ser usado en casos de no tener las dependencias en otras ubicaciones no usuales
+# =============== POSIBLES DEPENDENCIAS PARA LINUX ===============
+GL_LIB  = /usr/lib64/libGL.so.1
+X11_LIB = /usr/lib64/libX11.so
+DL_LIB  = /usr/lib64/libdl.so.2
+RT_LIB  = /usr/lib64/librt.so.1
+M_LIB   = /usr/lib64/libm.so
+
 RAYLIB_SYS_LIBS = $(GL_LIB) $(X11_LIB) $(DL_LIB) $(RT_LIB) $(M_LIB) -pthread
 
-#Cuando raylib y sus dependencias existe (*.so o *.a) (más usual)
+# Linkeado: librerias estaticas locales + dependencias del sistema
 LDLIBS = $(LIBSCREEN_A) $(RAYLIB_A) $(RAYLIB_SYS_LIBS)
+
+
+# =============== TARGET POR DEFECTO ===============
+# Si haces 'make' a secas, ejecuta 'all' (no las pruebas aisladas).
+.DEFAULT_GOAL := all
+
 
 #######################################
 #            BUILD TARGETS
 #######################################
-
-prueba_deleteme: window_prueba.c
-	gcc window_prueba.c $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -o prueba
 
 all: $(TARGET)
 
@@ -187,12 +203,25 @@ $(TARGET): $(OBJ_DIR) $(OBJS)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
+
+#######################################
+#       PRUEBAS AISLADAS DE RAYLIB
+#######################################
+# Estos targets compilan window_prueba.c por separado para verificar
+# que la cadena de raylib funciona en tu maquina. NO forman parte
+# del proyecto principal y se invocan explicitamente.
+
+prueba_local: window_prueba.c
+	$(CC) window_prueba.c $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LDLIBS) -o prueba
+
+prueba_sys: window_prueba.c
+	$(CC) window_prueba.c -o prueba_sys -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+
+
 #######################################
 #           RUN TARGETS
 #######################################
 
-prueba_rbl: window_prueba.c
-	gcc window_prueba.c       -o programa -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 run: $(TARGET)
 	./$(TARGET) $(BD)
 
@@ -251,7 +280,7 @@ play: $(TARGET) $(LOG_DIR)
 playv: $(TARGET) $(LOG_DIR)
 	@echo ""
 	@echo "======================================"
-	@echo "   	Atlantic Quest — Select Map"
+	@echo "   Atlantic Quest — Select Map (Valgrind)"
 	@echo "======================================"
 	@echo ""
 	@echo "Available data files:"
@@ -267,9 +296,7 @@ playv: $(TARGET) $(LOG_DIR)
 		if [ -z "$$file" ]; then \
 			echo "Invalid number."; exit 1; \
 		fi; \
-	else \CPPFLAGS  = -I ./headers -DDEBUG -MMD -MP
-CFLAGS    = -g -Wall -O0 -Wextra -Wpedantic -pthread
-LDFLAGS   =
+	else \
 		file="$$choice"; \
 	fi; \
 	if [ ! -f "$$file" ]; then \
@@ -287,8 +314,9 @@ LDFLAGS   =
 		$(PREFLAG) ./$(TARGET) "$$file"; \
 	fi
 
+
 #######################################
-#         INTEGRATION TESTS (P2)
+#         INTEGRATION TESTS (P3)
 #######################################
 
 test_cmd: $(TARGET) $(LOG_DIR)
@@ -299,6 +327,7 @@ test_cmd: $(TARGET) $(LOG_DIR)
 	@echo ""
 	@echo "LOG written to $(LOG_FILE):"
 	@cat $(LOG_FILE)
+
 
 #######################################
 #          DOCUMENTATION (C3)
@@ -313,14 +342,17 @@ doc:
 		echo "No Doxyfile found. Create one with: doxygen -g"; \
 	fi
 
+
 #######################################
 #             UTILITIES
 #######################################
 
 Ingit: Ingit.sh
 	./Ingit.sh
+
 Tests: automatic_test.sh
 	./automatic_test.sh
+
 mandar: clean
 	zip -r Game_mandar_RaVi.zip ./
 	@echo "Packaged into Game_mandar_RaVi.zip"
@@ -331,17 +363,18 @@ mandar_rm:
 rm_log:
 	rm -f $(LOG_DIR)/*.log *.log
 
-
 clean:
 	rm -f $(OBJ_DIR)/*.o $(OBJ_DIR)/*.d $(TARGET) *.gch *.log
 	rm -f $(SRC_DIR)/*.o
 	rm -f Game_mandar_RaVi.zip
+	rm -f prueba prueba_sys
 
 clean_all: clean
 	rm -rf $(OBJ_DIR) $(DOC_DIR) tests/*.o tests/*_test
 
+
 .PHONY: all run runv run_log runv_log run_custom run_custom_log \
-        play playv test_cmd doc Ingit mandar mandar_rm rm_log \
-        clean clean_all
+        play playv test_cmd doc Ingit Tests mandar mandar_rm rm_log \
+        clean clean_all prueba_local prueba_sys
 
 -include $(OBJS:.o=.d)

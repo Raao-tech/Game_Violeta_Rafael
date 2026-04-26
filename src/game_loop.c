@@ -244,7 +244,7 @@ Status_init game_loop_init_user(GameLoop *game_loop) {
     result_ge = graphic_engine_init(game_loop->gp_raylib);
 
     /* Si el usuario salio del menu (cerro ventana o pulso Exit) */
-    if (result_ge.menu_out == OUT_ERR || result_ge.menu_out == EXIT) {
+    if (result_ge.menu_out == OUT_ERR || result_ge.menu_out == EXIT_Q) {
         return INIT_EXIT;
     }
 

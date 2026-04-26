@@ -12,6 +12,8 @@
 #define COMMAND_H
 
 #include "types.h"
+#include "raylib.h"
+
 
 #define N_CMDT 2
 #define N_CMD  16

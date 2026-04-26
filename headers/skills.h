@@ -24,7 +24,9 @@ struct _Skills
 typedef struct _Skills Skills;
 
 
-//command
-//attack name_numen 2 1
+/*
+*    command
+*    attack name_numen 2 1 
+*/
 
 
