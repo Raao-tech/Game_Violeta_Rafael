@@ -10,7 +10,6 @@
 
 #include "game_management.h"
 #include "game_actions.h"
-#include "raylib.h" /*esto es una prueba*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -648,8 +647,7 @@ static void game_actions_open(Game *game)
   int obj_health = 0;
   Links *link = NULL;
 
-  if (!game)
-    return;
+  if (!game) return;
 
   player = game_get_player_by_turn(game);
   if (!player)
@@ -706,14 +704,8 @@ static void game_actions_open(Game *game)
     return;
   }
 
-  if (link_get_destination_id(link) == space_id)
-  {
-    link_set_open_dest_to_origin(link, TRUE);
-  }
-  else if (link_get_origin_id(link) == space_id)
-  {
-    link_set_open_origin_to_dest(link, TRUE);
-  }
+  if (link_get_destination_id(link) == space_id)	{link_set_open_dest_to_origin(link, TRUE);}
+  else if (link_get_origin_id(link) == space_id)	{link_set_open_origin_to_dest(link, TRUE);}
   game_set_last_cmd_status(game, OK);
   return;
 }
@@ -729,12 +721,8 @@ static void game_actions_save(Game *game)
     return;
   }
 
-  if (game_save_file(&game) == OK)
-    game_set_last_cmd_status(game, OK);
-  else
-  {
-    game_set_last_cmd_status(game, ERROR_save);
-  }
+  if (game_save_file(&game) == OK) {game_set_last_cmd_status(game, OK);}
+  else 	{game_set_last_cmd_status(game, ERROR_save);}
   return;
 }
 
@@ -744,17 +732,12 @@ static void game_actions_save(Game *game)
 
 static Direction ge_parse_direction(const char *str)
 {
-  if (!str)
-    return U;
+  if (!str) return U;
 
-  if (strcasecmp(str, "north") == 0 || strcasecmp(str, "n") == 0)
-    return N;
-  if (strcasecmp(str, "south") == 0 || strcasecmp(str, "s") == 0)
-    return S;
-  if (strcasecmp(str, "east") == 0 || strcasecmp(str, "e") == 0)
-    return E;
-  if (strcasecmp(str, "west") == 0 || strcasecmp(str, "w") == 0)
-    return W;
+  if (strcasecmp(str, "north") == 0 || strcasecmp(str, "n") == 0)	return N;
+  if (strcasecmp(str, "south") == 0 || strcasecmp(str, "s") == 0)	return S;
+  if (strcasecmp(str, "east") == 0 || strcasecmp(str, "e") == 0)	return E;
+  if (strcasecmp(str, "west") == 0 || strcasecmp(str, "w") == 0)	return W;
 
   return U;
 }

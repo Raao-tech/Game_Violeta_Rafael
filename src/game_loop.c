@@ -13,102 +13,83 @@
 #include <string.h>
 #include <time.h>
 #include "raylib.h"
-#define RAYGUI_IMPLEMENTATION
-#include "raygui.h" /*Esto es una extension de raylib para hacer la interfaz grafica*/
 #include "command.h"
 #include "game.h"
 #include "game_management.h"
 #include "game_actions.h"
 #include "graphic_engine.h"
 
-#define	FLAG_DET 	"-d"
-#define	FLAG_LOG 	"-l"
-#define	FLAG_TEST	"-t"  /*<! Print permite imprimir el mesaje de log en el file indicado*/
-#define print(file, cmd, targ, Skill, res) do { \ 
+#define FLAG_DET  "-d"
+#define FLAG_LOG  "-l"
+#define FLAG_TEST "-t"
+
+/* ------------------------------------------------------------------------- */
+/* Macro: print                                                              */
+/*                                                                           */
+/* Imprime una linea de log al fichero indicado. Si Skill != NO_ID se        */
+/* incluye el id de la skill usada por el numen activo.                      */
+/* IMPORTANTE: la macro NO termina en ';'. El ';' lo pone quien la usa.      */
+/* ------------------------------------------------------------------------- */
+#define print(file, cmd, targ, Skill, res) do { \
     if (file) { \
-        if (Skill != NO_ID) { \
-            fprintf(file, "%s: %s    Used_Skill: %ld  Result: %s\n", \
-                (cmd)   ? (cmd)   : "Unknown", \
-                (targ)  ? (targ)  : "Target_unknown", \
+        if ((Skill) != NO_ID) { \
+            fprintf((file), "%s: %s    Used_Skill: %ld  Result: %s\n", \
+                (cmd)  ? (cmd)  : "Unknown", \
+                (targ) ? (targ) : "Target_unknown", \
                 (long)(Skill), \
-                (res)   ? (res)   : "Strange_Answer"); \
+                (res)  ? (res)  : "Strange_Answer"); \
         } else { \
-            fprintf(file, "%s: %s Result: %s\n", \
-                (cmd)   ? (cmd)   : "Unknown", \
-                (targ)  ? (targ)  : "Target_unknown", \
-                (res)   ? (res)   : "Strange_Answer"); \
+            fprintf((file), "%s: %s Result: %s\n", \
+                (cmd)  ? (cmd)  : "Unknown", \
+                (targ) ? (targ) : "Target_unknown", \
+                (res)  ? (res)  : "Strange_Answer"); \
         } \
-        fflush(file); \
+        fflush((file)); \
     } \
-} while(0);
+} while(0)
+
 #define print_error(mssg, md_test) do { \
-    if(mssg) fprintf(stderr, "%s   Modo: %s\n", mssg, \
-        (md_test == TRUE) ? "Test" : "User"); \
-} while(0);
-
-typedef enum{
-	OK,
-	EXIT,
-	ERR_gloop,
-	ERR_game,
-	ERR_cmd,
-	ERR_graph,
-	ERR_unknow
-}Status_init;
-
-typedef struct _Game_loop
-{
-	Graphic_engine* gp_raylib;
-	Game*			game;
-	Command*		last_cmd;
-}GameLoop;
+    if (mssg) fprintf(stderr, "%s   Modo: %s\n", (mssg), \
+        ((md_test) == TRUE) ? "Test" : "User"); \
+} while(0)
 
 
-	/*Se podría pedir la hora y la ínea en la que se ejecutó el comando y mostrarlo*/
+/* ------------------------------------------------------------------------- */
+/* Status_init                                                               */
+/*                                                                           */
+/* Codigos de retorno de las funciones de inicializacion del game_loop.      */
+/* INIT_OK debe ser el primero (valor 0) por convencion: "exito = 0".        */
+/* Todos los nombres tienen prefijo INIT_ para no chocar con CommandCode     */
+/* (EXIT) ni con Status (OK, ERROR).                                         */
+/* ------------------------------------------------------------------------- */
+typedef enum {
+    INIT_OK,
+    INIT_EXIT,           /*<! El usuario cerro el menu sin elegir partida */
+    INIT_ERR_GLOOP,      /*<! Puntero game_loop nulo */
+    INIT_ERR_GAME,       /*<! Fallo en game_management_create_from_file */
+    INIT_ERR_FILE,       /*<! Nombre de fichero invalido o no existe */
+    INIT_ERR_CMD,        /*<! No se pudo recuperar el last_cmd del Game */
+    INIT_ERR_GRAPH,      /*<! Fallo creando el Graphic_engine */
+    INIT_ERR_UNKNOW
+} Status_init;
 
-/**
- * @brief Initializes the game and the graphic engine from a data file on mode visual to commun user
- * @author Rafael
- *
- * @param game pointer to pointer to the game (will be allocated)
- * @param gengine pointer to pointer to the graphic engine (will be allocated)
- * @param file_name path to the .dat file
- * @return 0 on success, 1 if game init fails, 2 if graphic engine fails
- */
+
+typedef struct _Game_loop {
+    Graphic_engine *gp_raylib;
+    Game           *game;
+    Command        *last_cmd;
+} GameLoop;
+
+
+/* ========================================================================= */
+/*                          PROTOTIPOS DEL MODULO                            */
+/* ========================================================================= */
+
+GameLoop   *game_loop_create(void);
 Status_init game_loop_init_user(GameLoop *game_loop);
-
-
-/**
- * @brief Initializes the game and the graphic engine from a data file on mode Test to other devs
- * @author Rafael
- *
- * @param game pointer to pointer to the game (will be allocated)
- * @param gengine pointer to pointer to the graphic engine (will be allocated)
- * @param file_name path to the .dat file
- * @return 0 on success, 1 if game init fails, 2 if graphic engine fails
- */
-Status_init game_loop_init_test(GameLoop* game_loop, char *file_name);
-
-/**
- * @brief Frees the game, graphic engine and closes the log file
- * @author Profesores PPROG y Rafael
- *
- * @param game pointer to the game
- * @param gengine pointer to the graphic engine
- * @param log_file pointer to the log FILE (may be NULL)
- */
-void game_loop_cleanup(GameLoop* gameloop, FILE *log_file);
-
-
-/**
- * @brief print on file log
- * @author Rafael
- *
- * @param game pointer to the game
- * @param last_cmd pointer to the last command on game
- * @param log_file pointer to the log FILE (may be NULL)
- */
-void game_loop_print_log(Game *game, Command* last_cmd, FILE* log_file);
+Status_init game_loop_init_test(GameLoop *game_loop, char *file_name);
+void        game_loop_cleanup(GameLoop *gameloop, FILE *log_file);
+void        game_loop_print_log(Game *game, Command *last_cmd, FILE *log_file);
 
 
 /* ========================================================================= */
@@ -116,212 +97,210 @@ void game_loop_print_log(Game *game, Command* last_cmd, FILE* log_file);
 /* ========================================================================= */
 
 int main(int argc, char *argv[]) {
-	GameLoop*		game_loop =		 		NULL;
-	FILE           *log_file    = 	 		NULL;		/*<! puntero al file, desactivado en test mode*/
-	Bool            log_enabled = 	 		FALSE;
-	Bool			test_enabled = 	 		FALSE;
-	Bool			is_determinist = 		FALSE;
-	Status_init		result = 		 		ERR_unknow;
-	MenuResult		menu_result;
-	char			name_file_data[WORD_SIZE+1]= ""; 		/*<! Espacio para guardar la direccion del file con info de la partida*/
-	int             i_flag = 		 		0;
-	unsigned int	seed = 			 		0;
+    GameLoop    *game_loop      = NULL;
+    FILE        *log_file       = NULL;
+    Bool         log_enabled    = FALSE;
+    Bool         test_enabled   = FALSE;
+    Bool         is_determinist = FALSE;
+    Status_init  result         = INIT_ERR_UNKNOW;
+    char         name_file_data[WORD_SIZE + 1] = "";
+    int          i_flag         = 0;
+    unsigned int seed           = 0;
 
-	/*=============== COMPROBACION DE recursos Minimos (programa y .dat) =========================*/
-	/*Posible meora, podemos dejar como opcional el que s eingrese un .dat, al fin y al cabo, el jeugo se creara cuando se haya dado un menu que diga si leer el newgameo no*/
-	if (argc < 1) {
-		fprintf(stderr, "Use: %s  [-l <log_file>][-d <seed>][-t <game_data_file>]\n", argv[0]);
-		return 1;
-	}
+    /* (void)log_enabled; ← cuando implementes el bucle del Bloque 2,
+       quita este cast y usa la variable. */
+    (void)log_enabled;
 
+    /*=============== COMPROBACION DE recursos minimos =====================*/
+    if (argc < 1) {
+        fprintf(stderr,"Use: %s  [-l <log_file>][-d <seed>][-t <game_data_file>]\n",argv[0]);
+        return 1;
+    }
 
-	/*============= FLAGS -l -d -t =================================*/
-	/*Aca se hará la pregunta de las flags -l , -d  o -t*/
-	if(argc >= 2)
-	{
-		for (i_flag = 1; i_flag < argc; i_flag++)
+    /*=============== FLAGS -l -d -t =======================================*/
+    if (argc >= 2) {
+        for (i_flag = 1; i_flag < argc; i_flag++) 
 		{
-			/*Si existe -l debe de existir el namefile_log*/
-			if((i_flag+1) < argc && argv[i_flag] && strcmp(FLAG_LOG, argv[i_flag]) == 0)
+            /* -l <log_file> */
+            if ((i_flag + 1) < argc && argv[i_flag] && strcmp(FLAG_LOG, argv[i_flag]) == 0) 
 			{
-				if(argv[i_flag+1] != NULL)
+                if (argv[i_flag + 1] != NULL) 
 				{
-					log_file = fopen(argv[++i_flag], "w");
-					if(!log_file)
+                    log_file = fopen(argv[++i_flag], "w");
+                    if (!log_file)
 					{
-						print_error("Error: Cann't open the file pass", test_enabled);
-						return 1;
-					}
-					log_enabled = TRUE;
-				}
-			}
-			/*Si existe -d debe existir el <seed> para hacer determinista el juego*/
-			if(((i_flag+1) < argc) && argv[i_flag] && strcmp(FLAG_DET, argv[i_flag]) == 0)
+                        print_error("Error: Cann't open the file pass",test_enabled);
+                        return 1;
+                    }
+                    log_enabled = TRUE;
+                }
+            }
+            /* -d <seed> */
+            if (((i_flag + 1) < argc) && argv[i_flag] && strcmp(FLAG_DET, argv[i_flag]) == 0)
 			{
-				is_determinist = TRUE;
-				seed = (unsigned int) atoi(argv[++i_flag]);
-			}
-			/*Si existe -t  debe existir <game_data_file> para que se ejecute el modo test*/
-			if(((i_flag+1) < argc) && argv[i_flag] && strcmp(FLAG_TEST, argv[i_flag]) == 0)
+                is_determinist = TRUE;
+                seed = (unsigned int) atoi(argv[++i_flag]);
+            }
+            /* -t <game_data_file> */
+            if (((i_flag + 1) < argc) && argv[i_flag] && strcmp(FLAG_TEST, argv[i_flag]) == 0)
 			{
-				strncpy(name_file_data,argv[++i_flag],WORD_SIZE );
-				name_file_data[WORD_SIZE] = '\0';
-				test_enabled = TRUE;
-			}
-		}
-	}	
-	
-	/*Existe -d ---->  Activa el Modo Determinista*/
-	if(is_determinist == TRUE)  {srand(seed);}
-	else {srand(time(NULL));}
-	/*==========================================================*/
+                strncpy(name_file_data, argv[++i_flag], WORD_SIZE);
+                name_file_data[WORD_SIZE] = '\0';
+                test_enabled = TRUE;
+            }
+        }
+    }
 
-	/*============== Inicialización del JUEGO (LLAMADA A GAME_MANAGMENT  y Graphic_engine ) =======================*/
-	
-	game_loop = game_loop_create();
-	if(!game_loop)
+    if (is_determinist == TRUE) { srand(seed); }
+    else                        { srand((unsigned int)time(NULL)); }
+
+    /*=============== INICIALIZACION DEL JUEGO =============================*/
+
+    game_loop = game_loop_create();
+    if (!game_loop) 
 	{
-		print_error("ERROR: Cann't create game_loop", test_enabled); 
-		return 1;
-	}
+        print_error("ERROR: Cann't create game_loop", test_enabled);
+        if (log_file) fclose(log_file);
+        return 1;
+    }
 
-	if(test_enabled == TRUE)	{result = game_loop_init_test(game_loop, name_file_data);} /*Modo Test*/
-	else						{result = game_loop_init_user(game_loop);}				   /*Modo User*/
-	
+    if (test_enabled == TRUE) {result = game_loop_init_test(game_loop, name_file_data);}
+	else {result = game_loop_init_user(game_loop);}
 
-	switch (result)
-	{
-		case ERR_unknow: print_error("ERROR: Unknow this error, please, contact to we for we can help you", test_enabled) game_loop_cleanup(game_loop,log_file); 	return 1;
-		case ERR_game: 	 print_error("ERROR: Cann't init game", 				test_enabled); 	game_loop_cleanup(game_loop,log_file);	return 1;
-		case ERR_file: 	 print_error("ERROR: Anysomething wrong whit file", 	test_enabled); 	game_loop_cleanup(game_loop,log_file);  return 1;
-		case ERR_graph:  print_error("ERROR: Cann't init graph", 				test_enabled); 	game_loop_cleanup(game_loop,log_file);	return 1;
-		default:																														break;
-	}
-	/*==========================================================*/
+    switch (result) {
+        case INIT_OK:	break;
+        case INIT_EXIT: 		game_loop_cleanup(game_loop, log_file);/* El usuario cerro el menu pulsando Exit. Salida limpia. */				return 0; 
+        case INIT_ERR_GLOOP:	print_error("ERROR: game_loop is NULL", test_enabled);				game_loop_cleanup(game_loop, log_file); 	return 1;
+        case INIT_ERR_GAME:		print_error("ERROR: Cann't init game", test_enabled);				game_loop_cleanup(game_loop, log_file);		return 1;
+        case INIT_ERR_FILE:		print_error("ERROR: Anysomething wrong whit file", test_enabled);	game_loop_cleanup(game_loop, log_file);		return 1;
+        case INIT_ERR_CMD:		print_error("ERROR: Cann't recover last_cmd", test_enabled);		game_loop_cleanup(game_loop, log_file);		return 1;
+        case INIT_ERR_GRAPH:	print_error("ERROR: Cann't init graph", test_enabled);				game_loop_cleanup(game_loop, log_file);		return 1;
+        default:				print_error("ERROR: Unknow this error, please contact us",test_enabled);game_loop_cleanup(game_loop, log_file);	return 1;
+    }
 
-	/*============== OBTENCIÓN DEL INPUT DEL USUARIO =======================*/
+    /*=============== BUCLE PRINCIPAL ======================================*/
+    /*
+     * Bloque 2: aqui ira el while real.
+     *
+     * Modo test:
+     *   while (cmd != EXIT && !game_finished) {
+     *     command_get_user_input(last_cmd);
+     *     game_actions_update(game, last_cmd);
+     *     if (log_enabled) game_loop_print_log(game, last_cmd, log_file);
+     *   }
+     *
+     * Modo visual:
+     *   while (!WindowShouldClose() && cmd != EXIT && !game_finished) {
+     *     graphic_engine_paint_game(gp_raylib, game);
+     *     command_raylib_get_user_input(last_cmd);
+     *     if (command_has_input(last_cmd))
+     *         game_actions_update(game, last_cmd);
+     *   }
+     */
 
-	/** 
-	 * Mi propuesta consiste en bifurcar el tipo de input, gracia a una tercera flag[ -t ]
-	 *  que active el modo test (por terminal .cmd) o en su defecto el modo deploy (por Keyboard)
-	 * 
-	 * Modo Visual:
-	 *            IF    (no existe -t  )  THEN
-	 *                command_raylib_user_input();
-	 *
-	*/
-	/*==========================================================*/
-
-	return 0;
+    game_loop_cleanup(game_loop, log_file);
+    return 0;
 }
 
 
 /* ========================================================================= */
-/*                            CREATE/ INIT / CLEANUP                                 */
+/*                       CREATE / INIT / CLEANUP                             */
 /* ========================================================================= */
-GameLoop* 	game_loop_create()
-{
-	GameLoop* new_game_Loop = (GameLoop*) malloc(sizeof(GameLoop));
-	if(!new_game_Loop)			return NULL;
 
-	new_game_Loop->game =		NULL;
-	new_game_Loop->last_cmd = 	NULL;
-	new_game_Loop->gp_raylib = 	NULL;
+GameLoop *game_loop_create(void) {
+    GameLoop *new_game_loop = (GameLoop *) malloc(sizeof(GameLoop));
+    if (!new_game_loop) return NULL;
 
-	return new_game_Loop;
-}
-Status_init game_loop_init_test(GameLoop* game_loop, char *file_name)/*Función para el modo test*/
-{
-	if(!game_loop) return ERR_gloop; 																/*ERROR 1 : NO existe GameLoop con el que trabajar*/
-	if (game_management_create_from_file(game_loop->game, file_name) == ERROR) return ERR_game;		/*ERROR 2 : No se pudo guardar info del .dat en game*/
+    new_game_loop->game      = NULL;
+    new_game_loop->last_cmd  = NULL;
+    new_game_loop->gp_raylib = NULL;
+
+    return new_game_loop;
 }
 
-Status_init game_loop_init_user(GameLoop *game_loop)
-{
-	MenuResult	result_ge;
-	Command		*command = NULL;
+Status_init game_loop_init_test(GameLoop *game_loop, char *file_name) {
+    if (!game_loop) return INIT_ERR_GLOOP;
+    if (!file_name) return INIT_ERR_FILE;
 
+    if (game_management_create_from_file(&game_loop->game, file_name) == ERROR)
+        return INIT_ERR_GAME;
 
-	if(!game_loop)	return ERR_gloop;
+    game_loop->last_cmd = game_get_last_command(game_loop->game);
+    if (!game_loop->last_cmd) return INIT_ERR_CMD;
 
-
-	game_loop->gp_raylib = graphic_engine_create();
-	if (game_loop->gp_raylib == NULL)
-	{
-		command_destroy(command);
-		return ERR_graph;
-	}
-
-	result_ge = graphic_engine_init(game_loop->gp_raylib);
-
-	
-
-
-	/*Si por lo que sea el usuario ha terminado la sesión en el menú, salimos y notificamos que se tiene que salir (EXIT)*/
-	if(result_ge.menu_out == OUT_ERR)
-	{
-		command_destroy(command);
-		graphic_engine_destroy(game_loop->gp_raylib);
-		return EXIT;
-	}
-	if(game_management_create_from_file(&game_loop->game, result_ge.data_name) == ERROR)
-	{
-		command_destroy(command);
-		graphic_engine_destroy(game_loop->gp_raylib);
-		return ERR_game;
-	}
-	if(command_raylib_get_user_input(game_get_last_command(game_loop->game)) == ERROR)
-	{
-		command_destroy(command);
-		graphic_engine_destroy(game_loop->gp_raylib);
-		return ERR_game;
-	}
-	
-	return OK;
+    return INIT_OK;
 }
 
-void game_loop_cleanup(GameLoop* gameloop, FILE *log_file)
-{
-	if(gameloop)
-	{
-		if(gameloop->game) 		game_destroy(gameloop->game);
-		if(gameloop->gp_raylib) graphic_engine_destroy(gameloop->gp_raylib);
-		free(gameloop);
-	}
-	if (log_file) 			fclose(log_file);
+Status_init game_loop_init_user(GameLoop *game_loop) {
+    MenuResult result_ge;
+
+    if (!game_loop) return INIT_ERR_GLOOP;
+
+    /* 1. Crear el motor grafico */
+    game_loop->gp_raylib = graphic_engine_create();
+    if (!game_loop->gp_raylib) return INIT_ERR_GRAPH;
+
+    /* 2. Mostrar el menu y recoger la decision del usuario */
+    result_ge = graphic_engine_init(game_loop->gp_raylib);
+
+    /* Si el usuario salio del menu (cerro ventana o pulso Exit) */
+    if (result_ge.menu_out == OUT_ERR || result_ge.menu_out == EXIT) {
+        return INIT_EXIT;
+    }
+
+    /* 3. Cargar la partida desde el .dat elegido en el menu */
+    if (game_management_create_from_file(&game_loop->game,result_ge.data_name) == ERROR) {
+        return INIT_ERR_GAME;
+    }
+
+    /* 4. Recuperar el last_cmd que vive dentro del Game */
+    game_loop->last_cmd = game_get_last_command(game_loop->game);
+    if (!game_loop->last_cmd) return INIT_ERR_CMD;
+
+    /* 5. TODO Bloque 1: aplicar result_ge.init_numen al jugador
+       cuando Player tenga la API player_add_numen / player_set_active_numen */
+
+    return INIT_OK;
+}
+
+void game_loop_cleanup(GameLoop *gameloop, FILE *log_file) {
+    if (gameloop) {
+        if (gameloop->game)      game_destroy(gameloop->game);
+        if (gameloop->gp_raylib) graphic_engine_destroy(gameloop->gp_raylib);
+        free(gameloop);
+    }
+    if (log_file) fclose(log_file);
 }
 
 
-/* ======================================================================== */
-/*                               Print LOG                                  */
-/* ======================================================================== */
+/* ========================================================================= */
+/*                               PRINT LOG                                   */
+/* ========================================================================= */
 
-void game_loop_print_log(Game *game, Command* last_cmd, FILE* log_file){
-	if(!game || !last_cmd ) return;
-	if (log_file) {
-			Status      status   = game_get_last_cmd_status(game);
-			CommandCode cmd_code = command_get_code(last_cmd);
-			Id			skill_id = command_get_skill(last_cmd); /*Falta implementar esta función para saber que skill ha usado el numen del player*/
-			char       *target_name = command_get_target(last_cmd);
-			const char *result_str = (status == OK) ? "OK" : "ERROR";
+void game_loop_print_log(Game *game, Command *last_cmd, FILE *log_file) {
+    if (!game || !last_cmd) return;
+    if (log_file) {
+        Status      status      = game_get_last_cmd_status(game);
+        CommandCode cmd_code    = command_get_code(last_cmd);
+        Id          skill_id    = NO_ID;  /* TODO Bloque 1: command_get_skill(last_cmd) */
+        char       *target_name = command_get_target(last_cmd);
+        const char *result_str  = (status == OK) ? "OK" : "ERROR";
 
-			target_name = target_name ? target_name : "UNKNOW";
+        target_name = target_name ? target_name : "UNKNOW";
 
-			switch (cmd_code)
-			{
-				case EXIT: 		print(log_file, "Exit", "Generic",   NO_ID,    result_str);		break;
-				case MOVE: 		print(log_file, "Move", target_name, skill_id, result_str);		break;
-				case WALK: 		print(log_file, "Walk", target_name, skill_id, result_str);		break;
-				case TAKE: 		print(log_file, "Take", target_name, skill_id, result_str);		break;
-				case DROP: 		print(log_file, "Drop", target_name, skill_id, result_str);		break;
-				case ATTACK: 	print(log_file, "Attack", target_name, skill_id, result_str);	break;
-				case CHAT: 		print(log_file, "Chat", target_name, skill_id, result_str);		break;
-				case INSPECT: 	print(log_file, "Inspect", target_name, skill_id, result_str);	break;
-				case USE: 		print(log_file, "Use", 	target_name, skill_id, result_str);		break;
-				case OPEN: 		print(log_file, "Open", target_name, skill_id, result_str);		break;	
-				case SAVE: 		print(log_file, "Save", target_name, skill_id, result_str);		break;
-				default:		print(log_file, "UNKNOW", "???", NO_ID, "ERROR");				break;
-			}
-	}
-	return;
+        switch (cmd_code) {
+            case EXIT:    print(log_file, "Exit",    "Generic",   NO_ID,    result_str); break;
+            case MOVE:    print(log_file, "Move",    target_name, skill_id, result_str); break;
+            case WALK:    print(log_file, "Walk",    target_name, skill_id, result_str); break;
+            case TAKE:    print(log_file, "Take",    target_name, skill_id, result_str); break;
+            case DROP:    print(log_file, "Drop",    target_name, skill_id, result_str); break;
+            case ATTACK:  print(log_file, "Attack",  target_name, skill_id, result_str); break;
+            case CHAT:    print(log_file, "Chat",    target_name, skill_id, result_str); break;
+            case INSPECT: print(log_file, "Inspect", target_name, skill_id, result_str); break;
+            case USE:     print(log_file, "Use",     target_name, skill_id, result_str); break;
+            case OPEN:    print(log_file, "Open",    target_name, skill_id, result_str); break;
+            case SAVE:    print(log_file, "Save",    target_name, skill_id, result_str); break;
+            default:      print(log_file, "UNKNOW", "???",       NO_ID,    "ERROR");    break;
+        }
+    }
 }

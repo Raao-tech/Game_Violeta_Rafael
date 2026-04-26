@@ -1,5 +1,5 @@
 /**
- * @brief It implements the command interpreter
+ * @brief It implements the command interpreter (mode test, stdin)
  *
  * @file command.c
  * @author Profesores PPROG and Javier Jarque
@@ -17,115 +17,134 @@
 
 #define CMD_LENGHT 30
 
+/* ----------------------------------------------------------------------
+ * Tabla de comandos
+ *
+ * Correspondencia con CommandCode:
+ *   indice de tabla = valor de enum + 1
+ *   (porque NO_CMD = -1 ocupa la fila 0)
+ *
+ * IMPORTANTE: el orden de las filas DEBE coincidir con el orden del enum
+ * en command.h. Si añades un comando nuevo, añade tambien su fila aqui
+ * y actualiza N_CMD.
+ * ---------------------------------------------------------------------- */
 char *cmd_to_str[N_CMD][N_CMDT] = {
-  {"", "No command"},
-  {"", "Unknown"},
-  {"e", "Exit"},
-  {"m", "Move"},
-  {"t", "Take"},
-  {"d", "Drop"},
-  {"a", "Attack"},
-  {"c", "Chat"},
-  {"i", "Inspect"},
-  {"u", "Use"},
-  {"o", "Open"},
-  {"s", "Save"},
-  {"l", "Load"},
-  {"r", "Recruit"},
-  {"k", "Kick"}
+    {"",  "No command"},
+    {"",  "Unknown"},
+    {"e", "Exit"},
+    {"m", "Move"},
+    {"w", "Walk"},
+    {"t", "Take"},
+    {"d", "Drop"},
+    {"a", "Attack"},
+    {"c", "Chat"},
+    {"i", "Inspect"},
+    {"u", "Use"},
+    {"o", "Open"},
+    {"s", "Save"},
+    {"l", "Load"},
+    {"r", "Recruit"},
+    {"k", "Kick"}
 };
 
 struct _Command {
-  char *target;
-  CommandCode code;
-  /* PlayerCode player------> Es una posible  solución para nuestro multijugador simultaneo 7
-  * typedef enum{            que nos digan constantemente quién está ejecutando el comando por
-  *   NO_PLY,                cada frame (para graphic_engine_raylib()) y  por cada línea presente 
-  *   PLY_1,                 en el game1.cmd (las pruebas de integración automatizadas).
-  *   PLY_2
-  * }PlayerCode;
-  *                           Posiblers consescuencias: 
-  *                  La máxima cantidad de jugadores, vendría definido por una macro en test.h o en el
-  *                   propio command de la misma forma que se ecnuentra en CMD.  podemos establecerlo en 
-  *                 el game->turn  = MAX_PLY para no cmabiar muchas lineas de codigo,pero todo estaría con
-  *                   esta enumeracion de tipos de datos.
-  *
-  */
+    char       *target;
+    CommandCode code;
+
+    /* PlayerCode player ----> Posible solucion para multijugador simultaneo:
+     *   typedef enum { NO_PLY, PLY_1, PLY_2 } PlayerCode;
+     *   Permitiria identificar quien ejecuta cada comando, util para los
+     *   tests de integracion automatizados (game1.cmd) y para el render
+     *   por frame en graphic_engine.
+     */
 };
 
-Command *command_create(){
-  Command *newCommand = NULL;
+/* ----------------------------------------------------------------------
+ * Create / Destroy
+ * ---------------------------------------------------------------------- */
 
-  newCommand = (Command *)calloc(1, sizeof(Command));
-  if (newCommand == NULL) return NULL;
+Command *command_create(void) {
+    Command *newCommand = (Command *) calloc(1, sizeof(Command));
+    if (!newCommand) return NULL;
 
-  newCommand->code = NO_CMD;
-  newCommand->target = NULL;
-  return newCommand;
+    newCommand->code   = NO_CMD;
+    newCommand->target = NULL;
+    return newCommand;
 }
 
-Status command_destroy(Command *command){
-  if (!command) return ERROR;
+Status command_destroy(Command *command) {
+    if (!command) return ERROR;
 
-  if (command->target) free(command->target);
-
-  free(command);
-  return OK;
+    if (command->target) free(command->target);
+    free(command);
+    return OK;
 }
 
-Status command_set_code(Command *command, CommandCode code){
-  if (!command) return ERROR;
-  command->code = code;
-  return OK;
+/* ----------------------------------------------------------------------
+ * Set / Get
+ * ---------------------------------------------------------------------- */
+
+Status command_set_code(Command *command, CommandCode code) {
+    if (!command) return ERROR;
+    command->code = code;
+    return OK;
 }
 
-CommandCode command_get_code(Command *command){
-  if (!command) return NO_CMD;
-  return command->code;
-}
-/*======= obtener la entidad señalada en la que se basa la accion (CommandCode)=============*/
-char *command_get_target(Command *command){
-  if (!command) return NULL;
-  return command->target;
+CommandCode command_get_code(Command *command) {
+    if (!command) return NO_CMD;
+    return command->code;
 }
 
+char *command_get_target(Command *command) {
+    if (!command) return NULL;
+    return command->target;
+}
 
+/* ----------------------------------------------------------------------
+ * command_get_user_input  (modo test: lee de stdin)
+ *
+ * Lee una linea de stdin con formato "<cmd> [<target>]" (ej. "move north",
+ * "take sword", "walk n"). Rellena el Command con el codigo y el target.
+ *
+ * Si fgets devuelve NULL (EOF, p.ej. al terminar la redireccion del .cmd),
+ * tratamos la condicion como un EXIT implicito.
+ * ---------------------------------------------------------------------- */
+Status command_get_user_input(Command *command) {
+    char        input[CMD_LENGHT] = "";
+    char       *token             = NULL;
+    int         i                 = UNKNOWN - NO_CMD + 1;  /* = 2 */
+    CommandCode cmd;
 
-/*======= Eje central, Input del usuario =============*/
-Status command_get_user_input(Command *command){
-  char input[CMD_LENGHT] = "";
-  char *token = NULL;
-  int i = UNKNOWN - NO_CMD + 1;
-  CommandCode cmd;
+    if (!command) return ERROR;
 
-  if (!command) return ERROR;
-
-  if (command->target) {
-    free(command->target);
-    command->target = NULL;
-  }
-/*======================== (Issaty() == 1) Modo Visual con Raylib ==========================*/
-
-
-
-/*=============== (ISATY() == 0 ) Modo terminal ===================*/
-/*Guardamos el comando escrito por el user en la terminal en un string llamado input (con 20 caracteres = CMD_LEGHT)*/
-  if (fgets(input, CMD_LENGHT, stdin))
-  {
-    /* First token: the command itself */
-    token = strtok(input, " \n");
-    if (!token) return command_set_code(command, UNKNOWN);
-
-    cmd = UNKNOWN;
-    while (cmd == UNKNOWN && i < N_CMD){
-      if (!strcasecmp(token, cmd_to_str[i][CMDS]) || !strcasecmp(token, cmd_to_str[i][CMDL])) cmd = i + NO_CMD;
-      else  i++;
+    /* Limpiamos el target del turno anterior antes de leer el nuevo */
+    if (command->target) {
+        free(command->target);
+        command->target = NULL;
     }
 
-    /* Second token: the target name (for take, drop, attack, chat, inspect, use, load, recruit, kick) */
-    token = strtok(NULL, " \n");
-    if (token)  command->target = strdup(token);
-    return command_set_code(command, cmd);
-  }
-  else {return command_set_code(command, EXIT);}
+    if (fgets(input, CMD_LENGHT, stdin)) {
+        /* Primer token: el comando */
+        token = strtok(input, " \n");
+        if (!token) return command_set_code(command, UNKNOWN);
+
+        cmd = UNKNOWN;
+        while (cmd == UNKNOWN && i < N_CMD) {
+            if (!strcasecmp(token, cmd_to_str[i][CMDS]) ||
+                !strcasecmp(token, cmd_to_str[i][CMDL])) {
+                cmd = i + NO_CMD;
+            } else {
+                i++;
+            }
+        }
+
+        /* Segundo token: el target (opcional segun el comando) */
+        token = strtok(NULL, " \n");
+        if (token) command->target = strdup(token);
+
+        return command_set_code(command, cmd);
+    }
+
+    /* fgets fallo (EOF tipicamente): salida implicita */
+    return command_set_code(command, EXIT);
 }
