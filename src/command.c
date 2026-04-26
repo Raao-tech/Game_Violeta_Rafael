@@ -24,9 +24,6 @@
  *   indice de tabla = valor de enum + 1
  *   (porque NO_CMD = -1 ocupa la fila 0)
  *
- * IMPORTANTE: el orden de las filas DEBE coincidir con el orden del enum
- * en command.h. Si añades un comando nuevo, añade tambien su fila aqui
- * y actualiza N_CMD.
  * ---------------------------------------------------------------------- */
 char *cmd_to_str[N_CMD][N_CMDT] = {
     {"",  "No command"},
