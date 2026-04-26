@@ -80,50 +80,21 @@ Status game_actions_update(Game *game, Command *command)
 
   switch (cmd)
   {
-  case UNKNOWN:
-    game_actions_unknown(game);
-    break;
-  case EXIT:
-    game_actions_exit(game);
-    break;
-  case MOVE:
-    game_actions_move(game);
-    break;
-  case TAKE:
-    game_actions_take(game);
-    break;
-  case DROP:
-    game_actions_drop(game);
-    break;
-  case ATTACK:
-    game_actions_attack(game);
-    break;
-  case CHAT:
-    game_actions_chat(game);
-    break;
-  case INSPECT:
-    game_actions_inspect(game);
-    break;
-  case USE:
-    game_actions_use(game);
-    break;
-  case OPEN:
-    game_actions_open(game);
-    break;
-  case SAVE:
-    game_actions_save(game);
-    break;
-  case LOAD:
-    game_actions_load(game);
-    break;
-  case RECRUIT:
-    game_actions_recruit(game);
-    break;
-  case KICK:
-    game_actions_kick(game);
-    break;
-  default:
-    break;
+	case UNKNOWN:	game_actions_unknown(game); break;
+	case EXIT:		game_actions_exit(game);    break;
+	case MOVE:		game_actions_move(game);    break;
+	case TAKE:		game_actions_take(game);    break;
+	case DROP:		game_actions_drop(game);	break;
+	case ATTACK:	game_actions_attack(game);	break;
+	case CHAT:		game_actions_chat(game);	break;
+	case INSPECT:	game_actions_inspect(game);	break;
+	case USE:		game_actions_use(game);		break;
+	case OPEN:		game_actions_open(game);	break;
+	case SAVE:		game_actions_save(game);	break;
+	case LOAD:		game_actions_load(game);	break;
+	case RECRUIT:	game_actions_recruit(game);	break;
+	case KICK:		game_actions_kick(game);	break;
+	default:									break;
   }
   return OK;
 }
@@ -135,16 +106,14 @@ Status game_actions_update(Game *game, Command *command)
 /* ---- UNKNOWN ---- */
 static void game_actions_unknown(Game *game)
 {
-  if (!game)
-    return;
+  if (!game) return;
   game_set_last_cmd_status(game, ERROR);
 }
 
 /* ---- EXIT ---- */
 static void game_actions_exit(Game *game)
 {
-  if (!game)
-    return;
+  if (!game) return;
   game_set_last_cmd_status(game, OK);
 }
 
@@ -160,8 +129,7 @@ static void game_actions_move(Game *game)
   Direction dir;
   Id origin, dest;
 
-  if (!game)
-    return;
+  if (!game) return;
   player = game_get_player_by_turn(game);
   if (!player)
   {
@@ -206,8 +174,7 @@ static void game_actions_move(Game *game)
   player_set_zone(player, dest);
 
   dest_sp = game_get_space(game, dest);
-  if (dest_sp)
-    space_set_discovered(dest_sp, TRUE);
+  if (dest_sp) space_set_discovered(dest_sp, TRUE);
 
   game_set_last_cmd_status(game, OK);
 }
