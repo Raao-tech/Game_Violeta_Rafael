@@ -28,9 +28,9 @@ static const Skills skill_table[NUM_SKILLS] = {
 /*============== PUBLIC FUNCTION ======================*/
 void skill_active(Numen * sender, Numen* receiver, Skills id_skill)
 {
-    if(!sender || !receiver || id_skill == NO_ID) return ERROR;
+    if(!sender || !receiver || id_skill.id == NO_SKILL) return ERROR;
 
-    switch (id_skill)
+    switch (id_skill.id)
     {
     case TAKLE : skill_active_takle(sender, receiver, id_skill);
         /* code */

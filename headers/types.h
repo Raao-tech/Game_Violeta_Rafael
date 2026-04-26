@@ -84,7 +84,9 @@ typedef enum
     ERROR_save,
     ERROR_load,
     ERROR_recruit,
-    ERROR_kick
+    ERROR_kick,
+    ERROR_enemy_attack,
+    ERROR_enemy_move
 } Status;
 
 typedef enum

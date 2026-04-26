@@ -429,7 +429,7 @@ static void game_actions_attack(Game *game)
       distance = sqrt(pow(active_pos_x - enemy_pos_x, 2) + pow(active_pos_y - enemy_pos_y, 2));
       if (distance <= radio)
       {
-        if(skill_apply_effect(skill, num, enemy_num) == ERROR)  /*por implementar status skill_apply_effect*/
+        if(skill_active(num, enemy_num, skill) == ERROR)  /*por implementar status skill_apply_effect*/
         {
           game_set_last_cmd_status(game, ERROR_Attack);
           return;
