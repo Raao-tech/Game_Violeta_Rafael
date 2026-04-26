@@ -1,0 +1,11 @@
+	
+Centro del main anterior
+	/*Mientras no se haya dado a ESC  y el utlimo cmando no sea EXIT y No se haya acabado el juego, HAZ: ....*/
+    while (!WindowShouldClose() && command_get_code(last_cmd) != EXIT && game_get_finished(game)    == FALSE) 
+	{
+		graphic_engine_paint_game(gengine, game);  											/* 1. Render  */
+		command_get_user_input(last_cmd);           										/* 2. Input   */
+		game_actions_update(game, last_cmd); 												/* 3. UPDATE  */   
+		if (log_enabled && log_file) game_loop_print_log(game, last_cmd, log_file);			/* 4. LOG — if enabled, write the command and its result */
+		game_turn_update(game);																/* 5. TURN — advance to the next player (F11 multiplayer) */
+	}

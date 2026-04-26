@@ -371,7 +371,7 @@ static void game_actions_attack(Game *game)
   }
 
   skill_indx_ch = command_get_target(game_get_last_command(game));
-  if (!skill_indx)
+  if (!skill_indx_ch)
   {
     game_set_last_cmd_status(game, ERROR_Attack);
     return;

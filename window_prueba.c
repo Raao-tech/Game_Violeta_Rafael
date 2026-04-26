@@ -13,24 +13,33 @@ int main(int argn, char* argv[]){
     InitWindow(ancho, alto, "Proyecto Raylib");
     SetTargetFPS(60); // Importante para que el movimiento sea fluido
 
-    int x = 10, y = 10;
+    int x = 0, y = 0;
     int ancho_cuadrado = 20, alto_cuadrado = 20;
-    int speed = 5;
+    int speed = 1;
     int currentMenu = 0;
 
     while (!WindowShouldClose())
     {
+
         // --- Lógica de Actualización ---
         if (currentMenu == 1) {
-            if (IsKeyDown(KEY_RIGHT) && (x + ancho_cuadrado < ancho)) x += speed;
-            if (IsKeyDown(KEY_LEFT) && (x > 0)) x -= speed;
-            if (IsKeyDown(KEY_UP) && (y > 0)) y -= speed;
-            if (IsKeyDown(KEY_DOWN) && (y + alto_cuadrado < alto)) y += speed;
+            if (IsKeyDown(KEY_RIGHT) && (x + ((speed) *ancho_cuadrado) < ancho)) x += ((speed * ancho_cuadrado));
+            if (IsKeyDown(KEY_LEFT) && (x - (ancho_cuadrado*speed) > 0)) x -= (ancho_cuadrado*speed);
+            if (IsKeyDown(KEY_UP) && (y -  ((speed) *alto_cuadrado)> 0)) y -= (alto_cuadrado * speed);
+            if (IsKeyDown(KEY_DOWN) && (y + ((speed) *alto_cuadrado) < alto)) y +=  ((speed) *alto_cuadrado);
         }
 
         // --- Renderizado ---
         BeginDrawing();
             ClearBackground(RAYWHITE);
+
+            for (int i = 0; i < ancho; i++)
+            {
+                DrawLine(i*ancho_cuadrado, 0, i*ancho_cuadrado, alto, BLACK); /*lines  of the width*/
+                if (i < alto) DrawLine(0, i*alto_cuadrado, ancho, i*ancho_cuadrado, BLACK); /*lines  of the height*/
+
+            }
+            
 
             if (currentMenu == 0) {
                 DrawText("MENU PRINCIPAL", ancho/2 - 70, 100, 20, DARKGRAY);

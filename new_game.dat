@@ -8,7 +8,7 @@
 #s:131|Bedroom|./img_src/background/r.jpg|
 #s:132|Bathroom||./msc_src/OST|
 
-Estructura de space: s:Id|Nombre|gdesc|OST|
+Estructura de space: s:Id|Nombre|gdesc|OST|grid_fila_1|grid_fila_2|grid_fila_4|....|grid_fila_WIDHT_SCREEN
 
 
 #o:21|Sword|11|492|325|A sharp blade, rusty but deadly|./img_src|1|-5|0|0|0|0|

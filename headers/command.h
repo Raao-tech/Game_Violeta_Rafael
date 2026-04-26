@@ -14,7 +14,7 @@
 #include "types.h"
 
 #define N_CMDT 2
-#define N_CMD 14
+#define N_CMD 16
 
 typedef enum {
   CMDS,
@@ -26,6 +26,7 @@ typedef enum {
   UNKNOWN,
   EXIT,
   MOVE,
+  WALK,
   TAKE,
   DROP,
   ATTACK,
@@ -52,6 +53,10 @@ CommandCode command_get_code(Command *command);
 
 /*========== (Get or Read) User Input  =========== */
 Status  command_get_user_input(Command *command);
+char    *command_get_target(Command *command);
+
+/*========== (Get or Read) User Input  =========== */
+Status  command_raylib_get_user_input(Command *command);
 char    *command_get_target(Command *command);
 
 

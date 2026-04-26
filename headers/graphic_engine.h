@@ -22,9 +22,27 @@
 
 typedef struct _Graphic_engine Graphic_engine;
 
+
+typedef enum
+{
+	OUT_ERR = -1,
+    NEW_GAME,
+    LOAD_GAME,
+    EXIT
+}Out;
+
+typedef struct _MenuResult 
+{
+    Out     menu_out;
+    char    data_name[WORD_SIZE+1];
+    Id      init_numen;
+}MenuResult;
+
 Graphic_engine *graphic_engine_create(void);
 void            graphic_engine_destroy(Graphic_engine *ge);
+
+MenuResult		graphic_engine_init(Graphic_engine *ge);
 void            graphic_engine_paint_game(Graphic_engine *ge, Game *game);
-void            graphic_engine_menu_init(char* new_game_name);
+
 
 #endif

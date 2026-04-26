@@ -40,6 +40,10 @@ static Status game_load_players(Game *game, char *filename);
 static Status game_load_numens(Game *game, char *filename);
 static Status game_load_links(Game *game, char *filename);
 
+/*
+* Falta EL leido y guardado del space->grid
+* 
+*/
 static Status game_load_spaces(Game *game, char *filename)
 {
   FILE *file = NULL;
@@ -754,9 +758,7 @@ static Status game_load_links(Game *game, char *filename)
     }
   }
 
-  if (ferror(file))
-    status = ERROR;
-
+  if (ferror(file)) status = ERROR;
   fclose(file);
   return status;
 }

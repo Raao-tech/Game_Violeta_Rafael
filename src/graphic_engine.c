@@ -98,19 +98,26 @@ void graphic_engine_destroy(Graphic_engine *ge) {
 }
 
 
-char* graphic_engine_menu_init(char* name_game_default, Id* numen_initial)
+MenuResult graphic_engine_init(Graphic_engine *ge)
 {
-  Bool  exit_on   = FALSE;
-  char* name_game = NULL;
+  MenuResult result;
+  Bool       exit_on   = FALSE;
+  char*      name_game = NULL;
+
+  /*==== Parte de pruebas ====*/
   int   currentMenu = 0;
   int   w_boton     = 250;
   int   h_boton     = 50;
   int   intra_space = 10;
+  /*==== ================ ====*/
 
-  if(!name_game_default || !numen_create) return NULL;
-  name_game = (char*) calloc(WORD_SIZE+1,sizeof(char));
-  if(!name_game) return NULL;
+  /*===== Inicializamos el result ====*/
+  result.data_name[0] = '\0';
+  result.init_numen = NO_ID;
+  result.menu_out =  OUT_ERR;
+  /*===== ======================= ====*/
 
+  if(!ge) return result;
 
   /*Muestro el menú con todas las opciones posibles {New Game, Load Game, Exit}*/
   InitWindow(WIDHT_SCREEN, HIGHT_SCREEN, TITLE);
@@ -119,61 +126,65 @@ char* graphic_engine_menu_init(char* name_game_default, Id* numen_initial)
   while (!WindowShouldClose() && exit_on == FALSE)
   {
     BeginDrawing();
-      ClearBackground(RAYWHITE);
-      // --- Lógica del Menú ---
-      if (currentMenu == 0) {
-        DrawText("ATLANTIC QUEST", (int)(WIDHT_SCREEN*(3.0/8.0)), 100, 20, DARKGRAY);
-        if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 150, 200, 50 }, "NEW GAME"))  currentMenu = 1;
-        if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "LOAD GAME")) currentMenu = 2;
-        if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 290, 200, 50 }, "Exit"))      exit_on = TRUE;
-      } else if (currentMenu == 2) {
-        DrawText("WHITCH YOUR GAME?", 300, 100, 20, DARKGRAY);
-		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(6.0/8.0)), 10, 100, 30 }, "BACK"))       currentMenu = 0;
-		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 150, 200, 50 }, "LOAD GAME #1"))  {
-		strncpy(name_game, F_DATA_S_1, WORD_SIZE);
-		name_game[WORD_SIZE] ='\0';
-		exit_on = TRUE;
-		}
-		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "LOAD GAME #2"))  {
-		strncpy(name_game, F_DATA_S_2, WORD_SIZE);
-		name_game[WORD_SIZE] ='\0';
-		exit_on = TRUE;
-		}
-      }else if(currentMenu == 1){
-		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(6.0/8.0)), 10, 100, 30 }, "BACK"))       currentMenu = 0;
-        DrawText("Choose your Initial Numen", (int)(WIDHT_SCREEN*(3.0/8.0)), 100, 20, DARKGRAY);
-		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 150, 200, 50 }, "BULBASAUR"))  {
-		strncpy(name_game, F_DATA_S_1, WORD_SIZE);
-		name_game[WORD_SIZE] ='\0';
-		*(numen_initial) = First_numen;
-		exit_on = TRUE;
-		}
-		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "SQUIRTLE"))  {
-		strncpy(name_game, F_DATA_S_2, WORD_SIZE);
-		name_game[WORD_SIZE] ='\0';
-		*(numen_initial) = Second_numen;
-		exit_on = TRUE;
-		}
-		if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "CHARMANDER"))  {
-		strncpy(name_game, F_DATA_S_2, WORD_SIZE);
-		name_game[WORD_SIZE] ='\0';
-		*(numen_initial) = third_numen;
-		exit_on = TRUE;
-		}
-	  }
+		ClearBackground(RAYWHITE);
 
+		if (result.menu_out == OUT_ERR)							/* Menú Principal (OUT_ERR) */
+		{
+			DrawText("ATLANTIC QUEST", (int)(WIDHT_SCREEN*(3.0/8.0)), 100, 20, DARKGRAY);
+			if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 150, 200, 50 }, "NEW GAME"))  result.menu_out = NEW_GAME;
+			if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "LOAD GAME")) result.menu_out = LOAD_GAME;
+			if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 290, 200, 50 }, "Exit"))      exit_on = TRUE;
+
+		}
+		else if(result.menu_out == NEW_GAME)					/* Menú selección de Pokemons (NEW_GAME) */
+		{
+			if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(6.0/8.0)), 10, 100, 30 }, "BACK"))		result.menu_out = NEW_GAME;
+			DrawText("Choose your Initial Numen", (int)(WIDHT_SCREEN*(3.0/8.0)), 100, 20, DARKGRAY);
+			if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 150, 200, 50 }, "BULBASAUR"))
+			{
+				strncpy(result.data_name, F_DATA_N, WORD_SIZE);
+				result.data_name[WORD_SIZE] = '\0';
+				result.init_numen = First_numen;
+				exit_on = TRUE;
+			}
+			if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "SQUIRTLE"))
+			{
+				strncpy(result.data_name, F_DATA_N, WORD_SIZE);
+				result.data_name[WORD_SIZE] = '\0';
+				result.init_numen = Second_numen;
+				exit_on = TRUE;
+			}
+			if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "CHARMANDER"))
+			{
+				strncpy(result.data_name, F_DATA_N, WORD_SIZE);
+				result.data_name[WORD_SIZE] = '\0';
+				result.init_numen = third_numen;
+				exit_on = TRUE;
+			}
+		}
+		else if (result.menu_out == LOAD_GAME)					/* Menú selección de Partidas (LOAD_GAME) */
+		{
+			DrawText("WHITCH YOUR GAME?", 300, 100, 20, DARKGRAY);
+			if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(6.0/8.0)), 10, 100, 30 }, "BACK"))       result.menu_out = OUT_ERR;
+			if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 150, 200, 50 }, "LOAD GAME #1"))  {
+				strncpy(result.data_name, F_DATA_S_1, WORD_SIZE);
+				result.data_name[WORD_SIZE] = '\0';
+				result.init_numen = NO_ID;
+				exit_on = TRUE;
+			}
+			if (GuiButton((Rectangle){ (int)(WIDHT_SCREEN*(2.0/8.0)), 220, 200, 50 }, "LOAD GAME #2"))  {
+				strncpy(name_game, F_DATA_S_2, WORD_SIZE);
+				name_game[WORD_SIZE] ='\0';
+				result.init_numen = NO_ID;
+				exit_on = TRUE;
+			}
+		}
     EndDrawing();
   }
   
   CloseWindow();
 
-  /*Escucho que opcion ha escogido {New_game, Load_game_1, (Load_game_2) esta segunda opcion es contignente, empezaremos con una sola opcion de guardado}*/
-
-  /*si es New  Game ---> devuelvo el valor de F_DATA_N*/
-  /*si es Load Game ---> devuelvo el valor de F_DATA_S*/
-  /*si es Exit      ---> devuelvo el valor NULL       */
-  if(name_game[0] == '\0') {free(name_game); return NULL;} /*Esto es en el caso de que se de a Exit*/
-  return name_game;
+  return result;  /*Si ha salido por medio el New_game reuslt contendrá en su out  NEW_GAME,   si ha salido mediante EXIT  result-out_menu = ERR_OUT*/
 }
 
 void graphic_engine_paint_game(Graphic_engine *ge, Game *game) {
