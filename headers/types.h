@@ -56,8 +56,9 @@
 #define RESET       "\033[0m"
 
 /*<! Max_heald of skills*/
-#define MAX_HELD_SKILLS 4
 #define PLAYER 0
+#define NUM_SKILLS 6
+
 
 typedef long Id;
 
