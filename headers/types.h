@@ -19,6 +19,7 @@
 /*Dimensiones de la pantalla del graphic Engine*/
 #define WIDHT_SCREEN 950
 #define HIGHT_SCREEN 650
+#define SCALE        20
 
 /* Consts to numbers */
 #define WORD_SIZE 1000
