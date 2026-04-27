@@ -66,7 +66,7 @@ Bool numen_has_name(Numen *numen, char* name) {
 Status numen_add_skill(Numen* numen, Id skill_id)
 {
   if (!numen || skill_id < 0) return ERROR;
-  for (int i = 0; i < MAX_HELD_SKILLS; i++) {
+  for (int i = 0; i < NUM_SKILLS; i++) {
     if (numen->skills[i] == NO_SKILL) {
       numen->skills[i] = skill_id;
       return OK;
@@ -77,7 +77,7 @@ Status numen_add_skill(Numen* numen, Id skill_id)
 Id    numen_get_skill_by_id(Numen* numen, Id skill_id)
 {
   if (!numen || skill_id < 0) return NO_ID;
-  for (int i = 0; i < MAX_HELD_SKILLS; i++) {
+  for (int i = 0; i < NUM_SKILLS; i++) {
     if (numen->skills[i] == skill_id) {
       return skill_id;
     }
@@ -86,7 +86,7 @@ Id    numen_get_skill_by_id(Numen* numen, Id skill_id)
 }
 Skills_id numen_get_skill_by_index(Numen* numen, int skill_indx)
 {
-  if (!numen || skill_indx < 0 || skill_indx >= MAX_HELD_SKILLS) return NO_SKILL;
+  if (!numen || skill_indx < 0 || skill_indx >= NUM_SKILLS) return NO_SKILL;
   return numen->skills[skill_indx];
 } 
 
@@ -115,58 +115,85 @@ Bool numen_get_corrupt(Numen *numen){
   return (character_get_friendly(numen->c_numen) == TRUE ? FALSE : TRUE);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*======== (set/get) position ================*/
-Status numen_set_pos_x(Numen* numen, int pos_x); // tiene que estar entre los límites x 
-int    numen_get_pos_x(Numen* numen);
+Status numen_set_position(Numen *numen, int x, int y)
+{
+  if(!numen||x<0||x>WIDHT_SCREEN||y<0||y>HIGHT_SCREEN)
+  {
+    return ERROR;
+  }
+  return entity_set_position(numen->c_numen, x, y);
+}
 
-Status numen_set_pos_y(Numen* numen, int pos_y); // tiene que estar entre los límites y
-int    numen_get_pos_y(Numen* numen);
+int numen_get_pos_x(Numen *numen)
+{
+  if(!numen)
+  {
+    return -1;
+  }
+  return entity_get_pos_x(numen->c_numen);
+}
+int numen_get_pos_y(Numen *numen)
+{
+    if(!numen)
+  {
+    return -1;
+  }
+  return entity_get_pos_y(numen->c_numen);
+}
+
 
 /*======== (set/get) gdesc() ================*/
-Status numen_set_gdesc(Numen* numen, char* gdesc); // Será una línea de texto
-char*  numen_get_gdesc(Numen* numen);
+Status numen_set_gdesc(Numen* numen, char* gdesc)
+{
+  if (!numen || !gdesc) return ERROR;
+  return entity_set_gdesc(numen->c_numen, gdesc);
+}
+char*  numen_get_gdesc(Numen* numen)
+{
+  if (!numen) return NULL;
+  return entity_get_gdesc(numen->c_numen);
+}
 
 /* health */
-Status character_set_health(Character *character, int life){
-  if(!character) return ERROR;
-  return entity_set_health(character->e_character, life);
+Status numen_set_health(Numen *numen, int life){
+  if(!numen) return ERROR;
+  return entity_set_health(numen->c_numen, life);
 }
-int character_get_health(Character *character){
-  if(!character) return ERROR_LIFE;
-  return entity_get_health(character->e_character);
+int numen_get_health(Numen *numen){
+  if(!numen) return ERROR_LIFE;
+  return entity_get_health(numen->c_numen);
 }
 
 /* attack */
-Status character_set_attack(Character *character, int attack){
-  if(!character) return ERROR;
-  return entity_set_attack(character->e_character, attack);
+Status numen_set_attack(Numen *numen, int attack){
+  if(!numen) return ERROR;
+  return entity_set_attack(numen->c_numen, attack);
 }
-int character_get_attack(Character *character){
-  if(!character) return ERROR_ATTACK;
-  return entity_get_attack(character->e_character);
+int numen_get_attack(Numen *numen){
+  if(!numen) return ERROR_ATTACK;
+  return entity_get_attack(numen->c_numen);
 }
 
 /* energy */
-Status character_set_energy(Character* character, int energy){
-  if(!character) return ERROR;
-  return entity_set_energy(character->e_character, energy);
+Status numen_set_energy(Numen* numen, int energy){
+  if(!numen) return ERROR;
+  return entity_set_energy(numen->c_numen, energy);
 }
-int character_get_energy(Character *character){
-  if(!character) return ERROR_ENGY;
-  return entity_get_energy(character->e_character);
+int numen_get_energy(Numen *numen){
+  if(!numen) return ERROR_ENGY;
+  return entity_get_energy(numen->c_numen);
 }
 
 /* Speed */
-Status character_set_speed(Character* character, int speed){
-  if(!character) return ERROR;
-  return entity_set_speed(character->e_character, speed);
+Status numen_set_speed(Numen* numen, int speed){
+  if(!numen) return ERROR;
+  return entity_set_speed(numen->c_numen, speed);
 }
-int character_get_speed(Character *character){
-  if(!character) return 0;
-  return entity_get_speed(character->e_character);
+int numen_get_speed(Numen *numen){
+  if(!numen) return 0;
+  return entity_get_speed(numen->c_numen);
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Status numen_print(Numen *numen) 
 {
