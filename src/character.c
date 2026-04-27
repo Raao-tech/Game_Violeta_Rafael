@@ -21,7 +21,7 @@
  */
 struct _Character{
   Entity *e_character;    /*<! It stores the entity*/
-  Bool friendly;          /*<! It stores hether the character is friendly or not*/
+  Bool    friendly;          /*<! It stores hether the character is friendly or not*/
   Id following;           /*<! It stores the id of the character that this character is following*/
   
 };

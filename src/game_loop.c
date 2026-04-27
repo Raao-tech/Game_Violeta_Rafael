@@ -107,9 +107,6 @@ int main(int argc, char *argv[]) {
     int          i_flag         = 0;
     unsigned int seed           = 0;
 
-    /* (void)log_enabled; ← cuando implementes el bucle del Bloque 2,
-       quita este cast y usa la variable. */
-    (void)log_enabled;
 
     /*=============== COMPROBACION DE recursos minimos =====================*/
     if (argc < 1) {
