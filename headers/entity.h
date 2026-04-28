@@ -37,12 +37,21 @@ int entity_get_energy (Entity* entity);
 Status entity_set_attack (Entity* entity, int attack);
 int entity_get_attack (Entity* entity);
 
-int entity_get_pos_x (Entity* entity);
-int entity_get_pos_y (Entity* entity);
+
+/*==========================   POSITION (Set/Get) =======================*/
+Status      entity_set_position (Entity* entity, int x, int y);
+Position    entity_get_position (Entity* entity);
+
+Status      entity_set_pos_x (Entity* entity, int x);
+int         entity_get_pos_x (Entity* entity);
+
+Status      entity_set_pos_y (Entity* entity, int y);
+int         entity_get_pos_y (Entity* entity);
+
 
 /*==========Set et all stats  and position =====================*/
 
-Status entity_set_position (Entity* entity, int x, int y);
+
 
 Status entity_set_stats (Entity* entity, int energy, int health, int speed, int attack);
 

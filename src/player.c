@@ -11,6 +11,9 @@
 #include "player.h"
 #include "inventory.h"
 
+
+
+
 /**
  * @brief player
  *
@@ -22,6 +25,7 @@ struct _Player
     Inventory* backpack_items;  /*!< Inventory of object IDs the player carries */
     Inventory* backpack_numens; /*!< Inventory of nuemns IDs the player carries */
     Id zone;                    /*!< Id of the space where the player is */
+    Position     vision;
     Id active_numen;            /*!< Id of the active numen */
 };
 
@@ -33,8 +37,10 @@ player_create ()
     Player* newPlayer = (Player*)malloc (sizeof (Player));
     if (!newPlayer) return NULL;
 
-    newPlayer->zone         = NO_ID;
-    newPlayer->active_numen = NO_ID;
+    newPlayer->zone         	= NO_ID;
+    newPlayer->vision.pos_x     = NO_POS;
+    newPlayer->vision.pos_y     = NO_POS;
+    newPlayer->active_numen 	= NO_ID;
 
     newPlayer->e_player     = entity_create ();
     if (!newPlayer->e_player)
@@ -273,35 +279,101 @@ player_get_gdesc (Player* player)
 
 /*========== Position =====================*/
 
-Status
-player_set_position (Player* player, int x, int y)
+Status	player_set_position (Player* player, int x, int y)
 {
-    if (!player || x < 0 || x > WIDHT_SCREEN || y < 0 || y > HIGHT_SCREEN)
-        {
-            return ERROR;
-        }
+    if (!player) return ERROR;
     return entity_set_position (player->e_player, x, y);
 }
-
-int
-player_get_pos_x (Player* player)
+Position	player_get_position (Player* player)
 {
-    if (!player)
-        {
-            return -1;
-        }
+	Position	pos;
+	pos.pos_x = NO_POS;
+	pos.pos_y = NO_POS;
+
+    if (!player) return pos;
+    return entity_get_position (player->e_player);
+}
+
+int	player_get_pos_x (Player* player)
+{
+    if (!player) return NO_POS;
     return entity_get_pos_x (player->e_player);
 }
 
-int
-player_get_pos_y (Player* player)
+int		player_get_pos_y (Player* player)
 {
-    if (!player)
-        {
-            return -1;
-        }
+    if (!player) return NO_POS;
     return entity_get_pos_y (player->e_player);
 }
+/* =========== Vision (Set / Get) ==========*/
+
+Status  player_set_vision(Player* player, int x, int y)
+{
+    if(!player) return ERROR;
+    if(x >= WIDHT_SCREEN || x < 0 || y >= HIGHT_SCREEN || y < 0)
+    {
+        player->vision.pos_x = NO_POS;
+        player->vision.pos_y = NO_POS;
+        return ERROR; /*Es un error que notifica que Vision ya no existirá*/
+    }
+    player->vision.pos_x = x;
+    player->vision.pos_y = y;
+    
+    return OK;
+}
+
+Position player_get_vision(Player* player)
+{
+	Position vision;
+	vision.pos_x = NO_POS;
+	vision.pos_y = NO_POS;
+
+	if(!player) return vision;
+	vision.pos_x = player->vision.pos_x;
+	vision.pos_y = player->vision.pos_y;
+
+	return vision;
+}
+
+Status  player_set_vision_x(Player* player, int x)
+{
+    if(!player) return ERROR;
+    if(x >= WIDHT_SCREEN || x < 0)
+    {
+		player->vision.pos_x = NO_POS;
+		player->vision.pos_y = NO_POS;
+        return ERROR; /*Es un error que notifica que Vision ya no existirá*/
+    }
+    player->vision.pos_x = x;
+    return OK;
+}
+
+Status  player_set_vision_y(Player* player, int y)
+{
+    if(!player) return ERROR;
+    if(y >= HIGHT_SCREEN || y < 0)
+    {
+		player->vision.pos_x = NO_POS;
+		player->vision.pos_y = NO_POS;
+        return ERROR; /*Es un error que notifica que Vision ya no existirá*/
+    }
+    player->vision.pos_y = y;
+    return OK;
+}
+
+
+int  player_get_vision_x(Player* player)
+{
+    if(!player) return NO_POS;
+    return player->vision.pos_x;
+}
+
+int  player_get_vision_y(Player* player)
+{
+    if(!player) return NO_POS;
+    return player->vision.pos_y;
+}
+
 
 /* ========== Print ========== */
 

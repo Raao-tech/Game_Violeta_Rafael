@@ -143,32 +143,31 @@ numen_get_corrupt (Numen* numen)
 }
 
 /*======== (set/get) position ================*/
-Status
-numen_set_position (Numen* numen, int x, int y)
+Status      numen_set_position (Numen* numen, int x, int y)
 {
-    if (!numen || x < 0 || x > WIDHT_SCREEN || y < 0 || y > HIGHT_SCREEN)
-        {
-            return ERROR;
-        }
+    if (!numen) return ERROR;
     return entity_set_position (numen->c_numen, x, y);
+}
+Position    numen_get_position (Numen* numen)
+{
+    Position numen_pos;
+    numen_pos.pos_x = NO_POS;
+    numen_pos.pos_y = NO_POS;
+    if (!numen) return numen_pos;
+
+    return entity_get_position (numen->c_numen);
 }
 
 int
 numen_get_pos_x (Numen* numen)
 {
-    if (!numen)
-        {
-            return -1;
-        }
+    if (!numen) return NO_POS;
     return entity_get_pos_x (numen->c_numen);
 }
 int
 numen_get_pos_y (Numen* numen)
 {
-    if (!numen)
-        {
-            return -1;
-        }
+    if (!numen) return NO_POS;
     return entity_get_pos_y (numen->c_numen);
 }
 

@@ -26,11 +26,6 @@ struct _Stats
     int speed;  /*!< Velocidad */
 };
 
-struct _Position
-{
-    int pos_x; /*!< Posición x en el space */
-    int pos_y; /*!< Posición y en el space */
-};
 
 struct _Entity
 {
@@ -58,8 +53,8 @@ entity_create (void)
     newEntity->gdesc          = NULL;
     newEntity->name           = NULL;
     newEntity->message        = NULL;
-    newEntity->position.pos_x = 0;
-    newEntity->position.pos_y = 0;
+    newEntity->position.pos_x = NO_POS;
+    newEntity->position.pos_y = NO_POS;
     newEntity->stats.attack   = MIN_ATTACK;
     newEntity->stats.speed    = 0;
     newEntity->stats.health   = MIN_LIFE;
@@ -300,21 +295,64 @@ Status
 entity_set_position (Entity* entity, int x, int y)
 {
     if (!entity) return ERROR;
+    if(y >= HIGHT_SCREEN || y < 0 || x >= WIDHT_SCREEN || x < 0 )
+        return ERROR;
     entity->position.pos_x = x;
     entity->position.pos_y = y;
+
     return OK;
+}
+
+Position    entity_get_position (Entity* entity)
+{
+    Position position;
+    position.pos_x = NO_POS;
+    position.pos_y = NO_POS;
+
+    if(!entity) return position;
+
+    position = entity->position;
+    return position;
 }
 
 int
 entity_get_pos_x (Entity* entity)
 {
-    if (!entity) return 0;
+    if (!entity) return NO_POS;
     return entity->position.pos_x;
 }
 
 int
 entity_get_pos_y (Entity* entity)
 {
-    if (!entity) return 0;
+    if (!entity) return NO_POS;
     return entity->position.pos_y;
+}
+
+Status
+entity_set_pos_x (Entity* entity, int x)
+{
+    if (!entity) return ERROR;
+    if( x >= WIDHT_SCREEN || x < 0 )
+    {
+		entity->position.pos_x = NO_POS;
+		entity->position.pos_y = NO_POS;
+        return ERROR; /*Es un error que notifica que Vision ya no existirá*/
+    }
+    entity->position.pos_x = x;
+    return  OK;
+}
+
+Status
+entity_set_pos_y (Entity* entity, int y)
+{
+    if (!entity) return ERROR;
+    if( y >= HIGHT_SCREEN || y < 0  )
+    {
+		entity->position.pos_x = NO_POS;
+		entity->position.pos_y = NO_POS;
+        return ERROR; /*Es un error que notifica que Vision ya no existirá*/
+    }
+    entity->position.pos_y = y;
+    return  OK;
 }

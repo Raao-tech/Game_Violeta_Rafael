@@ -27,7 +27,7 @@
 #define NO_ID -1
 #define ERROR_MAIN -1
 #define ERROR_GAME -1
-#define ERROR_POSITION -9999
+#define NO_POS -9999
 #define GRID_MODULE 10
 
 /*file of data for default*/
@@ -72,6 +72,7 @@ typedef enum
     ERROR,
     OK,
     ERROR_Attack,
+    ERROR_walk,
     ERROR_Chat,
     ERROR_dir,
     ERROR_take,
@@ -103,9 +104,14 @@ typedef enum
 typedef struct _Stats Stats;
 
 /**
- * @brief Posición de un entity
+ * @brief Posición de un
  */
-typedef struct _Position Position;
+typedef struct _Position
+{
+    int pos_x; /*!< Posición x en el space */
+    int pos_y; /*!< Posición y en el space */
+}Position;
+
 
 #define MIN_LIFE 0
 #define MIN_ATTACK 0

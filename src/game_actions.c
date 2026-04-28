@@ -25,6 +25,7 @@
 static void game_actions_unknown (Game* game);
 static void game_actions_exit (Game* game);
 static void game_actions_move (Game* game);
+static void game_actions_walk (Game* game);
 static void game_actions_take (Game* game);
 static void game_actions_drop (Game* game);
 static void game_actions_attack (Game* game);
@@ -89,9 +90,8 @@ game_actions_update (Game* game, Command* command)
         case EXIT:
             game_actions_exit (game);
             break;
-        case MOVE:
-            game_actions_move (game);
-            break;
+        case MOVE:	game_actions_move (game); 	break;
+        case WALK:	game_actions_walk (game); 	break;
         case TAKE:
             game_actions_take (game);
             break;
@@ -177,10 +177,17 @@ game_actions_take (Game* game)
     Space* space   = NULL;
     Object* obj    = NULL;
     char* obj_name = NULL;
+    Position obj_pos;
+    Position ply_vision;
     Id space_id, obj_id, dependency_id;
     Bool movable;
 
     if (!game) return;
+
+    ply_vision.pos_x = NO_POS;
+    ply_vision.pos_y = NO_POS;
+    obj_pos.pos_x =    NO_POS;
+    obj_pos.pos_y =    NO_POS;
 
     /*
      * Este tipo de comprobaciones hay que ponerlas en mira, para la solución del
@@ -194,6 +201,7 @@ game_actions_take (Game* game)
             game_set_last_cmd_status (game, ERROR_take);
             return;
         }
+    ply_vision = player_get_vision(player);
 
     space_id = player_get_zone (player);
     if (space_id == NO_ID)
@@ -217,9 +225,16 @@ game_actions_take (Game* game)
         }
 
     obj_id = obj_get_id (obj);
+    obj_pos.pos_x = obj_get_pos_x;
+    obj_pos.pos_y = obj_get_pos_y;
     space  = game_get_space (game, space_id);
 
     if (space_contains_object (space, obj_id) == FALSE)
+        {
+            game_set_last_cmd_status (game, ERROR_take);
+            return;
+        }
+    if(obj_pos.pos_x != ply_vision.pos_x || obj_pos.pos_y != ply_vision.pos_y)
         {
             game_set_last_cmd_status (game, ERROR_take);
             return;
@@ -265,11 +280,22 @@ game_actions_drop (Game* game)
     Object* obj    = NULL;
     char* obj_name = NULL;
     Id space_id, obj_id;
+	Position	ply_vision;
+
+	/*Inicializamos la vision*/
+	ply_vision.pos_x = NO_POS;
+	ply_vision.pos_y = NO_POS;
 
     if (!game) return;
 
     player = game_get_player_by_turn (game);
     if (!player)
+        {
+            game_set_last_cmd_status (game, ERROR_drop);
+            return;
+        }
+	ply_vision = player_get_vision(player);
+	if( ply_vision.pos_x == NO_POS || ply_vision.pos_y == NO_POS)
         {
             game_set_last_cmd_status (game, ERROR_drop);
             return;
@@ -307,8 +333,72 @@ game_actions_drop (Game* game)
     player_delete_object (player, obj_id);
     space = game_get_space (game, space_id);
     space_set_object (space, obj_id);
+	obj_set_position(obj, ply_vision.pos_x, ply_vision.pos_y); /*Seteamos la ubicación del objeto en la cuadrilla doinde esta viendo player*/
 
     game_set_last_cmd_status (game, OK);
+}
+
+/* ========================================================================= */
+/*            WALK: walk (w) <direction>                    */
+/* ========================================================================= */
+static void
+game_actions_walk (Game* game)
+{
+	Command* 	lst_cmd 	= NULL;
+	Player*  	player  	= NULL;
+	char*		dir_str		= NULL;
+	Direction 	direction 	= NULL;
+	Position	pos_current;
+	int			speed		= 0;
+
+
+	if (!game)
+	{
+		game_set_last_cmd_status (game, ERROR_walk);
+        return;
+	}
+	lst_cmd = game_get_last_command(game);
+	if(!lst_cmd)
+	{
+		game_set_last_cmd_status (game, ERROR_walk);
+        return;
+	}
+	
+	dir_str = command_get_target(lst_cmd);
+	if(!dir_str)
+	{
+		game_set_last_cmd_status (game, ERROR_walk);
+        return;
+	}
+	direction = ge_parse_direction(dir_str);
+
+
+	player = game_get_player_by_turn(game);
+	if(!player)
+	{
+		game_set_last_cmd_status (game, ERROR_walk);
+        return;
+	}
+
+	pos_current = player_get_position(player);
+
+	switch (direction)
+	{
+		case N:	 pos_current.pos_y -= HIGHT;		break;
+		case S:	 pos_current.pos_y += HIGHT;		break;
+		case W:	 pos_current.pos_x -= WIDHT;		break;
+		case E:	 pos_current.pos_x += WIDHT;		break;
+		default:								break;
+	}
+
+	if(player_set_position(player, pos_current.pos_x, pos_current.pos_y) == ERROR)
+	{
+		game_set_last_cmd_status (game, ERROR_walk);
+        return;
+	}
+	
+    game_set_last_cmd_status (game, OK);
+	return;
 }
 
 /* ========================================================================= */

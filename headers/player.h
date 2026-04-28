@@ -292,6 +292,9 @@ char* player_get_gdesc (Player* player);
  */
 Status player_set_position (Player* player, int x, int y);
 
+
+Position	player_get_position (Player* player);
+
 /**
  * @brief It gets the position x of the player
  * @author Salvador
@@ -309,6 +312,16 @@ int player_get_pos_x (Player* player);
  * @return position y of the player, -1 otherwise
  */
 int player_get_pos_y (Player* player);
+
+/* =========== Vision (Set/Get) ==========*/
+Status  player_set_vision(Player* player, int x, int y);
+Position player_get_vision(Player* player);
+
+Status  player_set_vision_x(Player* player, int x);
+int     player_get_vision_x(Player* player);
+
+Status  player_set_vision_y(Player* player, int y);
+int     player_get_vision_y(Player* player);
 
 /* ========== Print ========== */
 

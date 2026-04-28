@@ -53,16 +53,11 @@ game_create ()
     if (!game) return NULL;
 
     /* Initialize every pointer array to NULL */
-    for (i = 0; i < MAX_PLAYERS; i++)
-        game->players[i] = NULL;
-    for (i = 0; i < MAX_SPACES; i++)
-        game->spaces[i] = NULL;
-    for (i = 0; i < MAX_OBJECTS; i++)
-        game->objects[i] = NULL;
-    for (i = 0; i < MAX_NUMENS; i++)
-        game->numens[i] = NULL;
-    for (i = 0; i < MAX_LINKS; i++)
-        game->links[i] = NULL;
+    for (i = 0; i < MAX_PLAYERS; i++)   game->players[i] = NULL;
+    for (i = 0; i < MAX_SPACES; i++)    game->spaces[i] = NULL;
+    for (i = 0; i < MAX_OBJECTS; i++)   game->objects[i] = NULL;
+    for (i = 0; i < MAX_NUMENS; i++)    game->numens[i] = NULL;
+    for (i = 0; i < MAX_LINKS; i++)     game->links[i] = NULL;
 
     /*
      * Every counter MUST be set to 0 explicitly.
@@ -95,16 +90,11 @@ game_destroy (Game* game)
     int i;
     if (!game) return ERROR;
 
-    for (i = 0; i < game->n_spaces; i++)
-        space_destroy (game->spaces[i]);
-    for (i = 0; i < game->n_objects; i++)
-        obj_destroy (game->objects[i]);
-    for (i = 0; i < game->n_numens; i++)
-        numen_destroy (game->numens[i]);
-    for (i = 0; i < game->n_players; i++)
-        player_destroy (game->players[i]);
-    for (i = 0; i < game->n_links; i++)
-        link_destroy (game->links[i]);
+    for (i = 0; i < game->n_spaces; i++)    space_destroy (game->spaces[i]);
+    for (i = 0; i < game->n_objects; i++)   obj_destroy (game->objects[i]);
+    for (i = 0; i < game->n_numens; i++)    numen_destroy (game->numens[i]);
+    for (i = 0; i < game->n_players; i++)   player_destroy (game->players[i]);
+    for (i = 0; i < game->n_links; i++)     link_destroy (game->links[i]);
 
     command_destroy (game->last_cmd);
     free (game);
@@ -375,6 +365,11 @@ game_get_player_location (Game* game, Id player_id)
         }
     return NO_ID;
 }
+
+
+/*
+    game_player_get_objects_close()    Es una función para obenter los objetos cercanos al jugador
+*/
 
 /* ========================================================================= */
 /*                         SEARCH: LINKS                                     */
