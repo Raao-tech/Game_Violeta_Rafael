@@ -64,8 +64,7 @@ Player *player_create()
 
 Status player_destroy(Player *player)
 {
-  if (!player)
-    return ERROR;
+  if (!player)	return ERROR;
 
   entity_destroy(player->e_player);           /*!< Destroy pointer to entity*/
   inventory_destroy(player->backpack_items);  /*!< Destroy pointer to backpack of intems*/
@@ -79,15 +78,13 @@ Status player_destroy(Player *player)
 
 Status player_set_id(Player *player, Id new_id)
 {
-  if (!player || !(player->e_player))
-    return ERROR;
+  if (!player || !(player->e_player))	return ERROR;
   return entity_set_id(player->e_player, new_id);
 }
 
 Id player_get_id(Player *player)
 {
-  if (!player || !(player->e_player))
-    return NO_ID;
+  if (!player || !(player->e_player))	return NO_ID;
   return entity_get_id(player->e_player);
 }
 
@@ -95,8 +92,7 @@ Id player_get_id(Player *player)
 
 Status player_set_name(Player *player, char *name)
 {
-  if (!player || !name)
-    return ERROR;
+  if (!player || !name)	return ERROR;
   return entity_set_name(player->e_player, name);
 }
 
