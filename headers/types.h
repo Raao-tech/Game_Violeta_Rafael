@@ -8,7 +8,6 @@
  * @copyright GNU Public License
  */
 
-
 #ifndef TYPES_H
 #define TYPES_H
 
@@ -19,7 +18,7 @@
 /*Dimensiones de la pantalla del graphic Engine*/
 #define WIDHT_SCREEN 950
 #define HIGHT_SCREEN 650
-#define SCALE        20
+#define SCALE 20
 
 /* Consts to numbers */
 #define WORD_SIZE 1000
@@ -29,40 +28,34 @@
 #define ERROR_POSITION -9999
 
 /*file of data for default*/
-#define	F_DATA_N		"new_game.dat"
-#define	F_DATA_S_1		"./Save_old_games/game_1.dat"
-#define	F_DATA_S_2		"./Save_old_games/game_3.dat"
-
-
+#define F_DATA_N "new_game.dat"
+#define F_DATA_S_1 "./Save_old_games/game_1.dat"
+#define F_DATA_S_2 "./Save_old_games/game_3.dat"
 
 /*Los Ids de los numens serán impuestos, en pokemon Bulbasaur siempre es el #1 de la pokedex incluso pasando a otro juego*/
 /*Id de los Numens inciales*/
-#define First_numen     1
-#define Second_numen    2
-#define third_numen     3
+#define First_numen 1
+#define Second_numen 2
+#define third_numen 3
 
 /*Name of game*/
-#define	TITLE		"Atlantic Quest"
+#define TITLE "Atlantic Quest"
 /*Number of FPS*/
-#define	FPS	60
-
-
+#define FPS 60
 
 /* Colors to prints */
-#define ROJO        "\033[0;31m"
-#define VERDE       "\033[0;32m"
-#define AMARILLO    "\033[0;33m"
-#define AZUL        "\033[0;34m"
-#define MORADO      "\033[0;35m"
-#define RESET       "\033[0m"
+#define ROJO "\033[0;31m"
+#define VERDE "\033[0;32m"
+#define AMARILLO "\033[0;33m"
+#define AZUL "\033[0;34m"
+#define MORADO "\033[0;35m"
+#define RESET "\033[0m"
 
 /*<! Max_heald of skills*/
 #define PLAYER 0
 #define NUM_SKILLS 6
 
-
 typedef long Id;
-
 
 typedef enum
 {
@@ -100,7 +93,6 @@ typedef enum
     U /*Unknown*/
 } Direction;
 
-
 /**
  * @brief Estadísticas de un entity
  */
@@ -111,15 +103,14 @@ typedef struct _Stats Stats;
  */
 typedef struct _Position Position;
 
-#define  MIN_LIFE 0
-#define  MIN_ATTACK 0
-#define  MIN_ENGY 0
-#define  MAX_LIFE 10
-#define  MAX_ENGY 100
-#define  MAX_ATTACK 10
-#define  ERROR_LIFE -1
-#define  ERROR_ATTACK -1
-#define  ERROR_ENGY -1
-
+#define MIN_LIFE 0
+#define MIN_ATTACK 0
+#define MIN_ENGY 0
+#define MAX_LIFE 10
+#define MAX_ENGY 100
+#define MAX_ATTACK 10
+#define ERROR_LIFE -1
+#define ERROR_ATTACK -1
+#define ERROR_ENGY -1
 
 #endif

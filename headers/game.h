@@ -17,24 +17,24 @@
 #define GAME_H
 
 #include "command.h"
+#include "links.h"
+#include "numen.h" /*Nota: Character se cambia por Numen, ya no se usa character hay que ahcer ese cambio en el modulo game*/
+#include "object.h"
+#include "player.h"
 #include "space.h"
 #include "types.h"
-#include "player.h"
-#include "object.h"
-#include "numen.h" /*Nota: Character se cambia por Numen, ya no se usa character hay que ahcer ese cambio en el modulo game*/
-#include "links.h"
 
 /*Usar ctrl + f para escanear todo lo que diga charcter, y adpatarlo a numens*/
 /** @brief Maximum number of spaces the game can hold */
-#define MAX_SPACES     100
+#define MAX_SPACES 100
 /** @brief Maximum number of objects the game can hold */
-#define MAX_OBJECTS    100
+#define MAX_OBJECTS 100
 /** @brief Maximum number of NUMENS the game can hold */
 #define MAX_NUMENS 100
 /** @brief Maximum number of players the game can hold */
-#define MAX_PLAYERS    10
+#define MAX_PLAYERS 10
 /** @brief Maximum number of links the game can hold */
-#define MAX_LINKS      (MAX_SPACES * 4)
+#define MAX_LINKS (MAX_SPACES * 4)
 
 /**
  * @brief Game ADT (opaque type)
@@ -43,7 +43,6 @@
  * a Command for the last input, counters, turn index, and flags.
  */
 typedef struct _Game Game;
-
 
 /* ========================================================================= */
 /*                          CREATE / DESTROY                                 */
@@ -58,7 +57,7 @@ typedef struct _Game Game;
  *
  * @return pointer to the new game, or NULL if memory allocation fails
  */
-Game *game_create();
+Game* game_create ();
 
 /**
  * @brief It destroys a game, freeing all allocated memory
@@ -70,8 +69,7 @@ Game *game_create();
  * @param game a pointer to the game
  * @return OK if everything goes well, or ERROR if game is NULL
  */
-Status game_destroy(Game *game);
-
+Status game_destroy (Game* game);
 
 /* ========================================================================= */
 /*                    ACCES: EXPOSITE POINTERs                */
@@ -86,7 +84,7 @@ Status game_destroy(Game *game);
  * @param game a pointer to the game
  * @return pointer to the players array, or NULL if game is NULL
  */
-Player **game_get_players(Game *game);
+Player** game_get_players (Game* game);
 
 /**
  * @brief It gets the active player (whose turn it is)
@@ -99,7 +97,7 @@ Player **game_get_players(Game *game);
  * @param game a pointer to the game
  * @return pointer to the active player, or NULL if no players exist
  */
-Player *game_get_player(Game *game);
+Player* game_get_player (Game* game);
 
 /**
  * @brief It finds a space by its id
@@ -111,7 +109,7 @@ Player *game_get_player(Game *game);
  * @param id the id of the space to find
  * @return pointer to the space, or NULL if not found or game is NULL
  */
-Space *game_get_space(Game *game, Id id);
+Space* game_get_space (Game* game, Id id);
 
 /**
  * @brief It gets the last command registered in the game
@@ -123,8 +121,7 @@ Space *game_get_space(Game *game, Id id);
  * @param game a pointer to the game
  * @return pointer to the last command, or NULL if game is NULL
  */
-Command *game_get_last_command(Game *game);
-
+Command* game_get_last_command (Game* game);
 
 /* ========================================================================= */
 /*                       CONNECTIONS (via Links)                              */
@@ -143,7 +140,7 @@ Command *game_get_last_command(Game *game);
  * @param dir the direction to query (N, S, E, W)
  * @return the id of the destination space, or NO_ID if no link found
  */
-Id game_get_connection(Game *game, Id space, Direction dir);
+Id game_get_connection (Game* game, Id space, Direction dir);
 
 /**
  * @brief It checks whether a connection in a given direction is open
@@ -159,8 +156,7 @@ Id game_get_connection(Game *game, Id space, Direction dir);
  * @param dir the direction to query
  * @return TRUE if the connection is open, FALSE otherwise
  */
-Bool game_connection_is_open(Game *game, Id space, Direction dir);
-
+Bool game_connection_is_open (Game* game, Id space, Direction dir);
 
 /* ========================================================================= */
 /*                   ADD ELEMENTS (used by game_reader)                      */
@@ -177,7 +173,7 @@ Bool game_connection_is_open(Game *game, Id space, Direction dir);
  * @param space a pointer to the space to add
  * @return OK if added, ERROR if NULL or array full
  */
-Status game_add_space(Game *game, Space *space);
+Status game_add_space (Game* game, Space* space);
 
 /**
  * @brief It adds an object to the game
@@ -190,7 +186,7 @@ Status game_add_space(Game *game, Space *space);
  * @param obj a pointer to the object to add
  * @return OK if added, ERROR if NULL or array full
  */
-Status game_add_object(Game *game, Object *obj);
+Status game_add_object (Game* game, Object* obj);
 
 /**
  * @brief It adds a character to the game
@@ -203,7 +199,7 @@ Status game_add_object(Game *game, Object *obj);
  * @param character a pointer to the character to add
  * @return OK if added, ERROR if NULL or array full
  */
-Status game_add_character(Game *game, Character *character);
+Status game_add_character (Game* game, Character* character);
 
 /**
  * @brief It adds a player to the game
@@ -216,7 +212,7 @@ Status game_add_character(Game *game, Character *character);
  * @param player a pointer to the player to add
  * @return OK if added, ERROR if NULL or array full
  */
-Status game_add_player(Game *game, Player *player);
+Status game_add_player (Game* game, Player* player);
 
 /**
  * @brief It adds a link to the game
@@ -229,8 +225,7 @@ Status game_add_player(Game *game, Player *player);
  * @param link a pointer to the link to add
  * @return OK if added, ERROR if NULL or array full
  */
-Status game_add_links(Game *game, Links *link);
-
+Status game_add_links (Game* game, Links* link);
 
 /* ========================================================================= */
 /*                          SEARCH: OBJECTS                                  */
@@ -244,7 +239,7 @@ Status game_add_links(Game *game, Links *link);
  * @param id the id of the object to find
  * @return pointer to the object, or NULL if not found
  */
-Object *game_get_object_by_id(Game *game, Id id);
+Object* game_get_object_by_id (Game* game, Id id);
 
 /**
  * @brief It finds an object by its name
@@ -256,7 +251,7 @@ Object *game_get_object_by_id(Game *game, Id id);
  * @param name the name of the object to find
  * @return pointer to the object, or NULL if not found
  */
-Object *game_get_object_by_name(Game *game, char *name);
+Object* game_get_object_by_name (Game* game, char* name);
 
 /**
  * @brief It finds which space contains a given object
@@ -270,8 +265,7 @@ Object *game_get_object_by_name(Game *game, char *name);
  * @param obj_id the id of the object to locate
  * @return the id of the space containing the object, or NO_ID
  */
-Id game_get_object_location(Game *game, Id obj_id);
-
+Id game_get_object_location (Game* game, Id obj_id);
 
 /* ========================================================================= */
 /*                        SEARCH: NUMENS                                 */
@@ -285,7 +279,7 @@ Id game_get_object_location(Game *game, Id obj_id);
  * @param id the id of the numen to find
  * @return pointer to the numen, or NULL if not found
  */
-Numen *game_get_numen_by_id(Game *game, Id numen_id);
+Numen* game_get_numen_by_id (Game* game, Id numen_id);
 
 /**
  * @brief It finds a numen by its name
@@ -297,7 +291,7 @@ Numen *game_get_numen_by_id(Game *game, Id numen_id);
  * @param name the name of the numen to find
  * @return pointer to the character, or NULL if not found
  */
-Numen *game_get_numen_by_name(Game *game, char *numen_name);
+Numen* game_get_numen_by_name (Game* game, char* numen_name);
 
 /**
  * @brief It get location numen
@@ -307,8 +301,7 @@ Numen *game_get_numen_by_name(Game *game, char *numen_name);
  * @param char_id the id of the character to locate
  * @return the id of the space containing the character, or NO_ID
  */
-Id game_get_numen_location(Game *game, Id numen_id);
-
+Id game_get_numen_location (Game* game, Id numen_id);
 
 /* ========================================================================= */
 /*                         SEARCH: PLAYERS                                   */
@@ -322,7 +315,7 @@ Id game_get_numen_location(Game *game, Id numen_id);
  * @param id the id of the player to find
  * @return pointer to the player, or NULL if not found
  */
-Player *game_get_player_by_id(Game *game, Id id);
+Player* game_get_player_by_id (Game* game, Id id);
 
 /**
  * @brief It finds a player by its name
@@ -332,7 +325,7 @@ Player *game_get_player_by_id(Game *game, Id id);
  * @param name the name of the player to find
  * @return pointer to the player, or NULL if not found
  */
-Player *game_get_player_by_name(Game *game, char *name);
+Player* game_get_player_by_name (Game* game, char* name);
 
 /**
  * @brief It returns the player whose turn it currently is
@@ -343,7 +336,7 @@ Player *game_get_player_by_name(Game *game, char *name);
  * @param game a pointer to the game
  * @return pointer to the active player, or NULL if no players or error
  */
-Player *game_get_player_by_turn(Game *game);
+Player* game_get_player_by_turn (Game* game);
 
 /**
  * @brief It gets the location (space id) of a player by player id
@@ -353,7 +346,7 @@ Player *game_get_player_by_turn(Game *game);
  * @param player_id the id of the player to locate
  * @return the id of the space containing the player, or NO_ID
  */
-Id game_get_player_location(Game *game, Id player_id);
+Id game_get_player_location (Game* game, Id player_id);
 
 /**
  * @brief It gets the current turn index
@@ -362,7 +355,7 @@ Id game_get_player_location(Game *game, Id player_id);
  * @param game a pointer to the game
  * @return the turn index (0 to n_players-1), or -1 if game is NULL
  */
-int game_get_turn(Game *game);
+int game_get_turn (Game* game);
 
 /* ========================================================================= */
 /*                         SEARCH: LINKS                                     */
@@ -376,7 +369,7 @@ int game_get_turn(Game *game);
  * @param id the id of the link to find
  * @return pointer to the link, or NULL if not found
  */
-Links *game_get_link_by_id(Game *game, Id id);
+Links* game_get_link_by_id (Game* game, Id id);
 
 /**
  * @brief It finds a link by its name
@@ -386,7 +379,7 @@ Links *game_get_link_by_id(Game *game, Id id);
  * @param name the name of the link to find
  * @return pointer to the link, or NULL if not found
  */
-Links *game_get_link_by_name(Game *game, char *name);
+Links* game_get_link_by_name (Game* game, char* name);
 
 /* ========================================================================= */
 /*                     ACCESS BY INDEX (for iteration)                       */
@@ -400,7 +393,7 @@ Links *game_get_link_by_name(Game *game, char *name);
  * @param position the zero-based index in the objects array
  * @return pointer to the object, or NULL if out of range
  */
-Object *game_get_object_at(Game *game, int position);
+Object* game_get_object_at (Game* game, int position);
 
 /**
  * @brief It gets a character by its position in the array
@@ -410,7 +403,7 @@ Object *game_get_object_at(Game *game, int position);
  * @param position the zero-based index in the characters array
  * @return pointer to the character, or NULL if out of range
  */
-Character *game_get_character_at(Game *game, int position);
+Character* game_get_character_at (Game* game, int position);
 
 /**
  * @brief It gets a player by its position in the array
@@ -420,7 +413,7 @@ Character *game_get_character_at(Game *game, int position);
  * @param position the zero-based index in the players array
  * @return pointer to the player, or NULL if out of range
  */
-Player *game_get_player_at(Game *game, int position);
+Player* game_get_player_at (Game* game, int position);
 
 /**
  * @brief It gets the id of a space by its position in the array
@@ -430,7 +423,7 @@ Player *game_get_player_at(Game *game, int position);
  * @param position the zero-based index in the spaces array
  * @return the id of the space, or NO_ID if out of range
  */
-Id game_get_space_id_at(Game *game, int position);
+Id game_get_space_id_at (Game* game, int position);
 
 /**
  * @brief It gets a numen by its position in the array
@@ -440,7 +433,7 @@ Id game_get_space_id_at(Game *game, int position);
  * @param position the zero-based index in the numens array
  * @return pointer to the numen, or NULL if out of range
  */
-Numen *game_get_numen__at(Game *game, int position);
+Numen* game_get_numen__at (Game* game, int position);
 
 /**
  * @brief It gets a link by its position in the array
@@ -450,7 +443,7 @@ Numen *game_get_numen__at(Game *game, int position);
  * @param position the zero-based index in the links array
  * @return pointer to the link, or NULL if out of range
  */
-Links *game_get_link_at(Game *game, int position);
+Links* game_get_link_at (Game* game, int position);
 /**
  * @brief It returns the number of spaces in the game
  * @author Violeta y Rafa
@@ -458,7 +451,7 @@ Links *game_get_link_at(Game *game, int position);
  * @param game a pointer to the game
  * @return number of spaces, or -1 if game is NULL
  */
-int game_get_n_spaces(Game *game);
+int game_get_n_spaces (Game* game);
 
 /**
  * @brief It returns the number of objects in the game
@@ -467,7 +460,7 @@ int game_get_n_spaces(Game *game);
  * @param game a pointer to the game
  * @return number of objects, or -1 if game is NULL
  */
-int game_get_n_objects(Game *game);
+int game_get_n_objects (Game* game);
 
 /**
  * @brief It returns the number of characters in the game
@@ -476,7 +469,7 @@ int game_get_n_objects(Game *game);
  * @param game a pointer to the game
  * @return number of characters, or -1 if game is NULL
  */
-int game_get_n_characters(Game *game);
+int game_get_n_characters (Game* game);
 
 /**
  * @brief It returns the number of players in the game
@@ -485,7 +478,7 @@ int game_get_n_characters(Game *game);
  * @param game a pointer to the game
  * @return number of players, or -1 if game is NULL
  */
-int game_get_n_players(Game *game);
+int game_get_n_players (Game* game);
 
 /**
  * @brief It returns the number of links in the game
@@ -497,8 +490,7 @@ int game_get_n_players(Game *game);
  * @param game a pointer to the game
  * @return number of links, or -1 if game is NULL
  */
-int game_get_n_links(Game *game);
-
+int game_get_n_links (Game* game);
 
 /* ========================================================================= */
 /*                            GAME STATE                                     */
@@ -515,7 +507,7 @@ int game_get_n_links(Game *game);
  * @param finished TRUE to mark as finished, FALSE otherwise
  * @return OK if set, ERROR if game is NULL
  */
-Status game_set_finished(Game *game, Bool finished);
+Status game_set_finished (Game* game, Bool finished);
 
 /**
  * @brief It checks if the game has finished
@@ -524,7 +516,7 @@ Status game_set_finished(Game *game, Bool finished);
  * @param game a pointer to the game
  * @return TRUE if finished, FALSE otherwise (TRUE if game is NULL)
  */
-Bool game_get_finished(Game *game);
+Bool game_get_finished (Game* game);
 
 /**
  * @brief It sets the last command of the game
@@ -538,7 +530,7 @@ Bool game_get_finished(Game *game);
  * @param command a pointer to the command
  * @return OK if set, ERROR if either pointer is NULL
  */
-Status game_set_last_command(Game *game, Command *command);
+Status game_set_last_command (Game* game, Command* command);
 
 /**
  * @brief It sets the status result of the last command executed
@@ -551,7 +543,7 @@ Status game_set_last_command(Game *game, Command *command);
  * @param status the result status to store
  * @return OK if set, ERROR if game is NULL
  */
-Status game_set_last_cmd_status(Game *game, Status status);
+Status game_set_last_cmd_status (Game* game, Status status);
 
 /**
  * @brief It gets the status result of the last command executed
@@ -560,7 +552,7 @@ Status game_set_last_cmd_status(Game *game, Status status);
  * @param game a pointer to the game
  * @return the stored status, or ERROR if game is NULL
  */
-Status game_get_last_cmd_status(Game *game);
+Status game_get_last_cmd_status (Game* game);
 
 /**
  * @brief It advances the turn to the next player
@@ -572,8 +564,7 @@ Status game_get_last_cmd_status(Game *game);
  * @param game a pointer to the game
  * @return OK if updated, ERROR if game is NULL or no players exist
  */
-Status game_turn_update(Game *game);
-
+Status game_turn_update (Game* game);
 
 /* ========================================================================= */
 /*                         PRINT (debugging)                                 */
@@ -588,6 +579,6 @@ Status game_turn_update(Game *game);
  *
  * @param game a pointer to the game
  */
-void game_print(Game *game);
+void game_print (Game* game);
 
 #endif

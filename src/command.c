@@ -25,43 +25,25 @@
  *   (porque NO_CMD = -1 ocupa la fila 0)
  *
  * ---------------------------------------------------------------------- */
-char *cmd_to_str[N_CMD][N_CMDT] = {
-    {"",  "No command"},
-    {"",  "Unknown"},
-    {"e", "Exit"},
-    {"m", "Move"},
-    {"w", "Walk"},
-    {"t", "Take"},
-    {"d", "Drop"},
-    {"a", "Attack"},
-    {"c", "Chat"},
-    {"i", "Inspect"},
-    {"u", "Use"},
-    {"o", "Open"},
-    {"s", "Save"},
-    {"l", "Load"},
-    {"r", "Recruit"},
-    {"k", "Kick"}
-};
+char* cmd_to_str[N_CMD][N_CMDT] = { { "", "No command" }, { "", "Unknown" }, { "e", "Exit" },    { "m", "Move" },    { "w", "Walk" }, { "t", "Take" },
+                                    { "d", "Drop" },      { "a", "Attack" }, { "c", "Chat" },    { "i", "Inspect" }, { "u", "Use" },  { "o", "Open" },
+                                    { "s", "Save" },      { "l", "Load" },   { "r", "Recruit" }, { "k", "Kick" } };
 
-struct _Command {
-    char       *target;
+struct _Command
+{
     CommandCode code;
-
-    /* PlayerCode player ----> Posible solucion para multijugador simultaneo:
-     *   typedef enum { NO_PLY, PLY_1, PLY_2 } PlayerCode;
-     *   Permitiria identificar quien ejecuta cada comando, util para los
-     *   tests de integracion automatizados (game1.cmd) y para el render
-     *   por frame en graphic_engine.
-     */
+    char*       target;
+    Direction   dir;
 };
 
 /* ----------------------------------------------------------------------
  * Create / Destroy
  * ---------------------------------------------------------------------- */
 
-Command *command_create(void) {
-    Command *newCommand = (Command *) calloc(1, sizeof(Command));
+Command*
+command_create (void)
+{
+    Command* newCommand = (Command*)calloc (1, sizeof (Command));
     if (!newCommand) return NULL;
 
     newCommand->code   = NO_CMD;
@@ -69,11 +51,13 @@ Command *command_create(void) {
     return newCommand;
 }
 
-Status command_destroy(Command *command) {
+Status
+command_destroy (Command* command)
+{
     if (!command) return ERROR;
 
-    if (command->target) free(command->target);
-    free(command);
+    if (command->target) free (command->target);
+    free (command);
     return OK;
 }
 
@@ -81,18 +65,24 @@ Status command_destroy(Command *command) {
  * Set / Get
  * ---------------------------------------------------------------------- */
 
-Status command_set_code(Command *command, CommandCode code) {
+Status
+command_set_code (Command* command, CommandCode code)
+{
     if (!command) return ERROR;
     command->code = code;
     return OK;
 }
 
-CommandCode command_get_code(Command *command) {
+CommandCode
+command_get_code (Command* command)
+{
     if (!command) return NO_CMD;
     return command->code;
 }
 
-char *command_get_target(Command *command) {
+char*
+command_get_target (Command* command)
+{
     if (!command) return NULL;
     return command->target;
 }
@@ -106,42 +96,49 @@ char *command_get_target(Command *command) {
  * Si fgets devuelve NULL (EOF, p.ej. al terminar la redireccion del .cmd),
  * tratamos la condicion como un EXIT implicito.
  * ---------------------------------------------------------------------- */
-Status command_get_user_input(Command *command) {
-    char        input[CMD_LENGHT] = "";
-    char       *token             = NULL;
-    int         i                 = UNKNOWN - NO_CMD + 1;  /* = 2 */
+Status
+command_get_user_input (Command* command)
+{
+    char input[CMD_LENGHT] = "";
+    char* token            = NULL;
+    int i                  = UNKNOWN - NO_CMD + 1; /* = 2 */
     CommandCode cmd;
 
     if (!command) return ERROR;
 
     /* Limpiamos el target del turno anterior antes de leer el nuevo */
-    if (command->target) {
-        free(command->target);
-        command->target = NULL;
-    }
-
-    if (fgets(input, CMD_LENGHT, stdin)) {
-        /* Primer token: el comando */
-        token = strtok(input, " \n");
-        if (!token) return command_set_code(command, UNKNOWN);
-
-        cmd = UNKNOWN;
-        while (cmd == UNKNOWN && i < N_CMD) {
-            if (!strcasecmp(token, cmd_to_str[i][CMDS]) ||
-                !strcasecmp(token, cmd_to_str[i][CMDL])) {
-                cmd = i + NO_CMD;
-            } else {
-                i++;
-            }
+    if (command->target)
+        {
+            free (command->target);
+            command->target = NULL;
         }
 
-        /* Segundo token: el target (opcional segun el comando) */
-        token = strtok(NULL, " \n");
-        if (token) command->target = strdup(token);
+    if (fgets (input, CMD_LENGHT, stdin))
+        {
+            /* Primer token: el comando */
+            token = strtok (input, " \n");
+            if (!token) return command_set_code (command, UNKNOWN);
 
-        return command_set_code(command, cmd);
-    }
+            cmd = UNKNOWN;
+            while (cmd == UNKNOWN && i < N_CMD)
+                {
+                    if (!strcasecmp (token, cmd_to_str[i][CMDS]) || !strcasecmp (token, cmd_to_str[i][CMDL]))
+                        {
+                            cmd = i + NO_CMD;
+                        }
+                    else
+                        {
+                            i++;
+                        }
+                }
+
+            /* Segundo token: el target (opcional segun el comando) */
+            token = strtok (NULL, " \n");
+            if (token) command->target = strdup (token);
+
+            return command_set_code (command, cmd);
+        }
 
     /* fgets fallo (EOF tipicamente): salida implicita */
-    return command_set_code(command, EXIT);
+    return command_set_code (command, EXIT);
 }

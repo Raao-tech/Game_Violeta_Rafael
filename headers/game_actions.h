@@ -32,6 +32,6 @@
  * @param cmd a pointer to the command (already parsed by command_get_user_input)
  * @return OK if the dispatch succeeded, ERROR if game or cmd is NULL
  */
-Status game_actions_update(Game *game, Command *cmd);
+Status game_actions_update (Game* game, Command* cmd);
 
 #endif

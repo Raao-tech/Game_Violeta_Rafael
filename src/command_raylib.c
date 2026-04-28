@@ -15,7 +15,6 @@
 #include <string.h>
 #include <strings.h>
 
-
 /* ----------------------------------------------------------------------
  * command_raylib_get_user_input  (modo visual: traduce teclas a Command)
  *
@@ -31,14 +30,18 @@
  *   - GetKeyPressed()      -> devuelve int (keycode); util para texto,
  *                             NO para reconocer una tecla concreta.
  * ---------------------------------------------------------------------- */
-Status command_raylib_get_user_input(Command *command) {
+Status
+command_raylib_get_user_input ()
+{
     if (!command) return ERROR;
 
-    if (IsKeyPressed(KEY_ESCAPE)) {
-        return command_set_code(command, EXIT);
-    }
+    if (IsKeyPressed (KEY_ESCAPE))  return command_set_code (, EXIT);
+    if (IsKeyPressed (KEY_UP))      return command_set_code (command, );
+    if (IsKeyPressed (KEY_ESCAPE))  return command_set_code (command, EXIT);
+    if (IsKeyPressed (KEY_ESCAPE))  return command_set_code (command, EXIT);
+    if (IsKeyPressed (KEY_ESCAPE))  return command_set_code (command, EXIT);
 
-    /* 
+    /*
      *   if (IsKeyPressed(KEY_UP)    || IsKeyPressed(KEY_W)) -> WALK + N
      *   if (IsKeyPressed(KEY_DOWN)  || IsKeyPressed(KEY_S)) -> WALK + S
      *   if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) -> WALK + E

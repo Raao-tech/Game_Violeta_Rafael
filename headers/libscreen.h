@@ -12,9 +12,17 @@
 #define LIBSCREEN_H
 
 typedef struct _Area Area;
-typedef enum {BLUE, GREEN, BLACK, RED, YELLOW, PURPLE, CYAN, WHITE} Frame_color;
-
-
+typedef enum
+{
+    BLUE,
+    GREEN,
+    BLACK,
+    RED,
+    YELLOW,
+    PURPLE,
+    CYAN,
+    WHITE
+} Frame_color;
 
 /**
  * @brief It creates a new screen
@@ -25,7 +33,7 @@ typedef enum {BLUE, GREEN, BLACK, RED, YELLOW, PURPLE, CYAN, WHITE} Frame_color;
  * @param rows the number of rows that will have the full screen
  * @param columns the number of columns that will have the full screen
  */
-void screen_init(int rows, int columns);
+void screen_init (int rows, int columns);
 
 /**
  * @brief It destroys a new screen area
@@ -34,7 +42,7 @@ void screen_init(int rows, int columns);
  * As it frees the screen, it must be called at the end of the program,
  *  once the areas created have been freed.
  */
-void screen_destroy();
+void screen_destroy ();
 
 /**
  * @brief It paints in the terminal the actual screen composition
@@ -43,7 +51,7 @@ void screen_destroy();
  * This function should be called when some updates
  *  in the screen want to be shown.
  */
-void screen_paint(Frame_color color);
+void screen_paint (Frame_color color);
 
 /**
  * @brief It creates a new area inside a screen
@@ -57,7 +65,7 @@ void screen_paint(Frame_color color);
  * @param height the height of the area
  * @return a new area, initialized
  */
-Area* screen_area_init(int x, int y, int width, int height);
+Area* screen_area_init (int x, int y, int width, int height);
 
 /**
  * @brief It destroys a new screen area
@@ -67,7 +75,7 @@ Area* screen_area_init(int x, int y, int width, int height);
  *  before ending the programme.
  * @param area the area to be freed
  */
-void screen_area_destroy(Area* area);
+void screen_area_destroy (Area* area);
 
 /**
  * @brief It cleares an area, eraising all its content
@@ -77,7 +85,7 @@ void screen_area_destroy(Area* area);
  *  before introducing a new state of it.
  * @param area the area to be cleared
  */
-void screen_area_clear(Area* area);
+void screen_area_clear (Area* area);
 
 /**
  * @brief It resets the cursor of an area
@@ -86,7 +94,7 @@ void screen_area_clear(Area* area);
  * This function reset the cursor to the up-left corner of the area.
  * @param area the involved area
  */
-void screen_area_reset_cursor(Area* area);
+void screen_area_reset_cursor (Area* area);
 
 /**
  * @brief It introduces some information inside an area
@@ -97,6 +105,6 @@ void screen_area_reset_cursor(Area* area);
  * @param area the area to be modified
  * @param str a string that contains the information to be included in a particular area
  */
-void screen_area_puts(Area* area, char* str);
+void screen_area_puts (Area* area, char* str);
 
 #endif

@@ -21,7 +21,7 @@
  * @param filename string with the name of the data file
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status game_management_create_from_file(Game **game, char *filename);
+Status game_management_create_from_file (Game** game, char* filename);
 
 /**
  * @brief It saves the current game in a new .dat
@@ -30,6 +30,6 @@ Status game_management_create_from_file(Game **game, char *filename);
  * @param game pointer to pointer to the game
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status game_management_save_file(Game **game);
+Status game_management_save_file (Game** game);
 
 #endif

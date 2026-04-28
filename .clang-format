@@ -1,0 +1,18 @@
+#Establecemos el estilo LLVM con idnetacion 4
+BasedOnStyle: GNU
+IndentWidth: 4
+Language: C
+# Force pointers to the type for C.
+DerivePointerAlignment: false
+PointerAlignment: Left
+ColumnLimit: 150
+
+
+
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: false
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+
+

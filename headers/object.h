@@ -11,10 +11,10 @@
 #define OBJECT_H
 
 #include "command.h"
+#include "entity.h"
+#include "player.h"
 #include "space.h"
 #include "types.h"
-#include "player.h"
-#include "entity.h"
 
 typedef struct _Object Object;
 
@@ -24,7 +24,7 @@ typedef struct _Object Object;
  *
  * @return a new object, initialized
  */
-Object *obj_create();
+Object* obj_create ();
 
 /**
  * @brief It destroys an object, freeing the allocated memory
@@ -33,9 +33,9 @@ Object *obj_create();
  * @param obj a pointer to the object
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status obj_destroy(Object *obj);
+Status obj_destroy (Object* obj);
 
- /* =============Name============= */
+/* =============Name============= */
 /**
  * @brief It sets the name of an object
  * @author Violeta y Rafa
@@ -44,7 +44,7 @@ Status obj_destroy(Object *obj);
  * @param name the name of the object
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status obj_set_name(Object *obj, char *name);
+Status obj_set_name (Object* obj, char* name);
 
 /**
  * @brief It checks whether the object has the given name
@@ -54,7 +54,7 @@ Status obj_set_name(Object *obj, char *name);
  * @param name the name to compare against
  * @return TRUE if the names match, FALSE otherwise or if any parameter is NULL
  */
-Bool obj_has_name(Object *obj, char *name);
+Bool obj_has_name (Object* obj, char* name);
 
 /**
  * @brief It gets the name of an object
@@ -63,7 +63,7 @@ Bool obj_has_name(Object *obj, char *name);
  * @param obj a pointer to the object
  * @return a string with the name of the object
  */
-char *obj_get_name(Object *obj);
+char* obj_get_name (Object* obj);
 /**
  * @brief It sets the description of an object
  * @author Javier Jarque
@@ -72,7 +72,7 @@ char *obj_get_name(Object *obj);
  * @param description the description of the object
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status obj_set_description(Object *obj, char *description);
+Status obj_set_description (Object* obj, char* description);
 /**
  * @brief It checks whether the object has the given description
  * @author Javier Jarque
@@ -81,7 +81,7 @@ Status obj_set_description(Object *obj, char *description);
  * @param description the description to compare against
  * @return TRUE if the descriptions match, FALSE otherwise or if any parameter is NULL
  */
-Bool obj_has_description(Object *obj, char *description);
+Bool obj_has_description (Object* obj, char* description);
 /**
  * @brief It gets the description of an object
  * @author Javier Jarque
@@ -89,9 +89,9 @@ Bool obj_has_description(Object *obj, char *description);
  * @param obj a pointer to the object
  * @return a string with the description of the object
  */
-char *obj_get_description(Object *obj);
+char* obj_get_description (Object* obj);
 
- /* =============ID============= */
+/* =============ID============= */
 /**
  * @brief It sets the id of an object
  * @author Violeta y Rafa
@@ -100,7 +100,7 @@ char *obj_get_description(Object *obj);
  * @param id the id to set
  * @return OK  if all good, ERROR if pointer is NULL or other case not good
  */
- Status obj_set_id(Object *obj, Id id);
+Status obj_set_id (Object* obj, Id id);
 /**
  * @brief It gets the id of an object
  * @author Violeta y Rafa
@@ -108,26 +108,25 @@ char *obj_get_description(Object *obj);
  * @param obj a pointer to the object
  * @return the id of object
  */
-Id obj_get_id(Object *obj);
+Id obj_get_id (Object* obj);
 
- /* ========== Position ========== */
-Status obj_set_position (Object *obj, int x, int y);
-int obj_get_pos_x (Object *obj);
-int obj_get_pos_y (Object *obj);
+/* ========== Position ========== */
+Status obj_set_position (Object* obj, int x, int y);
+int obj_get_pos_x (Object* obj);
+int obj_get_pos_y (Object* obj);
 
-
- /* =============Health============= */
- /**
+/* =============Health============= */
+/**
  * @brief It sets the health of an object
- * @author Javier Jarque 
+ * @author Javier Jarque
  *
  * @param obj a pointer to the object
  * @param health the health to set
  * @return OK  if all good, ERROR if pointer is NULL or other case not good
  */
-Status obj_set_health(Object *obj, int health);
+Status obj_set_health (Object* obj, int health);
 
-int obj_get_health(Object *obj);
+int obj_get_health (Object* obj);
 
 /**
  * @brief It gets the health of an object
@@ -136,18 +135,18 @@ int obj_get_health(Object *obj);
  * @param obj a pointer to the object
  * @return the health of the object, 0 in case of mistake
  */
-int obj_get_health(Object *obj);
+int obj_get_health (Object* obj);
 
- /* =============Movable============= */
- /**
+/* =============Movable============= */
+/**
  * @brief It sets the boolean movable of an object
- * @author Salvador 
+ * @author Salvador
  *
  * @param obj a pointer to the object
  * @param movable the movable value to set
  * @return OK  if all good, ERROR if pointer is NULL or other case not good
  */
-Status obj_set_movable(Object *obj, Bool movable);
+Status obj_set_movable (Object* obj, Bool movable);
 /**
  * @brief It gets the movable status of an object
  * @author Salvador
@@ -155,18 +154,18 @@ Status obj_set_movable(Object *obj, Bool movable);
  * @param obj a pointer to the object
  * @return the movable status of the object, FALSE in case of mistake
  */
-Bool obj_get_movable(Object *obj);
+Bool obj_get_movable (Object* obj);
 
- /* =============Open============= */
-  /**
+/* =============Open============= */
+/**
  * @brief It sets the Id of the link that this object can open
- * @author Salvador 
+ * @author Salvador
  *
  * @param obj a pointer to the object
  * @param open the Id of the link to set
  * @return OK  if all good, ERROR if pointer is NULL or other case not good
  */
-Status obj_set_open(Object *obj, Id open);
+Status obj_set_open (Object* obj, Id open);
 
 /**
  * @brief It gets the Id of the link that this object can open
@@ -175,19 +174,19 @@ Status obj_set_open(Object *obj, Id open);
  * @param obj a pointer to the object
  * @return the Id of the link that this object can open, NO_ID in case of mistake
  */
-Id obj_get_open(Object *obj);
+Id obj_get_open (Object* obj);
 
- /* =============Dependency============= */
+/* =============Dependency============= */
 
- /**
+/**
  * @brief It sets the Id of the object that this object depends on
- * @author Salvador 
+ * @author Salvador
  *
  * @param obj a pointer to the object
  * @param dependency the Id of the dependent object to set
  * @return OK  if all good, ERROR if pointer is NULL or other case not good
  */
-Status obj_set_dependency(Object *obj, Id dependency);
+Status obj_set_dependency (Object* obj, Id dependency);
 
 /**
  * @brief It gets the Id of the object that this object depends on
@@ -196,7 +195,7 @@ Status obj_set_dependency(Object *obj, Id dependency);
  * @param obj a pointer to the object
  * @return the Id of the object that this object depends on, NO_ID in case of mistake
  */
-Id obj_get_dependency(Object *obj);
+Id obj_get_dependency (Object* obj);
 
 /**
  * @brief It gets the int of the stats
@@ -204,29 +203,24 @@ Id obj_get_dependency(Object *obj);
  *
  * @param obj a pointer to the object
  * @return the Id of the object that this object depends on, NO_ID in case of mistake
-*/
-Status obj_set_stats(Object *obj, int speed, int health, int energy, int attack);
+ */
+Status obj_set_stats (Object* obj, int speed, int health, int energy, int attack);
 
-Status obj_set_health(Object *obj, int health);
-int obj_get_health(Object *obj);
+Status obj_set_health (Object* obj, int health);
+int obj_get_health (Object* obj);
 
-Status obj_set_speed(Object *obj, int speed);
-int obj_get_speed(Object *obj);
+Status obj_set_speed (Object* obj, int speed);
+int obj_get_speed (Object* obj);
 
-Status obj_set_attack(Object *obj, int attack);
-int obj_get_attack(Object *obj);
+Status obj_set_attack (Object* obj, int attack);
+int obj_get_attack (Object* obj);
 
-Status obj_set_energy(Object *obj, int energy);
-int obj_get_energy(Object *obj);
+Status obj_set_energy (Object* obj, int energy);
+int obj_get_energy (Object* obj);
 
 /* ========== Consumable ========== */
-Bool obj_get_consumable (Object *obj);
-Status obj_set_consumable (Object *obj, Bool consumable);
-
-
-
-
-
+Bool obj_get_consumable (Object* obj);
+Status obj_set_consumable (Object* obj, Bool consumable);
 
 /**
  * @brief It prints the object information
@@ -235,6 +229,6 @@ Status obj_set_consumable (Object *obj, Bool consumable);
  * @param obj a pointer to the object
  * @return OK, if everything goes well, or ERROR if there was some mistake
  */
-Status obj_print(Object *obj);
+Status obj_print (Object* obj);
 
 #endif
