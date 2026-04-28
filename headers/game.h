@@ -285,11 +285,11 @@ Numen* game_get_numen_by_id (Game* game, Id numen_id);
  * @brief It finds a numen by its name
  * @author Violeta y Rafa
  *
- * Uses character_has_name for case-sensitive comparison.
+ * Uses numen_has_name for case-sensitive comparison.
  *
  * @param game a pointer to the game
  * @param name the name of the numen to find
- * @return pointer to the character, or NULL if not found
+ * @return pointer to the numen, or NULL if not found
  */
 Numen* game_get_numen_by_name (Game* game, char* numen_name);
 
@@ -298,8 +298,8 @@ Numen* game_get_numen_by_name (Game* game, char* numen_name);
  * @author Rafa
  *
  * @param game a pointer to the game
- * @param char_id the id of the character to locate
- * @return the id of the space containing the character, or NO_ID
+ * @param numen_id the id of the numen to locate
+ * @return the id of the space containing the numen, or NO_ID
  */
 Id game_get_numen_location (Game* game, Id numen_id);
 
@@ -433,7 +433,7 @@ Id game_get_space_id_at (Game* game, int position);
  * @param position the zero-based index in the numens array
  * @return pointer to the numen, or NULL if out of range
  */
-Numen* game_get_numen__at (Game* game, int position);
+Numen* game_get_numen_at (Game* game, int position);
 
 /**
  * @brief It gets a link by its position in the array

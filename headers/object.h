@@ -3,8 +3,8 @@
  *
  * @file object.h
  * @author Violeta, Rafa and Salvador
- * @version 1
- * @date 18-04-2025
+ * @version 3
+ * @date 28-04-2025
  * @copyright GNU Public License
  */
 #ifndef OBJECT_H
@@ -110,9 +110,54 @@ Status obj_set_id (Object* obj, Id id);
  */
 Id obj_get_id (Object* obj);
 
+/* ========== Gdesc ========== */
+/**
+ * @brief It sets the graphic description of an object
+ * @author Salvador
+ *
+ * @param obj a pointer to the object
+ * @param gdesc the graphic description to set
+ * @return OK  if all good, ERROR if pointer is NULL or other case not good
+ */
+Status obj_set_gdesc (Object* obj, char* gdesc);
+
+/**
+ * @brief It gets the graphic description of an object
+ * @author Salvador
+ *
+ * @param obj a pointer to the object
+ * @return a string with the graphic description of the object
+ */
+char* obj_get_gdesc (Object* obj);
+
 /* ========== Position ========== */
+/**
+ * @brief It sets the position x and y of the object
+ * @author Rafael and Violeta
+ *
+ * @param obj a pointer to the object
+ * @param x x position to be set
+ * @param y y position to be set
+ * @return OK if position set properly, ERROR otherwise
+ */
 Status obj_set_position (Object* obj, int x, int y);
+
+/**
+ * @brief It gets the position x of the object
+ * @author Rafael and Violeta
+ *
+ * @param obj a pointer to the object
+ * @return position x of the object, -1 otherwise
+ */
 int obj_get_pos_x (Object* obj);
+
+/**
+ * @brief It gets the position y of the object
+ * @author Rafael and Violeta
+ *
+ * @param obj a pointer to the object
+ * @return position y of the object, -1 otherwise
+ */
 int obj_get_pos_y (Object* obj);
 
 /* =============Health============= */

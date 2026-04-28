@@ -147,6 +147,15 @@ int player_get_n_objects (Player* player);
  * @return OK if successful, ERROR if player is NULL or max < 0
  */
 Status player_set_max_objects (Player* player, int max);
+
+/**
+ * @brief It gets the maximum number of objects the player can carry
+ * @author Salvador
+ *
+ * @param player a pointer to the player
+ * @return the maximum number of objects the player can carry, or ERROR if player is NULL
+ */
+int player_get_max_objects (Player* player); 
 /* ========== Numens ==========*/
 
 /**
@@ -196,7 +205,16 @@ int player_get_n_numens (Player* player); /*!< Cuántos tiene?*/
  * @param max_numens the maximum capacity of the numen inventory
  * @return OK if successful, ERROR if player is NULL or max_numens < 0
  */
-Status player_set_max_numens (Player* player, int max_numens); /*!< El máximo es...*/
+Status player_set_max_numens (Player* player, int max_numens); 
+
+/**
+ * @brief It gets the maximum number of numens the player can carry
+ * @author Salvador
+ *
+ * @param player a pointer to the player
+ * @return the maximum number of numens the player can carry, or ERROR if player is NULL
+ */
+int player_get_max_numens (Player* player); 
 
 /**
  * @brief It gets the id of the active numen
@@ -322,6 +340,7 @@ int     player_get_vision_x(Player* player);
 
 Status  player_set_vision_y(Player* player, int y);
 int     player_get_vision_y(Player* player);
+
 
 /* ========== Print ========== */
 

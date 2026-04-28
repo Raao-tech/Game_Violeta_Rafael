@@ -172,8 +172,45 @@ Status space_remove_character (Space* space, Id id_chara);
 int space_get_n_characters (Space* space);
 /* ========== Grid ====================== */
 
-Status space_set_grid_by_line (Space* space, int line, char* content);
+/**
+ * @brief It sets a line of the grid for the space
+ * @author Rafael and Salvador
+ *
+ * @param space a pointer to the space
+ * @param line the line number to set
+ * @param content a pointer to the array of integers representing the line
+ * @return OK if set, ERROR if space is NULL or line is out of bounds
+ */
+Status space_set_grid_by_line(Space *space, int line, int *content);
+/**
+ * @brief It gets a line of the grid for the space
+ * @author Rafael
+ *
+ * @param space a pointer to the space
+ * @param line the line number to get
+ * @return a pointer to the array of integers representing the line, or NULL if space is NULL or line is out of bounds
+ */
 int* space_get_grid_by_line (Space* space, int line);
+
+/* ========== OST ====================== */
+
+/**
+ * @brief It sets the OST filename for the space
+ * @author Salvador
+ *
+ * @param space a pointer to the space
+ * @param ost the OST filename
+ * @return OK if set, ERROR if space is NULL or ost is invalid
+ */
+Status space_set_ost (Space* space, char* ost);
+/**
+ * @brief It returns the OST filename stored in the space
+ * @author Salvador
+ *
+ * @param space a pointer to the space
+ * @return pointer to the OST filename, or NULL if space is NULL
+ */
+char* space_get_ost (Space* space);
 
 /* ========== Numens (Set of Ids) ========== */
 
