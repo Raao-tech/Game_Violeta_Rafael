@@ -295,7 +295,7 @@ game_load_objects (Game* game, char* filename)
         space = game_get_space(game, space_id);
         if (space)
         {
-          space_set_object(space, id);
+          space_set_object(space, id, obj_get_position(obj));
         }
         else
         {

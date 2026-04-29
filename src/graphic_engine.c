@@ -145,7 +145,7 @@ graphic_engine_init (Graphic_engine* ge)
             /* ------ Menu Principal ------ */
             if (result.menu_out == OUT_ERR)
                 {
-                    DrawText ("ATLANTIC QUEST", (int)(WIDHT_SCREEN * (3.0 / 8.0)), 100, 20, DARKGRAY);
+                    DrawText (TITLE, (int)(WIDHT_SCREEN * (3.0 / 8.0)), 100, 20, DARKGRAY);
 
                     if (GuiButton ((Rectangle){ (int)(WIDHT_SCREEN * (2.0 / 8.0)), 150, 200, 50 }, "NEW GAME"))
                         {
@@ -170,7 +170,7 @@ graphic_engine_init (Graphic_engine* ge)
                         {
                             result.menu_out = OUT_ERR;
                         }
-                    if (GuiButton ((Rectangle){ (int)(WIDHT_SCREEN * (2.0 / 8.0)), 150, 200, 50 }, "BULBASAUR"))
+                    if (GuiButton ((Rectangle){ (int)(WIDHT_SCREEN * (2.0 / 8.0)), 150, 200, 50 }, "BROCOCHACHO"))
                         {
                             strncpy (result.data_name, F_DATA_N, WORD_SIZE);
                             result.data_name[WORD_SIZE] = '\0';

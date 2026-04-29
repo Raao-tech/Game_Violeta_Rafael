@@ -256,12 +256,12 @@ game_actions_take (Game* game)
                     return;
                 }
         }
-    space_remove_object (space, obj_id);
+    space_remove_object (space, obj_id, obj_pos);
 
     if (player_add_object (player, obj_id) != OK)
         {
             /* Inventory full — put the object back */
-            space_set_object (space, obj_id);
+            space_set_object (space, obj_id, obj_pos);
             game_set_last_cmd_status (game, ERROR_take);
             return;
         }
@@ -332,7 +332,7 @@ game_actions_drop (Game* game)
 
     player_delete_object (player, obj_id);
     space = game_get_space (game, space_id);
-    space_set_object (space, obj_id);
+    space_set_object (space, obj_id, obj_get_position(obj));
 	obj_set_position(obj, ply_vision.pos_x, ply_vision.pos_y); /*Seteamos la ubicación del objeto en la cuadrilla doinde esta viendo player*/
 
     game_set_last_cmd_status (game, OK);
@@ -390,7 +390,8 @@ game_actions_walk (Game* game)
 		case E:	 pos_current.pos_x += WIDHT;		break;
 		default:								break;
 	}
-
+    if(grid[pos_current.pos_x][pos_current.y]  != 0 )
+    
 	if(player_set_position(player, pos_current.pos_x, pos_current.pos_y) == ERROR)
 	{
 		game_set_last_cmd_status (game, ERROR_walk);
