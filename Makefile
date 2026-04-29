@@ -33,7 +33,7 @@
 #			|			-Wall (Warn All) : nos chiva Errores y odiosos Warnings, sin embargo no los activa todos (no confién tanto)
 #			|			-Wextra (Warn Extras) : Es una ayuda para Wall, se encarga de advertir cosas como comparaciones entre datos 
 #			|				con y sin signo o parámetros en funciones que no están siendo usadas
-#			|			-Wpedantic : Fuerxa al compilador a seguir el estándar de C o C++ de la ISO, evita que se use "extensiones" 
+#			|			-Wpedantic : Fuerza al compilador a seguir el estándar de C o C++ de la ISO, evita que se use "extensiones" 
 #			|				o artilugios que normalmente aceptaria GCC pero tal vez otro compilador no, lo que nos obliga a escribir un código portátil
 #			|			-O0 (Optimización 0) : Esta flag asegura que el compilador no modificará tu código para optimizarlo, sino que permitirá  
 #			|			apreciar vuestras "metidas de pata" en tiempo real mientras que se ejecuta cualquier programa de debugueado.  
@@ -44,7 +44,7 @@
 #			Se supone, según el manual, que es en ésta constante de makefile que le decimos al compilador cómo debería "linkear" todos los .o del proyecto,
 #			en un contexto normal, acá le diríamos algo del estilo: "Vete a tal directorio y espera a que te diga que lirebrias linkearas con estos .o",
 #			para ello escribiríamos algo como -L./directorio. Bien, la razón por la cual esta vacío, es porque no quería confiar en que cada sistema buscaría
-#			la librería estática correcta, por lo que decidí que LDLIBS tenga cada y una de las rutas de nustras librerías (libscreen.a, libraylib.a, etc)	
+#			la librería estática correcta, por lo que decidí que LDLIBS tenga cada una de las rutas de nustras librerías (libscreen.a, libraylib.a, etc)	
 #			por lo que LDFLAGS queda vacío, y esto es así sólo por respetar el estándar, pero podríamos quitarlo y todo compilaría tan fácil como lo hace el agua 
 #			agua por un río.  	
 #		PREFLAGS		--> Opciones debugueado (flags)
@@ -68,7 +68,7 @@
 #	FILES: Acá tenemos el nombre de los archivos con ciertas reglas que ya explicaré: 
 #
 #		SRCS     = $(wildcard $(SRC_DIR)/*.c)
-#					Esta constante lo que tenrá será todos los nombres de los .c en el directorio src/
+#					Esta constante lo que tendrá será todos los nombres de los .c en el directorio src/
 #
 #		OBJS     = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS)) 
 #					Esta constante lo que tiene es que relaciona el nombre  de todos los .c (%.c) que haya en el directorio src/
@@ -82,7 +82,7 @@
 #					Dirección del archivo de logs por defecto. Lo puedes probar ejecutando make run_log runv_log playv play test_cmd etc 
 #					
 #	DATA FILES: Acá tenemos los archivos donde se guardará y/o leerá información necesaria para el jeugo (GameLoad, *.dat, .cmd. etc)
-#		BD       --> Es el archivo que leera game_reader.c, ahḉi estará definido todo lo relacioando con los espacios, players, objects, numens, etc
+#		BD       --> Es el archivo que leerá game_reader.c, aquí estará definido todo lo relacioando con los espacios, players, objects, numens, etc
 #		CMD		 --> Acá estarán los comandos que se usarán en las pruebas automatizadas de integración.
 #
 #
@@ -101,21 +101,21 @@
 #	No siempre las dependencias que usa raylib están en nuestros computadores, lo cual es raro pues son dependencias
 #	muy usadas en la industria (OpenGL, X11, etc), pero puede ocurrir que aunque estén instaldas, se tenga discrepancia en el 
 #	nombre, este es el problema con el que me tope en los ordenadores de la uni;  al parecer el nombre de ciertas librerías dinámicas,
-#	(identificadas por su temrinación ".so") tienen incluído por alguna razón que desconozco un "*.so.1" o .2 o lo algo que no coincide con
+#	(identificadas por su temrinación ".so") tienen incluído por alguna razón que desconozco un "*.so.1" o .2 o algo que no coincide con
 #	el patrón exacto que busca el compialdor cuando se le manda a linkear con -name_of_genericLib, devolviendo error.  Para evitar esos problemas
 #	he definido la ruta exacta en la que se encuentra cada librería, veamos cuales son para que son usadas por raylib: 
 #
 #		GL_LIB     ̣---> librería de OpenGL: Es una librería o API de renderizado gráfico 2D y 3D, muchos juegos como Minecraft (versión java) u Angry Birds (para Pc s) lo usarón
 #		X11_LIB    ---> librería X11: Es la librería que usa Ubuntu para gestionar la creación de su interfaz gráfica.  (abrir ventanas, detectar clicks del ratón o teclado, lo irémos viendo en raylib)
-#		DL_LIB     ---> librería Dynamic Linker Library: es un a lirebria que permite llamar cargar librerias dinamicas (.so) en tiempo de ejecución, se suelen usar en proyectos grandes como este para reducir el tiempo de compilación
+#		DL_LIB     ---> librería Dynamic Linker Library: es un a lirebria que permite cargar librerias dinamicas (.so) en tiempo de ejecución, se suelen usar en proyectos grandes como este para reducir el tiempo de compilación
 #		RT_LIB     ---> librería Real-time Extensions: basicamente nos trae una precisiónm absurda del tiempo, lo que nos permite hacer animaciones fluidas a 60 fps
 #		M_LIB      ---> librería Math Library: Esta librería la hemos usado con anterioridad, trae funciones matemáticas para poder calcular potencias, raíces cuadradas, y otros artilugios
-#						matemáticos que pdormeos uar para cañlcular el moódulo del vector "distancia enemigo", área de efecto de las habildiades, etc. 
+#						matemáticos que podremos usar para calcular el moódulo del vector "distancia enemigo", área de efecto de las habildiades, etc. 
 #
 #
 #		                    --------------------------------------------------------------
 #		
-#		LDLIBS ------> ÉSTE SERÁ LA CONMSTANTE USADA EN ORDENADORES DE LA UNI PARA COMPILAR NUESTRO CÓDIGO
+#		LDLIBS ------> ÉSTE SERÁ LA CONSTANTE USADA EN ORDENADORES DE LA UNI PARA COMPILAR NUESTRO CÓDIGO
 #		
 #		RAYLIB_SYS_LIBS  Esta constante guarda todas las librerías, pero hay una flag especial que usa, a la cual me gustaría dedicarle un pequeño inciso:
 #				-pthread   ---> Esta flag le dice al compilador que pueda ejecutar múltiples cosas en paralelo.  El audio, debe sonar mientras que la imágen se mueve.
@@ -248,10 +248,7 @@ play: $(TARGET) $(LOG_DIR)
 	@echo ""
 	@echo "Available data files:"
 	@echo ""
-	@i=1; for f in *.dat; do \
-		echo "  $$i) $$f"; \
-		i=$$((i + 1)); \
-	done
+
 	@echo ""
 	@read -p "Enter the .dat filename (or number): " choice; \
 	if echo "$$choice" | grep -qE '^[0-9]+$$'; then \
@@ -285,10 +282,7 @@ playv: $(TARGET) $(LOG_DIR)
 	@echo ""
 	@echo "Available data files:"
 	@echo ""
-	@i=1; for f in *.dat; do \
-		echo "  $$i) $$f"; \
-		i=$$((i + 1)); \
-	done
+	
 	@echo ""
 	@read -p "Enter the .dat filename (or number): " choice; \
 	if echo "$$choice" | grep -qE '^[0-9]+$$'; then \
@@ -346,9 +340,6 @@ doc:
 #######################################
 #             UTILITIES
 #######################################
-
-Ingit: Ingit.sh
-	./Ingit.sh
 
 Tests: automatic_test.sh
 	./automatic_test.sh
