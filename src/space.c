@@ -139,9 +139,16 @@ space_get_name (Space* space)
 /* ========== Objects ========== */
 
 Status
-space_set_object (Space* space, Id new_id)
+space_set_object (Space* space, Id new_id, Position obj_pos)
 {
+       int *grid[HIGHT], i;
     if (!space) return ERROR;
+    
+    for(i=0; i<HIGHT; i++) grid[i]= space->grid[i];
+    if (grid[obj_pos.pos_y][obj_pos.pos_x] == new_id)
+        {
+            grid[obj_pos.pos_y][obj_pos.pos_x] = 0; 
+        }
     return set_add (space->objs_id, new_id);
 }
 
@@ -153,10 +160,17 @@ space_contains_object (Space* space, Id id_obj)
 }
 
 Status
-space_remove_object (Space* space, Id id_obj)
+space_remove_object (Space* space, Id obj_id, Position obj_pos)
 {
+    int *grid[HIGHT], i;
     if (!space) return ERROR;
-    return set_delete_id (space->objs_id, id_obj);
+    
+    for(i=0; i<HIGHT; i++) grid[i]= space->grid[i];
+    if (grid[obj_pos.pos_y][obj_pos.pos_x] == obj_id)
+        {
+            grid[obj_pos.pos_y][obj_pos.pos_x] = 1; 
+        }
+    return set_delete_id (space->objs_id, obj_id);
 }
 
 int

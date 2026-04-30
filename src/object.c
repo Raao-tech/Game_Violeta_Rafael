@@ -138,6 +138,16 @@ Status  obj_set_position (Object* obj, int x, int y)
     return entity_set_position (obj->e_obj, x, y);
 }
 
+Position  obj_get_position (Object* obj)
+{
+    Position obj_pos;
+    obj_pos.pos_x = NO_POS;
+    obj_pos.pos_y = NO_POS;
+
+    if (!obj) return obj_pos;
+    return entity_get_position (obj->e_obj);
+}
+
 int obj_get_pos_x (Object* obj)
 {
     if (!obj) return NO_POS;
