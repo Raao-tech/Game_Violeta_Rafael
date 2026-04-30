@@ -87,9 +87,10 @@ const char* space_get_name (Space* space);
  *
  * @param space a pointer to the space
  * @param new_id the id of the object to add
+ * @param obj_pos the position of the object to add
  * @return OK, if everything goes well or ERROR if there was some mistake
  */
-Status space_set_object (Space* space, Id new_id);
+Status space_set_object (Space* space, Id new_id, Position obj_pos);
 
 /**
  * @brief It checks whether an object id is in the space
@@ -107,9 +108,11 @@ Bool space_contains_object (Space* space, Id id_obj);
  *
  * @param space a pointer to the space
  * @param id_obj the id of the object to remove
+ * @param obj_pos the position of the object to remove
  * @return OK if removed, ERROR if not found or space is NULL
  */
-Status space_remove_object (Space* space, Id id_obj);
+Status
+space_remove_object (Space* space, Id obj_id, Position obj_pos);
 
 /**
  * @brief It returns the number of objects in the space
