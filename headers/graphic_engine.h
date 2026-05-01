@@ -53,8 +53,8 @@ typedef struct _MenuResult
 } MenuResult;
 
 Graphic_engine* graphic_engine_create (void);
-void graphic_engine_destroy (Graphic_engine* ge);
-MenuResult graphic_engine_init (Graphic_engine* ge);
-void graphic_engine_paint_game (Graphic_engine* ge, Game* game);
+void            graphic_engine_destroy (Graphic_engine* ge);
+MenuResult      graphic_engine_init (Graphic_engine* ge);
+void            graphic_engine_paint_game (Graphic_engine* ge, Game* game);
 
 #endif

@@ -346,11 +346,8 @@ game_rule_move (Game* game)
     switch (dir)
         {
             case S: player_set_position (player, pos_x, (int)((float)(HIGHT_SCREEN / SCALE))); break;
-
             case N: player_set_position (player, pos_x, (int)(HIGHT_SCREEN - (float)(HIGHT_SCREEN / SCALE))); break;
-
             case E: player_set_position (player, (int)((float)(WIDHT_SCREEN / SCALE)), pos_y); break;
-
             case W: player_set_position (player, (int)(WIDHT_SCREEN - (float)(WIDHT_SCREEN / SCALE)), pos_y); break;
         }
     player_set_zone (player, dest);

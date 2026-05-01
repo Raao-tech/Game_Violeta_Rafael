@@ -162,66 +162,43 @@ game_actions_take (Game* game)
 	obj_pos.pos_x    = NO_POS;
 	obj_pos.pos_y    = NO_POS;
 
-	/*
-	 * Este tipo de comprobaciones hay que ponerlas en mira, para la solución del
-	 * multijugador en paralelo, hay que ver que jugador esta haciendo la ccion,
-	 * pero no es por turnos. Hay una cantida n de jugadores establecida en alguna
-	 * macro que dependerá de la enumaercaicon de tipos de datos PLY
-	 */
+
+	/*Se obtiene el player*/
 	player = game_get_player_by_turn (game);
-	if (!player)
-		{
-			game_set_last_cmd_status (game, ERROR_take);
-			return;
-		}
+	if (!player){game_set_last_cmd_status (game, ERROR_take);return;}
+
+	/*Se  Obtiene el campo de visión o acción del player*/
 	ply_vision = player_get_vision (player);
 
+	/*Se  Obtiene el Space donde esta el player*/
 	space_id   = player_get_zone (player);
-	if (space_id == NO_ID)
-		{
-			game_set_last_cmd_status (game, ERROR_take);
-			return;
-		}
-
-	obj_name = command_get_target (game_get_last_command (game));
-	if (!obj_name)
-		{
-			game_set_last_cmd_status (game, ERROR_take);
-			return;
-		}
-
-	obj = game_get_object_by_name (game, obj_name);
-	if (!obj)	{game_set_last_cmd_status (game, ERROR_take);	return;}
-
-	obj_id        = obj_get_id (obj);
-	obj_pos.pos_x = obj_get_pos_x;
-	obj_pos.pos_y = obj_get_pos_y;
+	if (space_id == NO_ID)	{game_set_last_cmd_status (game, ERROR_take);	return;}
 	space         = game_get_space (game, space_id);
+	if (!space) {game_set_last_cmd_status (game, ERROR_take);	return;}
 
+
+	/*Se obtinee el objeto del objet que coincide con la cision del player*/
+	obj  	= game_get_object_by_vision (game, ply_vision);
+	if(!obj) {game_set_last_cmd_status (game, ERROR_take);	return;}
+	obj_id = obj_get_id (obj);
+	if (obj_id == NO_ID) {game_set_last_cmd_status (game, ERROR_take);	return;}
+
+
+	/*Si el obejto no está contenido en el space, error*/
 	if (space_contains_object (space, obj_id) == FALSE)
 		{game_set_last_cmd_status (game, ERROR_take);	return;}
-	if (obj_pos.pos_x != ply_vision.pos_x || obj_pos.pos_y != ply_vision.pos_y)
-		{game_set_last_cmd_status (game, ERROR_take);	return;}
 
+	/*Preguntamos si es un obejto movible*/
 	movable = obj_get_movable (obj);
 	if (movable == FALSE)
 		{
-
+			/*Si no es movible se pregunta  por lo que necesita player para mover dicho objeto*/
 			dependency_id = obj_get_dependency (obj);
-			if (dependency_id != NO_ID && player_contains_object (player, dependency_id) == TRUE)
-				{
-					/* The object is not movable, but the player has the required dependency
-					 * in inventory */
-					/* Allow taking the object */
-				}
-			else
-				{
-					game_set_last_cmd_status (game, ERROR_take);
-					return;
-				}
+			if (dependency_id == NO_ID || player_contains_object (player, dependency_id) == FALSE)
+				{game_set_last_cmd_status (game, ERROR_take);	return;}
 		}
+	
 	space_remove_object (space, obj_id, obj_pos);
-
 	if (player_add_object (player, obj_id) != OK)
 		{
 			/* Inventory full — put the object back */
@@ -231,6 +208,7 @@ game_actions_take (Game* game)
 		}
 
 	game_set_last_cmd_status (game, OK);
+	return;
 }
 
 /* ========================================================================= */
@@ -253,17 +231,11 @@ game_actions_drop (Game* game)
 	if (!game) return;
 
 	player = game_get_player_by_turn (game);
-	if (!player)
-		{
-			game_set_last_cmd_status (game, ERROR_drop);
-			return;
-		}
+	if (!player)	{ game_set_last_cmd_status (game, ERROR_drop);	return;}
+
 	ply_vision = player_get_vision (player);
 	if (ply_vision.pos_x == NO_POS || ply_vision.pos_y == NO_POS)
-		{
-			game_set_last_cmd_status (game, ERROR_drop);
-			return;
-		}
+		{game_set_last_cmd_status (game, ERROR_drop);	return;}
 
 	space_id = player_get_zone (player);
 	if (space_id == NO_ID)
@@ -609,10 +581,10 @@ ge_parse_direction (const char* str)
 {
 	if (!str) return U;
 
-	if (strcasecmp (str, "north") == 0 || strcasecmp (str, "n") == 0) return N;
-	if (strcasecmp (str, "south") == 0 || strcasecmp (str, "s") == 0) return S;
-	if (strcasecmp (str, "east") == 0 || strcasecmp (str, "e") == 0) return E;
-	if (strcasecmp (str, "west") == 0 || strcasecmp (str, "w") == 0) return W;
+	if (strcasecmp (str, "north") == 0 || strcasecmp (str, "n") == 0 || strcasecmp (str, "N") == 0) return N;
+	if (strcasecmp (str, "south") == 0 || strcasecmp (str, "s") == 0 || strcasecmp (str, "S") == 0) return S;
+	if (strcasecmp (str, "east") == 0 || strcasecmp (str, "e") == 0  || strcasecmp (str, "E") == 0) return E;
+	if (strcasecmp (str, "west") == 0 || strcasecmp (str, "w") == 0  || strcasecmp (str, "W") == 0) return W;
 
 	return U;
 }

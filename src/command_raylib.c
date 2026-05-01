@@ -14,8 +14,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <time.h>
 
 #define CMD_LENGHT 30
+
+#define	Nc	"N"
+#define	Sc	"S"
+#define	Ec	"E"
+#define	Wc	"W"
+#define	WAIT	0.2
 
 /* ----------------------------------------------------------------------
  * Tabla de comandos
@@ -25,13 +32,10 @@
  *   (porque NO_CMD = -1 ocupa la fila 0)
  *
  * ---------------------------------------------------------------------- */
-
 struct _Command
 {
-    CommandCode accion;
-    char* target;
-    Direction dir;
-    Bool is_command;
+	CommandCode code;
+	char* target;
 };
 
 /**
@@ -61,109 +65,109 @@ Bool _command_get_is_command (Command* command);
  *   - GetKeyPressed()      -> devuelve int (keycode); util para texto,
  *                             NO para reconocer una tecla concreta.
  * ---------------------------------------------------------------------- */
-Status
+static void
 command_raylib_get_user_input (Command* command)
 {
-    CommandCode result = EXIT;
-    if (!command) return command_set_code (command, result);
+	if (!command)	return;
 
-    /*========== ========== EXIT ========== ============*/
-    if (IsKeyPressed (KEY_ESCAPE))
-        {
-            if (_command_set_is_command (command, TRUE) == TRUE || command_set_code (command, EXIT) == TRUE) result = ;
-        }
-    /*========== ========== WAlK ========== ============*/
-    if (IsKeyPressed (KEY_UP))
-        {
-            if (_command_set_is_command (command, TRUE) == FALSE || _command_set_direction (command, N) == FALSE
-                || command_set_code (command, WALK) == FALSE)
-                {
-                    result = ERROR_walk;
-                }
-        }
-    if (IsKeyPressed (KEY_DOWN))
-        {
-            if (_command_set_is_command (command, TRUE) == FALSE || _command_set_direction (command, S) == FALSE
-                || command_set_code (command, WALK) == FALSE)
-                {
-                    result = ERROR_walk;
-                }
-        }
-    if (IsKeyPressed (KEY_RIGHT))
-        {
-            if (_command_set_is_command (command, TRUE) == FALSE || _command_set_direction (command, E) == FALSE
-                || command_set_code (command, WALK) == FALSE)
-                {
-                    result = ERROR_walk;
-                }
-        }
-    if (IsKeyPressed (KEY_LEFT))
-        {
-            if (_command_set_is_command (command, TRUE) == FALSE || _command_set_direction (command, N) == FALSE
-                || command_set_code (command, WALK) == FALSE)
-                {
-                    result = ERROR_walk;
-                }
-        }
-    /*========== ==========  ========== ============*/
 
-    /*
-     *   if (IsKeyPressed(KEY_UP)    || IsKeyPressed(KEY_W)) -> WALK + N
-     *   if (IsKeyPressed(KEY_DOWN)  || IsKeyPressed(KEY_S)) -> WALK + S
-     *   if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) -> WALK + E
-     *   if (IsKeyPressed(KEY_LEFT)  || IsKeyPressed(KEY_A)) -> WALK + W
-     *   if (IsKeyPressed(KEY_E))                            -> MOVE (interactuar)
-     *   if (IsKeyPressed(KEY_ONE..FOUR))                    -> ATTACK + skill_id
-     *   En todos los casos: command_set_has_input(command, TRUE).
-     */
+	/*========== ========== EXIT ========== ============*/
+	if (IsKeyPressed (KEY_ESCAPE))
+		{
+			command_set_code (command, EXIT);
+			sleep (WAIT);
+			return;
+		}
 
-    return result;
-}
+	/*========== ========== WAlK ========== ============*/
+	if (IsKeyPressed (KEY_UP))
+		{
+			_command_set_target (command, Nc);
+			command_set_code (command, WALK);
+			sleep (WAIT);
+			return;
+		}
+	if (IsKeyPressed (KEY_DOWN))
+		{
+			_command_set_target (command, Sc);
+			command_set_code (command, WALK);
+			sleep (WAIT);
+			return;
+		}
+	if (IsKeyPressed (KEY_RIGHT))
+		{
+			_command_set_target (command, Ec);
+			command_set_code (command, WALK);
+			sleep (WAIT);
+			return;
+		}
+	if (IsKeyPressed (KEY_LEFT))
+		{
+			_command_set_target (command, Wc);
+			command_set_code (command, WALK);
+			sleep (WAIT);
+			return;
+		}
+	/*========== ========== TAKE ========== ============*/
+	if (IsKeyPressed (KEY_T))
+		{
+			_command_set_target (command, Wc);
+			command_set_code (command, TAKE);
+			sleep (WAIT);
+			return;
+		}
 
-/* ----------------------------------------------------------------------
- * Create / Destroy
- * ---------------------------------------------------------------------- */
 
-Command*
-command_create ()
-{
-    Command* new_command = (Command*)malloc (sizeof (Command));
-    if (!new_command) return NULL;
 
-    new_command->accion     = NO_CMD;
-    new_command->dir        = U;
-    new_command->is_command = FALSE;
-    new_command->target     = NULL;
 
-    return new_command;
-}
-Status
-command_destroy (Command* command)
-{
-    if (!command) return ERROR;
 
-    if (command->target) free (command->target);
-    free (command);
-    return OK;
+
+
+
+
+
+
+
+
+
+	/**
+	* 	switch (cmd)
+	* 	{
+	*		case UNKNOWN: game_actions_unknown (game); break;
+	*		case EXIT: game_actions_exit (game); break;
+	*		case MOVE: game_actions_move (game); break; tiene que preguntarse adentro de walk no deberia de ser algo independietne
+	*		case WALK: game_actions_walk (game); break;
+	*		case TAKE: game_actions_take (game); break;
+	*		case DROP: game_actions_drop (game); break;
+	*		case ATTACK: game_actions_attack (game); break;
+	*		case CHAT: game_actions_chat (game); break;
+	*		case INSPECT: game_actions_inspect (game); break;
+	*		case USE: game_actions_use (game); break;
+	*		case OPEN: game_actions_open (game); break;
+	*		case SAVE: game_actions_save (game); break;
+	*		case LOAD: game_actions_load (game); break;
+	*		case RECRUIT: game_actions_recruit (game); break;
+	*		case KICK: game_actions_kick (game); break;
+	*		default: break;
+	*	}
+	*/
+	/*
+	 *   if (IsKeyPressed(KEY_UP)    || IsKeyPressed(KEY_W)) -> WALK + N
+	 *   if (IsKeyPressed(KEY_DOWN)  || IsKeyPressed(KEY_S)) -> WALK + S
+	 *   if (IsKeyPressed(KEY_RIGHT) || IsKeyPressed(KEY_D)) -> WALK + E
+	 *   if (IsKeyPressed(KEY_LEFT)  || IsKeyPressed(KEY_A)) -> WALK + W
+	 *   if (IsKeyPressed(KEY_E))                            -> MOVE (interactuar)
+	 *   if (IsKeyPressed(KEY_ONE..FOUR))                    -> ATTACK + skill_id
+	 *   En todos los casos: command_set_has_input(command, TRUE).
+	 */
+
+	return result;
 }
 /* ----------------------------------------------------------------------
  * (Set / Get) Code or Accion
  * ---------------------------------------------------------------------- */
 
-Status
-command_set_code (Command* command, CommandCode code)
-{
-    if (!command) return ERROR;
-    command->accion = code;
-    return OK;
-}
 
-CommandCode
-command_get_code (Command* command)
-{
-    if (!command) return NO_CMD;
-    return command->accion;
-}
 /* ----------------------------------------------------------------------
  * (_Set / Get) Target
  * ---------------------------------------------------------------------- */
@@ -171,118 +175,30 @@ command_get_code (Command* command)
 Status
 _command_set_target (Command* command, char* target)
 {
-    int lentgh_target;
-    if (!command || !target) return ERROR;
-    if (command->target)
-        {
-            free (command->target);
-            command->target = NULL;
-        }
-    lentgh_target   = strlen (target);
+	int lentgh_target;
+	if (!command || !target) return ERROR;
+	if (command->target)
+		{
+			free (command->target);
+			command->target = NULL;
+		}
+	lentgh_target   = strlen (target);
 
-    command->target = (char*)calloc (lentgh_target + 1, sizeof (char));
-    if (!target) return ERROR;
+	command->target = (char*)calloc (lentgh_target + 1, sizeof (char));
+	if (!target) return ERROR;
 
-    strncpy (command->target, target, lentgh_target);
-    command->target[lentgh_target] = '\0';
+	strncpy (command->target, target, lentgh_target);
+	command->target[lentgh_target] = '\0';
 
-    return OK;
+	return OK;
 }
 
-char*
-command_get_target (Command* command)
-{
-    if (!command) return NULL;
-    return command->target;
-}
 
 /* ----------------------------------------------------------------------
  * (_Set / Get) Directions
  * ---------------------------------------------------------------------- */
 
-Status
-_command_set_direction (Command* command, Direction dir)
-{
-    if (!command) return ERROR;
-    command->dir = dir;
-    return OK;
-}
-
-Direction
-_command_get_direction (Command* command)
-{
-    if (!command) return U;
-    return command->dir;
-}
 
 /* ----------------------------------------------------------------------
  * (_Set / Get) Is_command
  * ---------------------------------------------------------------------- */
-
-Status
-_command_set_is_command (Command* command, Bool is_command)
-{
-    if (!command) return ERROR;
-    command->is_command = is_command;
-    return OK;
-}
-
-Bool
-_command_get_is_command (Command* command)
-{
-    if (!command) return FALSE;
-    return command->is_command;
-}
-
-/* ----------------------------------------------------------------------
- * command_get_user_input  (modo test: lee de stdin)
- *
- * Lee una linea de stdin con formato "<cmd> [<target>]" (ej. "move north",
- * "take sword", "walk n"). Rellena el Command con el codigo y el target.
- *
- * Si fgets devuelve NULL (EOF, p.ej. al terminar la redireccion del .cmd),
- * tratamos la condicion como un EXIT implicito.
- * ---------------------------------------------------------------------- */
-Status
-command_get_user_input (Command* command)
-{
-    char input[CMD_LENGHT] = "";
-    char* token            = NULL;
-    int i                  = UNKNOWN - NO_CMD + 1; /* = 2 */
-    CommandCode cmd;
-
-    if (!command) return ERROR;
-
-    /* Limpiamos el target del turno anterior antes de leer el nuevo */
-    if (command->target)
-        {
-            free (command->target);
-            command->target = NULL;
-        }
-
-    if (fgets (input, CMD_LENGHT, stdin))
-        {
-            /* Primer token: el comando */
-            token = strtok (input, " \n");
-            if (!token) return command_set_code (command, UNKNOWN);
-
-            cmd = UNKNOWN;
-            while (cmd == UNKNOWN && i < N_CMD)
-                {
-                    if (!strcasecmp (token, cmd_to_str[i][CMDS]) || !strcasecmp (token, cmd_to_str[i][CMDL])) { cmd = i + NO_CMD; }
-                    else
-                        {
-                            i++;
-                        }
-                }
-
-            /* Segundo token: el target (opcional segun el comando) */
-            token = strtok (NULL, " \n");
-            if (token) command->target = strdup (token);
-
-            return command_set_code (command, cmd);
-        }
-
-    /* fgets fallo (EOF tipicamente): salida implicita */
-    return command_set_code (command, EXIT);
-}

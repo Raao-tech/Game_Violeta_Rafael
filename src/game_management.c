@@ -447,7 +447,6 @@ game_load_players (Game* game, char* filename)
                     toks = strtok (NULL, "|");
                     if (!toks) continue;
                     pos_y = atoi (toks);
-
                     /* --- gdesc --- */
                     toks = strtok (NULL, "|");
                     if (!toks) continue;
@@ -573,11 +572,8 @@ game_load_numens (Game* game, char* filename)
                     for (int i = 0; i < 4; i++)
                         {
                             toks = strtok (NULL, "|");
-                            if (toks) { skills[i] = atol (toks); }
-                            else
-                                {
-                                    skills[i] = NO_ID;
-                                }
+                            if (toks) 	{skills[i] = atol (toks); }
+                            else		{skills[i] = NO_ID;}
                         }
 
                     /* --- following (optional) --- */
@@ -601,7 +597,7 @@ game_load_numens (Game* game, char* filename)
                             numen_set_following (numen, following);
                             if (following != NO_ID)
                                 player_add_numen (game_get_player_by_id (game, following), id); /* check if following id exists as a player, if not,
-                                                                                                   it will be set to NO_ID in numen_set_following */
+*                                                                                                   it will be set to NO_ID in numen_set_following */
                             game_add_numens (game, numen);
 
                             /* Place numen in its space */

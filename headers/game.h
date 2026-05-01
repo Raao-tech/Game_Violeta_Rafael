@@ -265,7 +265,22 @@ Object* game_get_object_by_name (Game* game, char* name);
  * @param obj_id the id of the object to locate
  * @return the id of the space containing the object, or NO_ID
  */
-Id game_get_object_location (Game* game, Id obj_id);
+Id  game_get_object_location (Game* game, Id obj_id);
+
+
+/**
+ * @brief Esta función busca el objeto que coincide con la posicion que se le pase
+ * @author Rafael
+ *
+ * Itera por todos los objetos presentes en el array total de objetos en el juego
+ * si llega a coincidir las coordenadas del object con las de la visión del player
+ * devuelve el puntero de dicho object
+ *
+ * @param game a pointer to the game
+ * @param Vision_player es la cuadrilla (Position) a la que está viedno el player
+ * @return the id of the space containing the object, or NO_ID
+ */
+Object*	game_get_object_by_vision (Game* game, Position vision_player);
 
 /* ========================================================================= */
 /*                        SEARCH: NUMENS                                 */

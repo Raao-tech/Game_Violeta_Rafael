@@ -110,10 +110,7 @@ command_get_user_input (Command* command)
 
     /* Limpiamos el target del turno anterior antes de leer el nuevo */
     if (command->target)
-        {
-            free (command->target);
-            command->target = NULL;
-        }
+		{free (command->target);    command->target = NULL;}
 
     if (fgets (input, CMD_LENGHT, stdin))
         {
@@ -125,10 +122,7 @@ command_get_user_input (Command* command)
             while (cmd == UNKNOWN && i < N_CMD)
                 {
                     if (!strcasecmp (token, cmd_to_str[i][CMDS]) || !strcasecmp (token, cmd_to_str[i][CMDL])) { cmd = i + NO_CMD; }
-                    else
-                        {
-                            i++;
-                        }
+                    else	{i++;}
                 }
 
             /* Segundo token: el target (opcional segun el comando) */

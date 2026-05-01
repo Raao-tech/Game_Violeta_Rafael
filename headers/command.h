@@ -60,6 +60,6 @@ char* command_get_target (Command* command);
 Status command_get_user_input (Command* command);
 
 /*========== User Input - modo visual (Raylib) ===========*/
-Status command_raylib_get_user_input (Command* command);
+static void command_raylib_get_user_input (Command* command);
 
 #endif
