@@ -405,6 +405,7 @@ game_rule_walk_active (Game* game)
 
             if (grid[pos_current.pos_x][pos_current.pos_y] == 0)
                 {
+                    direction = (direction + 1) % 4;
                     for (direction, i = 0; grid[pos_current.pos_x][pos_current.pos_y] == 0, i < 3; direction = (direction + 1) % 4, i++)
                         {
 
@@ -447,7 +448,7 @@ game_rule_walk_active (Game* game)
             if (grid[pos_current.pos_x][pos_current.pos_y] == 0) return ERROR; /*The active Numen can't move*/
             if (numen_set_pos_x (active_num, pos_current.pos_x) == ERROR || numen_set_pos_y (active_num, pos_current.pos_y) == ERROR)
                 {
-                    return ERROR;
+                    return ERROR; /*Unable to move the active numen*/
                 }
             return OK;
         }
