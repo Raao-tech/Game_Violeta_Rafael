@@ -378,7 +378,7 @@ game_rule_walk_active (Game* game)
                         }
                     return OK;
                 }
-            return ERROR;
+            return ERROR; /*Unable to move the active numen any closer to the player*/
         }
     else /*The numen is close enough to the player, for now, it moves at any random position inside the area or 1 square out of it, it decides it
             randomly*/
