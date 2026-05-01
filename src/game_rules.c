@@ -82,7 +82,7 @@ game_rule_walk_enemy (Game* game)
     Id id_enemy        = NO_ID;
     Set* space_num_ids = NULL;
     int *grid[HIGHT] = NULL, i, num_enemies = 0, loop;
-    Status ret=OK;
+    Status ret = OK;
 
     if (!game) { return ERROR; }
     player = game_get_player_at (game, PLAYER);
@@ -132,20 +132,11 @@ game_rule_walk_enemy (Game* game)
 
             switch (direction) /*Falta definir cuánto se mueve*/
                 {
-                case N:
-                    pos_current.pos_y -= SCALE;
-                    break;
-                case S:
-                    pos_current.pos_y += SCALE;
-                    break;
-                case W:
-                    pos_current.pos_x -= SCALE;
-                    break;
-                case E:
-                    pos_current.pos_x += SCALE;
-                    break;
-                default:
-                    break;
+                    case N: pos_current.pos_y -= SCALE; break;
+                    case S: pos_current.pos_y += SCALE; break;
+                    case W: pos_current.pos_x -= SCALE; break;
+                    case E: pos_current.pos_x += SCALE; break;
+                    default: break;
                 }
 
             for (i = 0; i < HIGHT; i++) { grid[i] = space_get_grid_by_line (game_get_space (game, game_get_numen_location (game, id_enemy)), i); }
@@ -153,53 +144,35 @@ game_rule_walk_enemy (Game* game)
                 {
                     if (numen_set_pos_x (enemy_num, pos_current.pos_x) == ERROR || numen_set_pos_y (enemy_num, pos_current.pos_y) == ERROR)
                         {
-                            ret=ERROR; /*Unable to move a enemy_num*/
-                         }
-                        continue;
+                            ret = ERROR; /*Unable to move a enemy_num*/
+                        }
+                    continue;
                 }
             switch (direction) /*checks whether the direction that failed is on the x coordinate and restores it. If it isn't, then it must've been on
                                             the y coordinate and there's nothing left to check*/
                 {
-                case W:
-                    pos_current.pos_x += SCALE;
-                    break;
-                case E:
-                    pos_current.pos_x -= SCALE;
-                    break;
-                default:
-                    continue;
+                    case W: pos_current.pos_x += SCALE; break;
+                    case E: pos_current.pos_x -= SCALE; break;
+                    default: continue;
                 }
             /*If the error was on the x coordinate, try the y coordinate*/
-            if (pos_current.pos_y < pos_player.pos_y)
-                {
-                    direction = S;
-                }
-            else if (pos_current.pos_y > pos_player.pos_y)
-                {
-                    direction = N;
-                }
+            if (pos_current.pos_y < pos_player.pos_y) { direction = S; }
+            else if (pos_current.pos_y > pos_player.pos_y) { direction = N; }
 
             switch (direction) /*Falta definir cuánto se mueve*/
                 {
-                case N:
-                    pos_current.pos_y -= SCALE;
-                    break;
-                case S:
-                    pos_current.pos_y += SCALE;
-                    break;
+                    case N: pos_current.pos_y -= SCALE; break;
+                    case S: pos_current.pos_y += SCALE; break;
 
-                default:
-                    break;
+                    default: break;
                 }
             if (grid[pos_current.pos_x][pos_current.pos_y] != 0)
                 {
                     if (numen_set_pos_x (enemy_num, pos_current.pos_x) == ERROR || numen_set_pos_y (enemy_num, pos_current.pos_y) == ERROR)
                         {
-                            ret=ERROR; /*Unable to move a enemy_num*/
+                            ret = ERROR; /*Unable to move a enemy_num*/
                         }
-                   
                 }
-            
         }
     return ret;
 }
@@ -209,36 +182,21 @@ game_rule_walk_active (Game* game)
 {
     Player* player      = NULL;
     Numen* active_num   = NULL;
-    Direction direction = NULL;
     Space* space        = NULL;
+    Direction direction = NULL;
     Position pos_current, pos_player;
     Id id_active     = NO_ID;
-    int *grid[HIGHT] = NULL, i, radio = SCALE * 4, distance;
+    int *grid[HIGHT] = NULL, i, radio = SCALE * 4, distance, speed;
 
-    if (!game)
-        {
-            return ERROR;
-        }
+    if (!game) { return ERROR; }
     player = game_get_player_at (game, PLAYER);
-    if (!player)
-        {
-            return ERROR;
-        }
+    if (!player) { return ERROR; }
     space = game_get_space (game, player_get_zone (player));
-    if (!space)
-        {
-            return ERROR;
-        }
-    for (i = 0; i < HIGHT; i++)
-        {
-            grid[i] = space_get_grid_by_line (game_get_space (game, player_get_zone (player)), i);
-        }
+    if (!space) { return ERROR; }
+    for (i = 0; i < HIGHT; i++) { grid[i] = space_get_grid_by_line (game_get_space (game, player_get_zone (player)), i); }
 
     id_active = player_get_active_numen (player);
-    if (id_active == NO_ID)
-        {
-            return ERROR; /* Skip if the ID is NO_ID*/
-        }
+    if (id_active == NO_ID) { return ERROR; /* Skip if the ID is NO_ID*/ }
     active_num = game_get_numen_by_id (game, id_active);
 
     if (!active_num || numen_get_health (active_num) <= 0)
@@ -251,45 +209,25 @@ game_rule_walk_active (Game* game)
     pos_current.pos_y = numen_get_pos_y (active_num);
 
     pos_player        = player_get_position (player);
+    speed             = player_get_speed (player);
 
     distance          = sqrt (pow (pos_current.pos_x - pos_player.pos_x, 2) + pow (pos_current.pos_y - pos_player.pos_y, 2));
 
     if (distance > radio) /*The active numen is too far from player, it tries to get back to the area*/
         {
-            if (pos_current.pos_x < pos_player.pos_x)
-                {
-                    direction = E;
-                }
-            else if (pos_current.pos_x > pos_player.pos_x)
-                {
-                    direction = W;
-                }
-            else if (pos_current.pos_y < pos_player.pos_y)
-                {
-                    direction = S;
-                }
-            else if (pos_current.pos_y > pos_player.pos_y)
-                {
-                    direction = N;
-                }
+            if (pos_current.pos_x < pos_player.pos_x) { direction = E; }
+            else if (pos_current.pos_x > pos_player.pos_x) { direction = W; }
+            else if (pos_current.pos_y < pos_player.pos_y) { direction = S; }
+            else if (pos_current.pos_y > pos_player.pos_y) { direction = N; }
 
             /////////////////////////////////////////////////////////
             switch (direction) /*Falta definir cuánto se mueve*/
                 {
-                case N:
-                    pos_current.pos_y -= SCALE;
-                    break;
-                case S:
-                    pos_current.pos_y += SCALE;
-                    break;
-                case W:
-                    pos_current.pos_x -= SCALE;
-                    break;
-                case E:
-                    pos_current.pos_x += SCALE;
-                    break;
-                default:
-                    break;
+                    case N: pos_current.pos_y -= SCALE; break;
+                    case S: pos_current.pos_y += SCALE; break;
+                    case W: pos_current.pos_x -= SCALE; break;
+                    case E: pos_current.pos_x += SCALE; break;
+                    default: break;
                 }
 
             /////////////////////////////////////////////////////////
@@ -304,36 +242,20 @@ game_rule_walk_active (Game* game)
             switch (direction) /*checks whether the direction that failed is on the x coordinate and restores it. If it isn't, then it must've been on
                                                         the y coordinate and there's nothing left to check*/
                 {
-                case W:
-                    pos_current.pos_x += SCALE;
-                    break;
-                case E:
-                    pos_current.pos_x -= SCALE;
-                    break;
-                default:
-                    return ERROR;
+                    case W: pos_current.pos_x += SCALE; break;
+                    case E: pos_current.pos_x -= SCALE; break;
+                    default: return ERROR;
                 }
             /*If the error was on the x coordinate, try the y coordinate*/
-            if (pos_current.pos_y < pos_player.pos_y)
-                {
-                    direction = S;
-                }
-            else if (pos_current.pos_y > pos_player.pos_y)
-                {
-                    direction = N;
-                }
+            if (pos_current.pos_y < pos_player.pos_y) { direction = S; }
+            else if (pos_current.pos_y > pos_player.pos_y) { direction = N; }
 
             switch (direction) /*Falta definir cuánto se mueve*/
                 {
-                case N:
-                    pos_current.pos_y -= SCALE;
-                    break;
-                case S:
-                    pos_current.pos_y += SCALE;
-                    break;
+                    case N: pos_current.pos_y -= SCALE; break;
+                    case S: pos_current.pos_y += SCALE; break;
 
-                default:
-                    break;
+                    default: break;
                 }
             if (grid[pos_current.pos_x][pos_current.pos_y] != 0)
                 {
@@ -352,20 +274,11 @@ game_rule_walk_active (Game* game)
 
             switch (direction) /*Falta definir cuánto se mueve*/
                 {
-                case N:
-                    pos_current.pos_y -= SCALE;
-                    break;
-                case S:
-                    pos_current.pos_y += SCALE;
-                    break;
-                case W:
-                    pos_current.pos_x -= SCALE;
-                    break;
-                case E:
-                    pos_current.pos_x += SCALE;
-                    break;
-                default:
-                    break;
+                    case N: pos_current.pos_y -= SCALE; break;
+                    case S: pos_current.pos_y += SCALE; break;
+                    case W: pos_current.pos_x -= SCALE; break;
+                    case E: pos_current.pos_x += SCALE; break;
+                    default: break;
                 }
 
             if (grid[pos_current.pos_x][pos_current.pos_y] == 0)
@@ -376,37 +289,19 @@ game_rule_walk_active (Game* game)
 
                             switch ((direction + 3) % 4) /*restores the previous coordinates*/
                                 {
-                                case N:
-                                    pos_current.pos_y += SCALE;
-                                    break;
-                                case S:
-                                    pos_current.pos_y -= SCALE;
-                                    break;
-                                case W:
-                                    pos_current.pos_x += SCALE;
-                                    break;
-                                case E:
-                                    pos_current.pos_x -= SCALE;
-                                    break;
-                                default:
-                                    break;
+                                    case N: pos_current.pos_y += SCALE; break;
+                                    case S: pos_current.pos_y -= SCALE; break;
+                                    case W: pos_current.pos_x += SCALE; break;
+                                    case E: pos_current.pos_x -= SCALE; break;
+                                    default: break;
                                 }
                             switch (direction) /*gets the new coordinates to move to*/
                                 {
-                                case N:
-                                    pos_current.pos_y -= SCALE;
-                                    break;
-                                case S:
-                                    pos_current.pos_y += SCALE;
-                                    break;
-                                case W:
-                                    pos_current.pos_x -= SCALE;
-                                    break;
-                                case E:
-                                    pos_current.pos_x += SCALE;
-                                    break;
-                                default:
-                                    break;
+                                    case N: pos_current.pos_y -= SCALE; break;
+                                    case S: pos_current.pos_y += SCALE; break;
+                                    case W: pos_current.pos_x -= SCALE; break;
+                                    case E: pos_current.pos_x += SCALE; break;
+                                    default: break;
                                 }
                         }
                 }

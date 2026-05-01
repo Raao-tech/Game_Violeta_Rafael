@@ -28,6 +28,7 @@ struct _Object
                                   command) */
     char gdesc[WORD_SIZE + 1]; /*!< Graphic description of the object */
     Bool consumable;           /*!< If the object could be consumable or not */
+    Effect  effect;
 };
 
 /* ========== Create / Destroy ========== */
@@ -51,6 +52,7 @@ obj_create ()
     newObj->dependency = NO_ID;
     newObj->consumable = FALSE;
     newObj->gdesc[0]   = '\0';
+    newObj->effect      = NO_EFECT;
     return newObj;
 }
 
@@ -219,6 +221,22 @@ obj_get_dependency (Object* obj)
 /*
  * Effects in Players or character (Numens)
  */
+Status
+obj_set_effect (Object* obj, Effect effect)
+{
+    if(!obj) return ERROR;
+    obj->effect = effect;
+    return OK;
+}
+
+Effect
+obj_get_effect (Object* obj)
+{
+    if(!obj) return NO_EFECT;
+    return obj->effect;
+}
+
+/* ======== STATS =============*/
 
 Status
 obj_set_stats (Object* obj, int speed, int health, int energy, int attack)

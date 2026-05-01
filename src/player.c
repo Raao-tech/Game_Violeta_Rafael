@@ -320,7 +320,22 @@ player_get_pos_y (Player* player)
     if (!player) return NO_POS;
     return entity_get_pos_y (player->e_player);
 }
-/* =========== Vision (Set / Get) ==========*/
+
+
+/* =========== Speed ======================= */
+Status
+player_set_speed (Player* player, int speed)
+{
+    if (!player) return ERROR;
+    return entity_set_speed (player->e_player, speed);
+}
+int
+player_get_speed (Player* player)
+{
+    if (!player) return 0;
+    return entity_get_speed (player->e_player);
+}
+/* =========== Vision (Set / Get) ========== */
 
 Status
 player_set_vision (Player* player, int x, int y)

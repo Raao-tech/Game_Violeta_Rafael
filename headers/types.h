@@ -111,6 +111,20 @@ typedef struct _Position
     int pos_y; /*!< Posición y en el space */
 } Position;
 
+
+/**
+ *  @enum Efect es una estructura de MACROS que contine todos los posibles efectos de un objeto
+ */
+typedef enum 
+{
+    NO_EFECT,
+    HEALTH_PLUS,
+    HEALTH_LESS,
+    SPEED_PLUS,
+    SPEED_LESS,
+    OPEN
+}Effect;
+
 #define MIN_LIFE 0
 #define MIN_ATTACK 0
 #define MIN_ENGY 0

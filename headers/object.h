@@ -250,9 +250,30 @@ Status obj_set_dependency (Object* obj, Id dependency);
  */
 Id obj_get_dependency (Object* obj);
 
+
+/* ============= Effect ============= */
+
+/**
+ * @brief It sets the effect of the object 
+ * @author Rafael
+ *
+ * @param obj a pointer to the object
+ * @param effect to be set
+ * @return OK  if all good, ERROR if pointer is NULL or other case not good
+ */
+Status  obj_set_effect (Object* obj, Effect effect);
+/**
+ * @brief It gets the effect of the object 
+ * @author Rafael
+ *
+ * @param obj a pointer to the object
+ * @return the Id of the object that this object depends on, NO_ID in case of mistake
+ */
+Effect  obj_get_effect (Object* obj);
+
 /**
  * @brief It gets the int of the stats
- * @author Salvador
+ * @author Salvador y Rafael
  *
  * @param obj a pointer to the object
  * @return the Id of the object that this object depends on, NO_ID in case of mistake

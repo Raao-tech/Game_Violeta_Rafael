@@ -330,7 +330,28 @@ int player_get_pos_x (Player* player);
  */
 int player_get_pos_y (Player* player);
 
+/* =========== Speed (Set/ Get) ======================= */
+
+/**
+ * @brief It sets the speed of the player
+ * @author Rafael
+ *
+ * @param player a pointer to the player
+ * @param speed speed to be set
+ * @return OK if position set properly, ERROR otherwise
+ */
+Status  player_set_speed (Player* player, int speed);
+/**
+ * @brief It gets the speed of the player
+ * @author Rafael
+ *
+ * @param player a pointer to the player
+ * @return speed of the plaeyer, but, if there is ERROR return 0
+ */
+int     player_get_speed (Player* player);
+
 /* =========== Vision (Set/Get) ==========*/
+
 Status player_set_vision (Player* player, int x, int y);
 Position player_get_vision (Player* player);
 

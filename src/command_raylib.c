@@ -65,13 +65,12 @@ Status
 command_raylib_get_user_input (Command* command)
 {
     CommandCode result = EXIT;
-    if (!command) return command_set_code(command, result);
+    if (!command) return command_set_code (command, result);
 
     /*========== ========== EXIT ========== ============*/
     if (IsKeyPressed (KEY_ESCAPE))
         {
-            if (_command_set_is_command (command, TRUE) == TRUE || command_set_code (command, EXIT) == TRUE) 
-				result = ;
+            if (_command_set_is_command (command, TRUE) == TRUE || command_set_code (command, EXIT) == TRUE) result = ;
         }
     /*========== ========== WAlK ========== ============*/
     if (IsKeyPressed (KEY_UP))
@@ -81,7 +80,6 @@ command_raylib_get_user_input (Command* command)
                 {
                     result = ERROR_walk;
                 }
-			
         }
     if (IsKeyPressed (KEY_DOWN))
         {
