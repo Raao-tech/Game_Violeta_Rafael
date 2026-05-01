@@ -111,12 +111,18 @@ command_raylib_get_user_input (Command* command)
 	/*========== ========== TAKE ========== ============*/
 	if (IsKeyPressed (KEY_T))
 		{
-			_command_set_target (command, Wc);
 			command_set_code (command, TAKE);
 			sleep (WAIT);
 			return;
 		}
-
+	/*========== ========== DROP ========== ============*/
+	if (IsKeyPressed (KEY_R))
+		{
+			command_set_code (command, DROP);
+			sleep (WAIT);
+			return;
+		}
+	
 
 
 
