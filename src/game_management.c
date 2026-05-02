@@ -156,14 +156,14 @@ game_load_objects (Game* game, char* filename)
     char description[WORD_SIZE] = "";
     char gdesc[WORD_SIZE]       = "";
     char* toks                  = NULL;
-    Id id = NO_ID, space_id = NO_ID, dependency = NO_ID;
-    Object* obj    = NULL;
-    Space* space   = NULL;
-    Player *player = NULL, *players_game[MAX_OBJECTS];
-    Status status  = OK;
+    Id id = NO_ID, space_id = NO_ID, dependency = NO_ID, active_obj_id = NO_ID;
+    Object* obj  = NULL;
+    Space* space = NULL;
+    Player* players_game[MAX_OBJECTS];
+    Status status = OK;
     Bool consumable, movable;
-    Effect  effect;
-    int tam_format, health, attack, energy, speed, pos_x, pos_y, check, bucle, n_play;
+    Effect effect;
+    int tam_format, health, attack, energy, speed, pos_x, pos_y, check, bucle;
 
     if (!game || !filename) return ERROR;
 
@@ -216,16 +216,6 @@ game_load_objects (Game* game, char* filename)
 
                     consumable = atoi (toks) ? TRUE : FALSE;
 
-                    /* --- effect --- */
-                    toks = strtok (NULL, "|");
-                    if (!toks) continue;
-                    
-
-                    effect = atoi (toks);
-
-                    if(effect < NO_EFECT || effect > MAX_EFFECT)
-                        effect = NO_EFECT;
-
                     /* --- health --- */
                     toks = strtok (NULL, "|");
                     if (!toks) continue;
@@ -251,14 +241,25 @@ game_load_objects (Game* game, char* filename)
 
                     /* --- dependency (optional) --- */
                     toks = strtok (NULL, "|");
-                    if (toks) 	{ dependency = atol (toks); }
-                    else    	{dependency = NO_ID;}
+                    if (toks) { dependency = atol (toks); }
+                    else
+                        {
+                            dependency = NO_ID;
+                        }
 
                     /* --- movable (0 or 1) --- */
-                    toks = strtok (NULL, "|\n");
+                    toks = strtok (NULL, "|");
                     if (!toks) continue;
 
                     movable = atoi (toks) ? TRUE : FALSE;
+
+                    /* --- effect --- */
+                    toks = strtok (NULL, "|");
+                    if (!toks) continue;
+
+                    effect = atoi (toks);
+
+                    if (effect < NO_EFECT || effect > MAX_EFFECT) effect = NO_EFECT;
 
 #ifdef DEBUG
                     printf ("Leido object: o:%ld|%s|%ld|%s\n", id, name, space_id, description);
@@ -282,12 +283,14 @@ game_load_objects (Game* game, char* filename)
                             else
                                 {
                                     check = game_get_n_players (game);
-                                    for (bucle = 0; bucle < check; bucle++) 
-                                        { players_game[bucle] = game_get_player_at (game, bucle); }
+                                    for (bucle = 0; bucle < check; bucle++) { players_game[bucle] = game_get_player_at (game, bucle); }
                                     for (bucle = 0; bucle < check; bucle++)
                                         {
-                                            if (player_get_id (players_game[bucle]) == space_id)    
-                                                {player_add_object (players_game[bucle], obj);    break;}
+                                            if (player_get_id (players_game[bucle]) == space_id)
+                                                {
+                                                    player_add_object (players_game[bucle], obj);
+                                                    break;
+                                                }
                                         }
                                 }
 
@@ -300,6 +303,12 @@ game_load_objects (Game* game, char* filename)
                             obj_set_dependency (obj, dependency);
                         }
                 }
+        }
+
+    for (bucle = 0; bucle < check; bucle++)
+        {
+            active_obj_id = player_get_active_object (players_game[bucle]);
+            if (player_contains_object (players_game[bucle], active_obj_id) == FALSE) { player_set_active_object (players_game[bucle], NO_ID); }
         }
     if (ferror (file)) status = ERROR;
 
@@ -366,8 +375,11 @@ game_load_characters (Game* game, char* filename)
 
                     /* --- message (rest of line, may contain spaces) --- */
                     toks = strtok (NULL, "\n");
-                    if (toks)	{ strcpy (message, toks); }
-                    else		{message[0] = '\0';}
+                    if (toks) { strcpy (message, toks); }
+                    else
+                        {
+                            message[0] = '\0';
+                        }
 
 #ifdef DEBUG
                     printf ("Leido character: c:%ld|%s|%s|%ld|%d|%d|%s\n", id, name, gdesc, space_id, health, friendly, message);
@@ -408,11 +420,13 @@ game_load_players (Game* game, char* filename)
     Player* player        = NULL;
     Space* space          = NULL;
     Id id                 = NO_ID;
+    Id active_num_id      = NO_ID;
+    Id active_obj_id      = NO_ID;
     Id zone               = NO_ID;
     int max_numens        = 0;
     int max_bag           = 0;
     Status status         = OK;
-    int tam_format, pos_x = 0, pos_y = 0;
+    int tam_format, pos_x = 0, pos_y = 0, vision_x = 0, vision_y = 0;
 
     if (!game || !filename) return ERROR;
 
@@ -439,14 +453,27 @@ game_load_players (Game* game, char* filename)
                     toks = strtok (NULL, "|");
                     if (!toks) continue;
                     zone = atol (toks);
+
                     /* --- pos_x --- */
                     toks = strtok (NULL, "|");
                     if (!toks) continue;
                     pos_x = atoi (toks);
+
                     /* --- pos_y --- */
                     toks = strtok (NULL, "|");
                     if (!toks) continue;
                     pos_y = atoi (toks);
+
+                    /* --- vision_x --- */
+                    toks = strtok (NULL, "|");
+                    if (!toks) continue;
+                    vision_x = atoi (toks);
+
+                    /* --- vision_y --- */
+                    toks = strtok (NULL, "|");
+                    if (!toks) continue;
+                    vision_y = atoi (toks);
+
                     /* --- gdesc --- */
                     toks = strtok (NULL, "|");
                     if (!toks) continue;
@@ -458,9 +485,17 @@ game_load_players (Game* game, char* filename)
                     max_bag = atoi (toks);
 
                     /* --- max_numens --- */
-                    toks = strtok (NULL, "|\n");
+                    toks = strtok (NULL, "|");
                     if (!toks) continue;
                     max_numens = atoi (toks);
+
+                    /* --- active_num_id (optional) --- */
+                    toks = strtok (NULL, "|");
+                    if (toks) active_num_id = atol (toks);
+
+                    /* --- active_obj_id (optional) --- */
+                    toks = strtok (NULL, "|\n");
+                    if (toks) active_obj_id = atol (toks);
 
 #ifdef DEBUG
                     printf ("Leido player: p:%ld|%s|%s|%ld|%d|%d\n", id, name, gdesc, zone, max_numens, max_bag);
@@ -476,6 +511,9 @@ game_load_players (Game* game, char* filename)
                             player_set_position (player, pos_x, pos_y);
                             player_set_max_numens (player, max_numens);
                             player_set_max_objects (player, max_bag);
+                            player_set_vision (player, vision_x, vision_y);
+                            if (active_num_id != NO_ID) player_set_active_numen (player, active_num_id);
+                            if (active_obj_id != NO_ID) player_set_active_object (player, active_obj_id);
 
                             game_add_player (game, player);
 
@@ -501,8 +539,9 @@ game_load_numens (Game* game, char* filename)
     char* toks            = NULL;
     Numen* numen          = NULL;
     Space* space          = NULL;
-    Id id = NO_ID, space_id = NO_ID;
-    int health = 0, attack = 0, energy = 0, speed = 0, skills[4] = { NO_ID, NO_ID, NO_ID, NO_ID }, pos_x, pos_y;
+    Player* players_game[MAX_OBJECTS];
+    Id id = NO_ID, space_id = NO_ID, active_numen_id = NO_ID;
+    int health = 0, attack = 0, energy = 0, speed = 0, skills[4] = { NO_ID, NO_ID, NO_ID, NO_ID }, pos_x, pos_y, check, bucle;
     Id following  = NO_ID;
     Status status = OK;
     int tam_format;
@@ -572,8 +611,11 @@ game_load_numens (Game* game, char* filename)
                     for (int i = 0; i < 4; i++)
                         {
                             toks = strtok (NULL, "|");
-                            if (toks) 	{skills[i] = atol (toks); }
-                            else		{skills[i] = NO_ID;}
+                            if (toks) { skills[i] = atol (toks); }
+                            else
+                                {
+                                    skills[i] = NO_ID;
+                                }
                         }
 
                     /* --- following (optional) --- */
@@ -597,14 +639,33 @@ game_load_numens (Game* game, char* filename)
                             numen_set_following (numen, following);
                             if (following != NO_ID)
                                 player_add_numen (game_get_player_by_id (game, following), id); /* check if following id exists as a player, if not,
-*                                                                                                   it will be set to NO_ID in numen_set_following */
+                                                                                                 * it will be set to NO_ID in numen_set_following */
                             game_add_numens (game, numen);
 
                             /* Place numen in its space */
                             space = game_get_space (game, space_id);
-                            if (space) space_set_numen (space, id);
+                            if (space) { space_set_numen (space, id, numen_get_position (numen)); }
+                            else
+                                {
+                                    check = game_get_n_players (game);
+                                    for (bucle = 0; bucle < check; bucle++) { players_game[bucle] = game_get_player_at (game, bucle); }
+                                    for (bucle = 0; bucle < check; bucle++)
+                                        {
+                                            if (player_get_id (players_game[bucle]) == space_id)
+                                                {
+                                                    player_add_numen (players_game[bucle], numen);
+                                                    break;
+                                                }
+                                        }
+                                }
                         }
                 }
+        }
+
+    for (bucle = 0; bucle < check; bucle++)
+        {
+            active_numen_id = player_get_active_numen (players_game[bucle]);
+            if (player_contains_numen (players_game[bucle], active_numen_id) == FALSE) { player_set_active_numen (players_game[bucle], NO_ID); }
         }
 
     if (ferror (file)) status = ERROR;
@@ -773,22 +834,27 @@ game_management_save_file (Game** game)
     Space* space   = NULL;
     Object* object = NULL;
     Object* players_game[MAX_OBJECTS];
-    Player* player = NULL;
-    Numen* numen   = NULL;
-    Links* link    = NULL;
-    Direction dir  = U;
-    Id id          = NO_ID;
-    Id zone        = NO_ID;
-    Id origin      = NO_ID;
-    Id dest        = NO_ID;
-    Id dependency  = NO_ID;
-    Id following   = NO_ID;
+    Player* player   = NULL;
+    Numen* numen     = NULL;
+    Links* link      = NULL;
+    Direction dir    = U;
+    Effect effect    = NO_EFECT;
+    Id id            = NO_ID;
+    Id zone          = NO_ID;
+    Id origin        = NO_ID;
+    Id dest          = NO_ID;
+    Id dependency    = NO_ID;
+    Id following     = NO_ID;
+    Id active_num_id = NO_ID;
+    Id active_obj_id = NO_ID;
     Set* skills[NUM_SKILLS];
     int check = 0;
     int bucle2;
     int bucle;
-    int pos_x = 0;
-    int pos_y = 0;
+    int pos_x    = 0;
+    int pos_y    = 0;
+    int vision_x = 0;
+    int vision_y = 0;
     int n_play;
     int health = MIN_LIFE;
     int attack = MIN_ATTACK;
@@ -840,16 +906,22 @@ game_management_save_file (Game** game)
     check = game_get_n_players (*game);
     for (bucle = 0; bucle < check; bucle++)
         {
-            player     = game_get_player_at (game, bucle);
-            id         = player_get_id (player);
-            name       = player_get_name (player);
-            zone       = player_get_zone (player);
-            pos_x      = player_get_pos_x (player);
-            pos_y      = player_get_pos_y (player);
-            gdesc      = player_get_gdesc (player);
-            max_bag    = player_get_max_objects (player);
-            max_numens = player_get_max_numens (player);
-            fprintf (new_sfile, "#p:%ld|%s|%ld|%d|%d|%s|%d|%d|\n", id, name, zone, pos_x, pos_y, gdesc == NULL ? "" : gdesc, max_bag, max_numens);
+            player        = game_get_player_at (game, bucle);
+            id            = player_get_id (player);
+            name          = player_get_name (player);
+            zone          = player_get_zone (player);
+            pos_x         = player_get_pos_x (player);
+            pos_y         = player_get_pos_y (player);
+            vision_x      = player_get_vision_x (player);
+            vision_y      = player_get_vision_y (player);
+            gdesc         = player_get_gdesc (player);
+            max_bag       = player_get_max_objects (player);
+            max_numens    = player_get_max_numens (player);
+            active_num_id = player_get_active_numen (player);
+            active_obj_id = player_get_active_object (player);
+            fprintf (new_sfile, "#p:%ld|%s|%ld|%d|%d|%d|%d|%s|%d|%d|%ld|%ld|\n", id, name, zone, pos_x, pos_y, vision_x, vision_y,
+                     gdesc == NULL ? "" : gdesc, max_bag, max_numens, active_num_id != NO_ID ? active_num_id : "",
+                     active_obj_id != NO_ID ? active_obj_id : "");
 
             free (name);
             free (gdesc);
@@ -884,10 +956,11 @@ game_management_save_file (Game** game)
             movable    = obj_get_movable (object);
             dependency = obj_get_dependency (object);
             consumable = obj_get_consumable (object);
+            effect     = obj_get_effect (object);
 
-            fprintf (new_sfile, "#o:%ld|%s|%ld|%d|%d|%s|%s|%d|%d|%d|%d|%d|%d|%d|%d|\n", id, name, zone, pos_x, pos_y, message,
+            fprintf (new_sfile, "#o:%ld|%s|%ld|%d|%d|%s|%s|%d|%d|%d|%d|%d|%d|%d|%d|%d|\n", id, name, zone, pos_x, pos_y, message,
                      gdesc == NULL ? "" : gdesc, consumable == TRUE ? 1 : 0, health, energy, attack, speed, dependency == NO_ID ? "" : dependency,
-                     movable == TRUE ? 1 : 0);
+                     movable == TRUE ? 1 : 0, (int)effect);
             free (name);
             free (gdesc);
             free (message);

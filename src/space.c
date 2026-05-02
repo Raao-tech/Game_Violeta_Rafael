@@ -273,16 +273,24 @@ space_get_n_numens (Space* space)
 }
 
 Status
-space_set_numen (Space* space, Id new_id)
+space_set_numen (Space* space, Id new_id, Position numen_pos)
 {
+ int *grid[HIGHT], i;
     if (!space) return ERROR;
-    return set_add (space->numens_id, new_id);
+
+    for (i = 0; i < HIGHT; i++) grid[i] = space->grid[i];
+    if (grid[numen_pos.pos_y][numen_pos.pos_x] == new_id) { grid[numen_pos.pos_y][numen_pos.pos_x] = 0; }
+    return set_add (space->objs_id, new_id);
 }
 
 Status
-space_remove_numen (Space* space, Id id_numen)
+space_remove_numen (Space* space, Id id_numen, Position numen_pos)
 {
+    int *grid[HIGHT], i;
     if (!space) return ERROR;
+
+    for (i = 0; i < HIGHT; i++) grid[i] = space->grid[i];
+    if (grid[numen_pos.pos_y][numen_pos.pos_x] == id_numen) { grid[numen_pos.pos_y][numen_pos.pos_x] = 1; }
     return set_delete_id (space->numens_id, id_numen);
 }
 
