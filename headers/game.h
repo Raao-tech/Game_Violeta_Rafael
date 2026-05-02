@@ -267,18 +267,13 @@ Object* game_get_object_by_name (Game* game, char* name);
  */
 Id  game_get_object_location (Game* game, Id obj_id);
 
-
 /**
- * @brief Esta función busca el objeto que coincide con la posicion que se le pase
+ * @brief It finds an object based on the vision of the player
  * @author Rafael
  *
- * Itera por todos los objetos presentes en el array total de objetos en el juego
- * si llega a coincidir las coordenadas del object con las de la visión del player
- * devuelve el puntero de dicho object
- *
  * @param game a pointer to the game
- * @param Vision_player es la cuadrilla (Position) a la que está viedno el player
- * @return the id of the space containing the object, or NO_ID
+ * @param Vision_player the grid (Position) player is looking at
+ * @return A pointer to the object if found, NULL otherwise
  */
 Object*	game_get_object_by_vision (Game* game, Position vision_player);
 
@@ -309,7 +304,7 @@ Numen* game_get_numen_by_id (Game* game, Id numen_id);
 Numen* game_get_numen_by_name (Game* game, char* numen_name);
 
 /**
- * @brief It get location numen
+ * @brief It gets the location of a numen
  * @author Rafa
  *
  * @param game a pointer to the game
@@ -318,6 +313,15 @@ Numen* game_get_numen_by_name (Game* game, char* numen_name);
  */
 Id game_get_numen_location (Game* game, Id numen_id);
 
+/**
+ * @brief It finds an numen based on the vision of the player
+ * @author Rafael
+ *
+ * @param game a pointer to the game
+ * @param Vision_player the grid (Position) player is looking at
+ * @return A pointer to the numen if found, NULL otherwise
+ */
+Numen* game_get_numen_by_vision (Game* game, Position vision_player);
 /* ========================================================================= */
 /*                         SEARCH: PLAYERS                                   */
 /* ========================================================================= */
