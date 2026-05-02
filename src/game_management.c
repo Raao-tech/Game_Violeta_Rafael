@@ -489,9 +489,10 @@ game_load_players (Game* game, char* filename)
                     if (!toks) continue;
                     max_numens = atoi (toks);
 
-                    /* --- active_num_id (optional) --- */
+                    /* --- active_num_id --- */
                     toks = strtok (NULL, "|");
-                    if (toks) active_num_id = atol (toks);
+                    if (!toks) continue;
+                    active_num_id = atol (toks);
 
                     /* --- active_obj_id (optional) --- */
                     toks = strtok (NULL, "|\n");
@@ -512,7 +513,12 @@ game_load_players (Game* game, char* filename)
                             player_set_max_numens (player, max_numens);
                             player_set_max_objects (player, max_bag);
                             player_set_vision (player, vision_x, vision_y);
-                            if (active_num_id != NO_ID) player_set_active_numen (player, active_num_id);
+
+                            player_set_loading (player, TRUE); /* Set loading flag to TRUE to allow setting active numen and object even if they are not in the player's inventory yet */
+                            player_set_active_numen (player, active_num_id);
+                            player_set_active_object (player, active_obj_id);
+                            player_set_loading (player, FALSE); /* Set loading flag back to FALSE after setting active numen and object */
+
                             if (active_obj_id != NO_ID) player_set_active_object (player, active_obj_id);
 
                             game_add_player (game, player);
@@ -664,8 +670,12 @@ game_load_numens (Game* game, char* filename)
 
     for (bucle = 0; bucle < check; bucle++)
         {
+            if(player_get_n_numens(players_game[bucle]) == 0) { return ERROR; } /*The player must have at least one numen*/
             active_numen_id = player_get_active_numen (players_game[bucle]);
-            if (player_contains_numen (players_game[bucle], active_numen_id) == FALSE) { player_set_active_numen (players_game[bucle], NO_ID); }
+            if (player_contains_numen (players_game[bucle], active_numen_id) == FALSE)
+             { 
+                player_set_active_numen (players_game[bucle], player_get_numen_at_inventory (players_game[bucle], 0)); /* If the active numen is not in the player's inventory, set it to the first numen in the inventory */
+             }
         }
 
     if (ferror (file)) status = ERROR;
@@ -920,7 +930,7 @@ game_management_save_file (Game** game)
             active_num_id = player_get_active_numen (player);
             active_obj_id = player_get_active_object (player);
             fprintf (new_sfile, "#p:%ld|%s|%ld|%d|%d|%d|%d|%s|%d|%d|%ld|%ld|\n", id, name, zone, pos_x, pos_y, vision_x, vision_y,
-                     gdesc == NULL ? "" : gdesc, max_bag, max_numens, active_num_id != NO_ID ? active_num_id : "",
+                     gdesc == NULL ? "" : gdesc, max_bag, max_numens, active_num_id,
                      active_obj_id != NO_ID ? active_obj_id : "");
 
             free (name);

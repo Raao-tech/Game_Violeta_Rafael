@@ -25,6 +25,7 @@ struct _Player
     Position vision;
     Id active_numen; /*!< Id of the active numen */
     Id active_object; /*!< Id of the active numen */
+    Bool loading       /*!< Flag to indicate if a player function is being called while loading the game (for now only used in set active object and numen) */
 };
 
 /* ========== Create / Destroy ========== */
@@ -40,7 +41,7 @@ player_create ()
     newPlayer->vision.pos_y = NO_POS;
     newPlayer->active_numen = NO_ID;
     newPlayer->active_object = NO_ID;
-
+    newPlayer->loading = FALSE;
     newPlayer->e_player     = entity_create ();
     if (!newPlayer->e_player)
         {
@@ -231,7 +232,7 @@ player_get_max_numens (Player* player)
 Status
 player_set_active_numen (Player* player, Id numen_id)
 {
-    if (!player || player_contains_numen (player, numen_id) == FALSE) return ERROR;
+    if (!player|| numen_id == NO_ID ||player_contains_numen (player, numen_id) == FALSE && player->loading == FALSE) return ERROR;
     player->active_numen = numen_id;
     return OK;
 }
@@ -254,10 +255,8 @@ player_get_active_object (Player* player)
 Status
 player_set_active_object (Player* player, Id obj_id)
 {
-    if (!player) return ERROR;
+    if (!player ||player_contains_object (player, obj_id) == FALSE && player->loading == FALSE) return ERROR;
     /* Permitimos NO_ID para "deseleccionar" */
-    if (obj_id != NO_ID && player_contains_object (player, obj_id) == FALSE)
-        return ERROR;
     player->active_object = obj_id;
     return OK;
 }
