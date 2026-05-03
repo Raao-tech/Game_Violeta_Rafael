@@ -576,17 +576,114 @@ game_actions_load (Game* game)
 static void
 game_actions_recruit (Game* game)
 {
-    if (!game) return;
-    /* TODO: pendiente de implementacion en I4 */
+     Position vision;
+    Player* player = NULL;
+    Space* space   = NULL;
+    Numen* numen   = NULL;
+    Id id_space, id_numen;
+    if (!game)
+        {
+            game_set_last_cmd_status (game, ERROR_recruit);
+            return;
+        }
+
+    vision.pos_x = NO_POS;
+    vision.pos_y = NO_POS;
+
+    player       = game_get_player_at (game, PLAYER);
+    vision       = player_get_vision (player);
+    if (vision.pos_x == NO_POS || vision.pos_y == NO_POS)
+        {
+            game_set_last_cmd_status (game, ERROR_recruit);
+            return;
+        }
+    id_space = player_get_zone (player);
+    space    = game_get_space (game, id_space);
+    numen    = game_get_numen_by_vision (game, vision);
+    if (!numen || player_get_n_numens (player) == player_get_max_numens (player))
+        {
+            game_set_last_cmd_status (game, ERROR_recruit);
+            return;
+        }
+    if (0 < numen_get_health (numen) && numen_get_health (numen) <= MAX_LIFE * 30 / 100 && numen_get_corrupt (numen) == FALSE
+        && numen_is_errant (numen))
+        {
+            if (player_add_numen (player, numen_get_id (numen)) == ERROR || space_remove_numen (space, numen_get_id (numen), vision) == ERROR
+                || numen_set_following (numen, player_get_id (player)) == ERROR)
+                {
+                    game_set_last_cmd_status (game, ERROR_recruit);
+                    return;
+                }
+            game_set_last_cmd_status (game, OK);
+            return;
+        }
     game_set_last_cmd_status (game, ERROR_recruit);
+    return;
 }
 
 static void
 game_actions_kick (Game* game)
 {
+  Player* player        = NULL;
+    Numen* numen          = NULL;
+    Command* last_command = NULL;
+    char* numen_char      = NULL;
+	Id numen_id;
+
+
     if (!game) return;
-    /* TODO: pendiente de implementacion en I4 */
-    game_set_last_cmd_status (game, ERROR_kick);
+
+    /*Obtenemos el puntero a player*/
+    player = game_get_player_at (game, PLAYER);
+    if (!player)
+        {
+            game_set_last_cmd_status (game, ERROR_kick);
+            return;
+        }
+
+    /*Obtenemos el utlimo comando del jgador*/
+    last_command = game_get_last_command (game);
+    if (!last_command)
+        {
+            game_set_last_cmd_status (game, ERROR_kick);
+            return;
+        }
+
+    /*Obtenemos el numen que tiene activo el jugador*/
+    numen_char = command_get_target (last_command);
+    if (numen_char)
+        {
+            numen = game_get_numen_by_name (game, numen_char);
+            if (!numen)
+                {
+                    game_set_last_cmd_status (game, ERROR_kick);
+                    return;
+                }
+            numen_id = obj_get_id (numen);
+        }
+    else
+        {
+           numen_id = player_get_active_numen (player);
+            numen    = game_get_numen_by_id (game, numen_id);
+            if (!numen)
+                {
+                   game_set_last_cmd_status (game, ERROR_kick);
+                    return;
+                }
+        }
+
+    /*Volvemos a comprobar que el jugador tenga el numen en su invetario y que no es el último que le queda*/
+    if (player_contains_numen (player, numen_id) == FALSE || player_get_n_numens(player)==1)
+        {
+            game_set_last_cmd_status (game, ERROR_kick);
+            return;
+        }
+
+    player_delete_numen (player, numen_id);
+
+    /*No hay necesidad de tocar la posición del numen en la gradiente, ya está fuera del inventario del player y eso es lo que importa*/
+
+    game_set_last_cmd_status (game, OK);
 }
 
 /* ========================================================================= */
