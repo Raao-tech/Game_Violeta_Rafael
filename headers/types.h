@@ -18,7 +18,7 @@
 /*Dimensiones de la pantalla del graphic Engine*/
 #define WIDHT_SCREEN 512
 #define HIGHT_SCREEN 512
-#define SCALE 21
+#define SCALE 20
 #define WIDHT 25
 #define HIGHT 25
 
@@ -29,6 +29,8 @@
 #define ERROR_GAME -1
 #define NO_POS -9999
 #define GRID_MODULE 10
+#define MAX_OBJECT_TEX 32   /* 1 textura por objeto */
+
 
 /*file of data for default*/
 #define F_DATA_N "new_game.dat"
@@ -131,6 +133,7 @@ typedef enum
 #define MIN_ATTACK 0
 #define MIN_ENGY 0
 #define MAX_LIFE 10
+#define MAX_LIFE_CORRUPT 20
 #define MAX_ENGY 100
 #define MAX_ATTACK 10
 #define ERROR_LIFE -1

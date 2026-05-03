@@ -329,40 +329,45 @@ game_rule_walk_active (Game* game)
 Status
 game_rule_move (Game* game)
 {
-    Player* player = NULL;
-    Space* dest_sp = NULL;
-    char* dir_str  = NULL;
+    Player*   player;
+    Space*    dest_sp;
+    char*     dir_str;
     Direction dir;
-    Id origin, dest;
-    int pos_x, pos_y;
+    Id        origin, dest;
+    int       pos_x, pos_y;
 
     if (!game) return ERROR;
     player = game_get_player_at (game, PLAYER);
-    if (!player) { return ERROR; }
+    if (!player) return ERROR;
 
     origin = player_get_zone (player);
-    if (origin == NO_ID) { return ERROR; }
+    if (origin == NO_ID) return ERROR;
 
     dir_str = command_get_target (game_get_last_command (game));
-    if (!dir_str) { return ERROR; }
+    if (!dir_str) return ERROR;
 
     dir = ge_parse_direction (dir_str);
-    if (dir == U) { return ERROR; }
+    if (dir == U) return ERROR;
 
     dest = game_get_connection (game, origin, dir);
-    if (dest == NO_ID) { return ERROR; }
+    if (dest == NO_ID) return ERROR;
 
-    if (game_connection_is_open (game, origin, dir) == FALSE) { return ERROR; }
+    if (game_connection_is_open (game, origin, dir) == FALSE) return ERROR;
+
     pos_x = player_get_pos_x (player);
     pos_y = player_get_pos_y (player);
 
+    /* Reposicionamos en el borde OPUESTO al de salida.
+     * Si sales por el norte, entras por el sur del nuevo space. */
     switch (dir)
-        {
-            case S: player_set_position (player, pos_x, (int)((float)(HIGHT_SCREEN / SCALE))); break;
-            case N: player_set_position (player, pos_x, (int)(HIGHT_SCREEN - (float)(HIGHT_SCREEN / SCALE))); break;
-            case E: player_set_position (player, (int)((float)(WIDHT_SCREEN / SCALE)), pos_y); break;
-            case W: player_set_position (player, (int)(WIDHT_SCREEN - (float)(WIDHT_SCREEN / SCALE)), pos_y); break;
-        }
+    {
+        case N: player_set_position (player, pos_x, (HIGHT - 1) * SCALE); break;
+        case S: player_set_position (player, pos_x, 0);                    break;
+        case E: player_set_position (player, 0, pos_y);                    break;
+        case W: player_set_position (player, (WIDHT - 1) * SCALE, pos_y);  break;
+        default: return ERROR;
+    }
+
     player_set_zone (player, dest);
 
     dest_sp = game_get_space (game, dest);

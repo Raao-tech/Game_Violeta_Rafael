@@ -309,7 +309,20 @@ game_loop_init_user (GameLoop* game_loop)
 
 	/* 5. Establecer Numen inicial como active si entro por NEW_GAME*/
 	if (result_ge.menu_out == NEW_GAME && result_ge.init_numen != NO_ID)
-		player_set_active_numen (game_get_player (game_loop->game), result_ge.init_numen);
+	{
+	    Player* p = game_get_player (game_loop->game);
+	    if (p)
+	    {
+	        player_set_loading (p, TRUE);  /* permite asignar antes de validar */
+	        player_add_numen        (p, result_ge.init_numen);
+	        player_set_active_numen (p, result_ge.init_numen);
+	        player_set_loading (p, FALSE);
+		
+	        /* Y le decimos al numen que ahora "sigue" a este player */
+	        Numen* nu = game_get_numen_by_id (game_loop->game, result_ge.init_numen);
+	        if (nu) numen_set_following (nu, player_get_id (p));
+	    }
+	}
 
 	return INIT_OK;
 }

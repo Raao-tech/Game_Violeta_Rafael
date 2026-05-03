@@ -311,7 +311,7 @@ obj_get_consumable (Object* obj)
 Status
 obj_set_consumable (Object* obj, Bool consumable)
 {
-    if (!obj || consumable == -1) return ERROR;
+    if (!obj) return ERROR;
     obj->consumable = consumable;
     return OK;
 }

@@ -66,6 +66,7 @@ struct _Graphic_engine
     TexEntry      space_textures [MAX_SPACE_TEX];
     TexEntryName  player_textures[MAX_PLAYER_TEX];
     TexEntryName  numen_textures [MAX_NUMEN_TEX];
+    TexEntryName  object_textures [MAX_OBJECT_TEX];
 
     Bool textures_loaded;
 };
@@ -76,14 +77,19 @@ struct _Graphic_engine
 
 static Texture2D* ge_get_space_texture  (Graphic_engine* ge, Id space_id);
 static Texture2D* ge_get_player_texture (Graphic_engine* ge, const char* name);
-/* ge_get_numen_texture: lo dejamos preparado para el Paso 5 */
-/* static Texture2D* ge_get_numen_texture  (Graphic_engine* ge, const char* name); */
+static Texture2D* ge_get_numen_texture (Graphic_engine* ge, const char* name);
+static Texture2D* ge_get_object_texture (Graphic_engine* ge, const char* name);
+
 
 static Bool ge_texture_is_valid (Texture2D* tex);
 
 static void ge_paint_background  (Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_player      (Graphic_engine* ge, Player* player);
 static void ge_paint_overlay     (Game* game, Player* player);
+static void ge_paint_active_numen (Graphic_engine* ge, Game* game, Player* player);
+static void ge_paint_objects (Graphic_engine* ge, Game* game, Player* player);
+
+
 
 static const char* ge_status_to_str (Status s);
 static const char* ge_cmd_to_str    (CommandCode c);
@@ -110,6 +116,7 @@ graphic_engine_create (void)
     for (i = 0; i < MAX_SPACE_TEX;  i++) ge->space_textures[i].id  = NO_ID;
     for (i = 0; i < MAX_PLAYER_TEX; i++) ge->player_textures[i].name[0] = '\0';
     for (i = 0; i < MAX_NUMEN_TEX;  i++) ge->numen_textures[i].name[0]  = '\0';
+    for (i = 0; i < MAX_OBJECT_TEX; i++) ge->object_textures[i].name[0] = '\0';
 
     ge->textures_loaded = FALSE;
     return ge;
@@ -121,8 +128,7 @@ graphic_engine_destroy (Graphic_engine* ge)
     int i;
     if (!ge) return;
 
-    /* Liberamos las texturas SOLO si la ventana sigue viva.
-     * UnloadTexture toca la GPU, asi que requiere contexto OpenGL. */
+    /* Liberamos las texturas SOLO si la ventana sigue viva. */
     if (IsWindowReady () && ge->textures_loaded)
     {
         for (i = 0; i < MAX_SPACE_TEX; i++)
@@ -136,6 +142,9 @@ graphic_engine_destroy (Graphic_engine* ge)
         for (i = 0; i < MAX_NUMEN_TEX; i++)
             if (ge->numen_textures[i].name[0] != '\0')
                 UnloadTexture (ge->numen_textures[i].tex);
+        for (i = 0; i < MAX_OBJECT_TEX; i++)
+            if (ge->object_textures[i].name[0] != '\0')
+                UnloadTexture (ge->object_textures[i].tex);
     }
 
     /* La ventana se cierra DESPUES de descargar texturas */
@@ -302,14 +311,30 @@ graphic_engine_load_textures (Graphic_engine* ge, Game* game)
         {
             nu = game_get_numen_at (game, i);
             if (!nu) continue;
-
             snprintf (path, sizeof (path),
                       "./img_src/sprites/numens/%s.png", numen_get_name (nu));
-
             strncpy (ge->numen_textures[slot].name,
                      numen_get_name (nu), 63);
             ge->numen_textures[slot].name[63] = '\0';
             ge->numen_textures[slot].tex = LoadTexture (path);
+            slot++;
+        }
+    }
+    /*====== objects =========*/
+    {
+        int n_objs = game_get_n_objects (game);
+        Object* o;
+        for (i = 0, slot = 0; i < n_objs && slot < MAX_OBJECT_TEX; i++)
+        {
+            o = game_get_object_at (game, i);
+            if (!o) continue;
+        
+            snprintf (path, sizeof (path),
+                      "./img_src/sprites/objects/%s.png", obj_get_name (o));
+        
+            strncpy (ge->object_textures[slot].name, obj_get_name (o), 63);
+            ge->object_textures[slot].name[63] = '\0';
+            ge->object_textures[slot].tex = LoadTexture (path);
             slot++;
         }
     }
@@ -328,16 +353,17 @@ graphic_engine_paint_game (Graphic_engine* ge, Game* game)
     Player* player;
 
     if (!ge || !game) return;
-
     player = game_get_player_by_turn (game);
     if (!player) return;
 
-    /* BeginDrawing/EndDrawing los pone el game_loop. */
     ClearBackground (BLACK);
 
-    ge_paint_background (ge, game, player);
-    ge_paint_player     (ge, player);
-    ge_paint_overlay    (game, player);
+    ge_paint_background  (ge, game, player);
+    ge_paint_objects       (ge, game, player);
+    ge_paint_active_numen (ge, game, player);
+    ge_paint_player      (ge, player);
+    ge_paint_overlay     (game, player);
+    
 }
 
 /* ====================================================================== */
@@ -620,4 +646,144 @@ ge_cmd_to_str (CommandCode code)
         case KICK:    return "kick";
         default:      return "";
     }
+}
+/* ====================================================================== */
+/*                  PRIVATE: ACTIVE NUMEN (pintado)                        */
+/* ====================================================================== */
+
+static void
+ge_paint_active_numen (Graphic_engine* ge, Game* game, Player* player)
+{
+    Numen*     num;
+    Texture2D* tex;
+    Id         active_id;
+    int        nx, ny;
+
+    active_id = player_get_active_numen (player);
+    if (active_id == NO_ID) return;
+
+    num = game_get_numen_by_id (game, active_id);
+    if (!num) return;
+
+    nx = numen_get_pos_x (num);
+    ny = numen_get_pos_y (num);
+
+    /* Si por algun motivo no tiene posicion valida, lo colocamos
+     * a la derecha del player. */
+    if (nx == NO_POS || ny == NO_POS)
+    {
+        nx = player_get_pos_x (player) + SCALE;
+        ny = player_get_pos_y (player);
+    }
+
+    tex = ge_get_numen_texture (ge, numen_get_name (num));
+
+    if (ge_texture_is_valid (tex))
+    {
+        Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
+        Rectangle dst = { (float)nx, (float)ny, (float)SCALE, (float)SCALE };
+        DrawTexturePro (*tex, src, dst, (Vector2){ 0, 0 }, 0.0f, WHITE);
+    }
+    else
+    {
+        /* Fallback: circulo del color de los numens corruptos vs friendly.
+         * El "B" de Brococacho lo pintamos como letra encima del circulo
+         * para que se distinga sin sprite. */
+        Color   col;
+        char*   gd;
+
+        col = (numen_get_corrupt (num) == TRUE)
+            ? (Color){ 200, 60, 60, 255 }     /* enemigo: rojo */
+            : (Color){ 80, 200, 80, 255 };    /* amigo: verde  */
+
+        DrawCircle (nx + SCALE / 2, ny + SCALE / 2, SCALE / 2 - 2, col);
+        DrawCircleLines (nx + SCALE / 2, ny + SCALE / 2, SCALE / 2 - 2, BLACK);
+
+        gd = numen_get_gdesc (num);
+        if (gd && gd[0])
+            DrawText (TextFormat ("%c", gd[0]),
+                      nx + SCALE / 2 - 4, ny + SCALE / 2 - 6, 12, BLACK);
+    }
+}
+
+/* ====================================================================== */
+/*                  PRIVATE: NUMEN TEXTURE LOOKUP                          */
+/* ====================================================================== */
+static Texture2D*
+ge_get_numen_texture (Graphic_engine* ge, const char* name)
+{
+    int i;
+    if (!ge || !name) return NULL;
+    for (i = 0; i < MAX_NUMEN_TEX; i++)
+    {
+        if (ge->numen_textures[i].name[0] != '\0' &&
+            strcmp (ge->numen_textures[i].name, name) == 0)
+            return &ge->numen_textures[i].tex;
+    }
+    return NULL;
+}
+/* ====================================================================== */
+/*           PRIVATE: OBJECTS DEL SPACE ACTUAL                             */
+/* ====================================================================== */
+static void
+ge_paint_objects (Graphic_engine* ge, Game* game, Player* player)
+{
+    Space*     sp;
+    Object*    obj;
+    Texture2D* tex;
+    Id         space_id;
+    int        i, n_objs, ox, oy;
+
+    space_id = player_get_zone (player);
+    sp       = game_get_space (game, space_id);
+    if (!sp) return;
+
+    n_objs = game_get_n_objects (game);
+    for (i = 0; i < n_objs; i++)
+    {
+        obj = game_get_object_at (game, i);
+        if (!obj) continue;
+
+        /* Solo pintamos los objetos cuyo space coincide con el actual.
+         * Usamos space_contains_object para no asumir nada de la
+         * implementacion interna. */
+        if (space_contains_object (sp, obj_get_id (obj)) == FALSE) continue;
+
+        ox  = obj_get_pos_x (obj);
+        oy  = obj_get_pos_y (obj);
+        if (ox == NO_POS || oy == NO_POS) continue;
+
+        tex = ge_get_object_texture (ge, obj_get_name (obj));
+
+        if (ge_texture_is_valid (tex))
+        {
+            Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
+            Rectangle dst = { (float)ox, (float)oy, (float)SCALE, (float)SCALE };
+            DrawTexturePro (*tex, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
+        }
+        else
+        {
+            /* cuadrado gris con la letra del gdesc */
+            char* gd = obj_get_gdesc (obj);
+            DrawRectangle (ox, oy, SCALE, SCALE, (Color){ 150, 150, 150, 200 });
+            DrawRectangleLines (ox, oy, SCALE, SCALE, BLACK);
+            if (gd && gd[0])
+                DrawText (TextFormat ("%c", gd[0]),
+                          ox + SCALE/2 - 4, oy + SCALE/2 - 6, 12, BLACK);
+        }
+    }
+}
+
+static Texture2D*
+ge_get_object_texture (Graphic_engine* ge, const char* name)
+{
+    int i;
+    if (!ge || !name) return NULL;
+    for (i = 0; i < MAX_OBJECT_TEX; i++)
+    {
+        if (ge->object_textures[i].name[0] != '\0' &&
+            strcmp (ge->object_textures[i].name, name) == 0)
+            return &ge->object_textures[i].tex;
+    }
+    return NULL;
 }

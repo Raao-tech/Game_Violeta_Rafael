@@ -242,7 +242,7 @@ int space_get_n_numens (Space* space);
  * @param new_id the id of the numen to add
  * @return OK if added, ERROR if space is NULL or id is invalid
  */
-Status space_set_numen (Space* space, Id new_id);
+Status space_set_numen (Space* space, Id new_id, Position numen_pos);
 
 /**
  * @brief It deletes a numen id from the space
@@ -252,7 +252,7 @@ Status space_set_numen (Space* space, Id new_id);
  * @param id_numen the id of the numen to delete
  * @return OK if deleted, ERROR if space is NULL or id is invalid
  */
-Status space_remove_numen (Space* space, Id id_numen);
+Status space_remove_numen (Space* space, Id id_numen, Position numen_pos);
 
 /**
  * @brief It checks whether a numen id is in the space

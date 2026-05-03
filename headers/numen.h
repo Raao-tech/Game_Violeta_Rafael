@@ -30,8 +30,9 @@ Bool numen_has_name (Numen* numen, char* name);
 Bool numen_is_errant (Numen* numen);
 
 /*======== (set/get) position ================*/
-Status  numen_set_position (Numen* numen, int x, int y);
-Position    numen_get_position (Numen* numen);
+Status numen_set_position (Numen* numen, int x, int y);
+Position numen_get_position (Numen* numen);
+
 Status numen_set_pos_x (Numen* numen, int pos_x); /* tiene que estar entre los límites x */
 int numen_get_pos_x (Numen* numen);
 

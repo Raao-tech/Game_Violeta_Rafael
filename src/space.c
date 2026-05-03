@@ -40,7 +40,7 @@ Space*
 space_create ()
 {
     Space* newSpace = NULL;
-    int i, j;
+    int i;
 
     newSpace = (Space*)calloc (1, sizeof (Space));
     if (!newSpace) return NULL;
@@ -157,14 +157,8 @@ space_set_object (Space* space, Id new_id, Position obj_pos)
         cell_x = obj_pos.pos_x / SCALE;
         cell_y = obj_pos.pos_y / SCALE;
 
-        if (cell_x >= 0 && cell_x < WIDHT &&
-            cell_y >= 0 && cell_y < HIGHT &&
-            space->grid[cell_y] != NULL)
-        {
-            /* Ahora si: marcar la celda como no transitable (a 0) porque ahora estará ese objeto */
-            if (space->grid[cell_y][cell_x] == new_id)
-                space->grid[cell_y][cell_x] = 0;
-        }
+        if (cell_x >= 0 && cell_x < WIDHT && cell_y >= 0 && cell_y < HIGHT && space->grid[cell_y] != NULL)
+        {if (space->grid[cell_y][cell_x] != 0)space->grid[cell_y][cell_x] = 0;}
     }
 
     return set_add (space->objs_id, new_id);
@@ -193,8 +187,8 @@ space_remove_object (Space* space, Id obj_id, Position obj_pos)
             cell_y >= 0 && cell_y < HIGHT &&
             space->grid[cell_y] != NULL)
         {
-            if (space->grid[cell_y][cell_x] == obj_id)
-                space->grid[cell_y][cell_x] = 1;
+        if (space->grid[cell_y][cell_x] == 0)
+            space->grid[cell_y][cell_x] = 1;
         }
     }
 
@@ -303,16 +297,53 @@ space_get_n_numens (Space* space)
 }
 
 Status
-space_set_numen (Space* space, Id new_id)
+space_set_numen (Space* space, Id new_id, Position numen_pos)
 {
+    int cell_x, cell_y;
+
     if (!space) return ERROR;
+
+    /* Conversion pixeles -> celda. Solo tocamos el grid si las
+     * coordenadas son validas. Si vienen NO_POS o fuera de rango,
+     * simplemente añadimos al set sin marcar el grid. */
+    if (numen_pos.pos_x != NO_POS && numen_pos.pos_y != NO_POS)
+    {
+        cell_x = numen_pos.pos_x / SCALE;
+        cell_y = numen_pos.pos_y / SCALE;
+
+        if (cell_x >= 0 && cell_x < WIDHT &&
+            cell_y >= 0 && cell_y < HIGHT &&
+            space->grid[cell_y] != NULL)
+        {
+            if (space->grid[cell_y][cell_x] == new_id)
+                space->grid[cell_y][cell_x] = 0;
+        }
+    }
+
     return set_add (space->numens_id, new_id);
 }
 
 Status
-space_remove_numen (Space* space, Id id_numen)
+space_remove_numen (Space* space, Id id_numen, Position numen_pos)
 {
+    int cell_x, cell_y;
+
     if (!space) return ERROR;
+
+    if (numen_pos.pos_x != NO_POS && numen_pos.pos_y != NO_POS)
+    {
+        cell_x = numen_pos.pos_x / SCALE;
+        cell_y = numen_pos.pos_y / SCALE;
+
+        if (cell_x >= 0 && cell_x < WIDHT &&
+            cell_y >= 0 && cell_y < HIGHT &&
+            space->grid[cell_y] != NULL)
+        {
+            if (space->grid[cell_y][cell_x] == id_numen)
+                space->grid[cell_y][cell_x] = 1;
+        }
+    }
+
     return set_delete_id (space->numens_id, id_numen);
 }
 

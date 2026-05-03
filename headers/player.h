@@ -419,6 +419,9 @@ int player_get_vision_x (Player* player);
 Status player_set_vision_y (Player* player, int y);
 int player_get_vision_y (Player* player);
 
+/* =========== Loading (Set/Get) ==========*/
+Status player_set_loading (Player* player, Bool loading);
+Bool player_get_loading (Player* player);
 /* ========== Print ========== */
 
 /**
