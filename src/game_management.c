@@ -711,7 +711,7 @@ game_management_save_file (Game** game)
         space = game_get_space       (*game, id);
         if (!space) continue;
 
-        name  = space_get_name  (space);
+        name  = (char*)space_get_name  (space);
         gdesc = space_get_gdesc (space);
         OST   = space_get_ost   (space);
 

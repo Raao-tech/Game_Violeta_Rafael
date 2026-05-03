@@ -32,7 +32,7 @@ static void game_actions_chat    (Game* game);
 static void game_actions_inspect (Game* game);
 static void game_actions_use     (Game* game);
 static void game_actions_save    (Game* game);
-static void game_actions_load    (Game* game);
+//static void game_actions_load    (Game* game);
 static void game_actions_recruit (Game* game);
 static void game_actions_kick    (Game* game);
 
@@ -71,7 +71,7 @@ game_actions_update (Game* game, Command* command)
         case INSPECT: game_actions_inspect (game); break;
         case USE:     game_actions_use     (game); break;
         case SAVE:    game_actions_save    (game); break;
-        case LOAD:    game_actions_load    (game); break;
+       // case LOAD:    game_actions_load    (game); break;
         case RECRUIT: game_actions_recruit (game); break;
         case KICK:    game_actions_kick    (game); break;
         default: break;
@@ -552,7 +552,7 @@ game_actions_use (Game* game)
 }
 
 /* ========================================================================= */
-/*                       SAVE / LOAD / RECRUIT / KICK                         */
+/*                       SAVE / LOAD RECRUIT / KICK                         */
 /*  (MEJORA: las 4 son `static` para que el dispatcher las vea correctamente) */
 /* ========================================================================= */
 static void
@@ -565,13 +565,12 @@ game_actions_save (Game* game)
         game_set_last_cmd_status (game, ERROR_save);
 }
 
-static void
-game_actions_load (Game* game)
+/*
+static void game_actions_load (Game *game)
 {
-    if (!game) return;
-    /* TODO: pendiente de implementacion en I4 */
-    game_set_last_cmd_status (game, ERROR_load);
+    if(!game) { game_set_last_cmd_status (game, ERROR_load); return; }
 }
+    */
 
 static void
 game_actions_recruit (Game* game)
@@ -580,7 +579,7 @@ game_actions_recruit (Game* game)
     Player* player = NULL;
     Space* space   = NULL;
     Numen* numen   = NULL;
-    Id id_space, id_numen;
+    Id id_space;
     if (!game)
         {
             game_set_last_cmd_status (game, ERROR_recruit);
@@ -659,7 +658,7 @@ game_actions_kick (Game* game)
                     game_set_last_cmd_status (game, ERROR_kick);
                     return;
                 }
-            numen_id = obj_get_id (numen);
+            numen_id = numen_get_id (numen);
         }
     else
         {

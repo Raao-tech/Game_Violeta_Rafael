@@ -19,11 +19,9 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
     Player* player = NULL;
     Space* space   = NULL;
     Numen *num = NULL, *enemy_num = NULL;
-    char* skill_indx_ch = NULL;
     Skills_id skill     = NO_SKILL;
     Id space_id, num_id;
-    Set* space_numens = NULL;
-    int distance, skill_indx = 0, radio, active_pos_x, active_pos_y, enemy_pos_x, enemy_pos_y, num_enemies, i;
+    int distance, radio, skill_indx = 0, active_pos_x, active_pos_y, enemy_pos_x, enemy_pos_y, i;
 
     if (!game || id_enemy == NO_ID) return ERROR_enemy_attack;
 
@@ -72,10 +70,11 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
     radio    = skill_get_radio (skill); /*por implementar*/
 
     distance = sqrt (pow (active_pos_x - enemy_pos_x, 2) + pow (active_pos_y - enemy_pos_y, 2));
-
+    if(radio>=distance)
+    {
     if (skill_active (enemy_num, num, skill, distance) == ERROR) /*por implementar status skill_apply_effect*/
         return ERROR_enemy_attack;
-
+    }
     return OK;
 }
 
@@ -222,7 +221,7 @@ game_rule_walk_active (Game* game)
     pos_current.pos_y = numen_get_pos_y (active_num);
 
     pos_player        = player_get_position (player);
-    speed             = player_get_speed (player);
+    speed             = numen_get_speed (active_num);
 
     distance          = sqrt (pow (pos_current.pos_x - pos_player.pos_x, 2) + pow (pos_current.pos_y - pos_player.pos_y, 2));
 
@@ -236,10 +235,10 @@ game_rule_walk_active (Game* game)
             /////////////////////////////////////////////////////////
             switch (direction) /*Falta definir cuánto se mueve*/
                 {
-                    case N: pos_current.pos_y -= SCALE; break;
-                    case S: pos_current.pos_y += SCALE; break;
-                    case W: pos_current.pos_x -= SCALE; break;
-                    case E: pos_current.pos_x += SCALE; break;
+                    case N: pos_current.pos_y -= SCALE*speed; break;
+                    case S: pos_current.pos_y += SCALE*speed; break;
+                    case W: pos_current.pos_x -= SCALE*speed; break;
+                    case E: pos_current.pos_x += SCALE*speed; break;
                     default: break;
                 }
 
@@ -255,8 +254,8 @@ game_rule_walk_active (Game* game)
             switch (direction) /*checks whether the direction that failed is on the x coordinate and restores it. If it isn't, then it must've been on
                                                         the y coordinate and there's nothing left to check*/
                 {
-                    case W: pos_current.pos_x += SCALE; break;
-                    case E: pos_current.pos_x -= SCALE; break;
+                    case W: pos_current.pos_x += SCALE*speed; break;
+                    case E: pos_current.pos_x -= SCALE*speed; break;
                     default: return ERROR;
                 }
             /*If the error was on the x coordinate, try the y coordinate*/
@@ -265,8 +264,8 @@ game_rule_walk_active (Game* game)
 
             switch (direction) /*Falta definir cuánto se mueve*/
                 {
-                    case N: pos_current.pos_y -= SCALE; break;
-                    case S: pos_current.pos_y += SCALE; break;
+                    case N: pos_current.pos_y -= SCALE*speed; break;
+                    case S: pos_current.pos_y += SCALE*speed; break;
 
                     default: break;
                 }
@@ -287,33 +286,33 @@ game_rule_walk_active (Game* game)
 
             switch (direction) /*Falta definir cuánto se mueve*/
                 {
-                    case N: pos_current.pos_y -= SCALE; break;
-                    case S: pos_current.pos_y += SCALE; break;
-                    case W: pos_current.pos_x -= SCALE; break;
-                    case E: pos_current.pos_x += SCALE; break;
+                    case N: pos_current.pos_y -= SCALE*speed; break;
+                    case S: pos_current.pos_y += SCALE*speed; break;
+                    case W: pos_current.pos_x -= SCALE*speed; break;
+                    case E: pos_current.pos_x += SCALE*speed; break;
                     default: break;
                 }
 
             if (grid[pos_current.pos_x][pos_current.pos_y] == 0)
                 {
                     direction = (direction + 1) % 4;
-                    for (direction, i = 0; grid[pos_current.pos_x][pos_current.pos_y] == 0, i < 3; direction = (direction + 1) % 4, i++)
+                    for (i = 0; grid[pos_current.pos_x][pos_current.pos_y] == 0 && i < 3; direction = (direction + 1) % 4, i++)
                         {
 
                             switch ((direction + 3) % 4) /*restores the previous coordinates*/
                                 {
-                                    case N: pos_current.pos_y += SCALE; break;
-                                    case S: pos_current.pos_y -= SCALE; break;
-                                    case W: pos_current.pos_x += SCALE; break;
-                                    case E: pos_current.pos_x -= SCALE; break;
+                                    case N: pos_current.pos_y += SCALE*speed; break;
+                                    case S: pos_current.pos_y -= SCALE*speed; break;
+                                    case W: pos_current.pos_x += SCALE*speed; break;
+                                    case E: pos_current.pos_x -= SCALE*speed; break;
                                     default: break;
                                 }
                             switch (direction) /*gets the new coordinates to move to*/
                                 {
-                                    case N: pos_current.pos_y -= SCALE; break;
-                                    case S: pos_current.pos_y += SCALE; break;
-                                    case W: pos_current.pos_x -= SCALE; break;
-                                    case E: pos_current.pos_x += SCALE; break;
+                                    case N: pos_current.pos_y -= SCALE*speed; break;
+                                    case S: pos_current.pos_y += SCALE*speed; break;
+                                    case W: pos_current.pos_x -= SCALE*speed; break;
+                                    case E: pos_current.pos_x += SCALE*speed; break;
                                     default: break;
                                 }
                         }
