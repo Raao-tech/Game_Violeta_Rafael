@@ -342,19 +342,19 @@ static Status
 game_load_players (Game* game, char* filename)
 {
     FILE*   file              = NULL;
+    Player* player            = NULL;
+    Space*  space             = NULL;
     char    line[WORD_SIZE]   = "";
     char    name[WORD_SIZE]   = "";
     char    gdesc[WORD_SIZE]  = "";
     char*   toks              = NULL;
-    Player* player            = NULL;
-    Space*  space             = NULL;
+    Status  status          = OK;
     Id      id              = NO_ID;
     Id      active_num_id   = NO_ID;
     Id      active_obj_id   = NO_ID;
     Id      zone            = NO_ID;
     int     max_numens      = 0;
     int     max_bag         = 0;
-    Status  status          = OK;
     int     tam_format, pos_x = 0, pos_y = 0, vision_x = 0, vision_y = 0;
 
     if (!game || !filename) return ERROR;
@@ -445,6 +445,7 @@ game_load_numens (Game* game, char* filename)
     int     health = 0, attack = 0, energy = 0, speed = 0, pos_x, pos_y;
     Id      skills[N_SKILLS] = { NO_ID, NO_ID, NO_ID, NO_ID };
     Status  status   = OK;
+    Bool    corrupt  = FALSE;
     int     tam_format, n_players, bucle, i;
 
     if (!game || !filename) return ERROR;
@@ -478,8 +479,13 @@ game_load_numens (Game* game, char* filename)
             skills[i] = (toks) ? atol (toks) : NO_ID;
         }
 
-        toks = strtok (NULL, "|\n");
+        /* following: id del player al que sigue (-1 = errante) */
+        toks = strtok (NULL, "|");
         following = (toks) ? atol (toks) : NO_ID;
+
+        /* corrupt: 0 = amigo, 1 = enemigo (campo nuevo) */
+        toks = strtok (NULL, "|\n");
+        corrupt = (toks && atoi (toks) == 1) ? TRUE : FALSE;
 
 #ifdef DEBUG
         printf ("Leido numen: n:%ld|%s|%ld|%d|%d\n", id, name, space_id, pos_x, pos_y);
@@ -498,8 +504,12 @@ game_load_numens (Game* game, char* filename)
         numen_set_attack (numen, attack);
         numen_set_speed  (numen, speed);
 
-        for (i = 0; i < N_SKILLS; i++)
-            if (skills[i] != NO_ID) numen_add_skill (numen, skills[i]);
+        for (i = 0; i < N_SKILLS; i++)  if (skills[i] != NO_ID) numen_add_skill (numen, skills[i]);
+
+        /* Aplicar el flag de corrupt. La conversion corrupt->friendly
+         * la hace internamente numen_set_corrupt (TRUE = enemigo). */
+        numen_set_corrupt (numen, corrupt);
+
 
         numen_set_following (numen, following);
 
@@ -516,16 +526,13 @@ game_load_numens (Game* game, char* filename)
         /* Colocamos el numen en su space (o en el inventario del player si
          * el "space_id" referenciaba a un player_id). */
         space = game_get_space (game, space_id);
-        if (space)
-            space_set_numen (space, id, numen_get_position (numen));
+        if (space)  space_set_numen (space, id, numen_get_position (numen));
         else
             for (bucle = 0; bucle < n_players; bucle++)
-                if (players_game[bucle] &&
-                    player_get_id (players_game[bucle]) == space_id)
-                {
-                    player_add_numen (players_game[bucle], id);
-                    break;
-                }
+            {   
+                if (players_game[bucle] && player_get_id (players_game[bucle]) == space_id)
+                    {player_add_numen (players_game[bucle], id); break;  }
+            }
     }
 
     /* Cada player debe tener al menos un numen y un active_numen valido. */

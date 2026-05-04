@@ -294,7 +294,7 @@ Status
 entity_set_position (Entity* entity, int x, int y)
 {
     if (!entity) return ERROR;
-    if (y >= HIGHT_SCREEN || y < 0 || x >= WIDHT_SCREEN || x < 0) return ERROR;
+    if (y >= HIGHT_MAP || y < 0 || x >= WIDHT_MAP || x < 0) return ERROR;
     entity->position.pos_x = x;
     entity->position.pos_y = y;
 
@@ -332,7 +332,7 @@ Status
 entity_set_pos_x (Entity* entity, int x)
 {
     if (!entity) return ERROR;
-    if (x >= WIDHT_SCREEN || x < 0)
+    if (x >= WIDHT_MAP || x < 0)
         {
             entity->position.pos_x = NO_POS;
             entity->position.pos_y = NO_POS;
@@ -346,7 +346,7 @@ Status
 entity_set_pos_y (Entity* entity, int y)
 {
     if (!entity) return ERROR;
-    if (y >= HIGHT_SCREEN || y < 0)
+    if (y >= HIGHT_MAP || y < 0)
         {
             entity->position.pos_x = NO_POS;
             entity->position.pos_y = NO_POS;

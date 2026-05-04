@@ -393,7 +393,7 @@ Status
 player_set_vision (Player* player, int x, int y)
 {
 	if (!player) return ERROR;
-	if (x >= WIDHT_SCREEN || x < 0 || y >= HIGHT_SCREEN || y < 0)
+	if (x >= WIDHT_MAP || x < 0 || y >= HIGHT_MAP || y < 0)
 		{
 			player->vision.pos_x = NO_POS;
 			player->vision.pos_y = NO_POS;
@@ -423,7 +423,7 @@ Status
 player_set_vision_x (Player* player, int x)
 {
 	if (!player) return ERROR;
-	if (x >= WIDHT_SCREEN || x < 0)
+	if (x >= WIDHT_MAP || x < 0)
 		{
 			player->vision.pos_x = NO_POS;
 			player->vision.pos_y = NO_POS;
@@ -437,7 +437,7 @@ Status
 player_set_vision_y (Player* player, int y)
 {
 	if (!player) return ERROR;
-	if (y >= HIGHT_SCREEN || y < 0)
+	if (y >= HIGHT_MAP || y < 0)
 		{
 			player->vision.pos_x = NO_POS;
 			player->vision.pos_y = NO_POS;

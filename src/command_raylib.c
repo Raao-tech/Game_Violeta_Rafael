@@ -118,13 +118,32 @@ command_raylib_get_user_input (Command* command)
 			command_set_code (command, DROP);
 			return;
 		}
-	/*========== ========== DROP ========== ============*/
-	if (IsKeyPressed (KEY_R))
+	/*========== ========== ATTACK con skill 0..3 ========== ============*/
+	/* Las teclas 1, 2, 3, 4 disparan el skill[0], skill[1], skill[2], skill[3]*/
+	if (IsKeyPressed (KEY_ONE))
 		{
-			command_set_code (command, DROP);
+			_command_set_target (command, "2");
+			command_set_code (command, ATTACK);
 			return;
 		}
-	/* ========== Selección de objeto activo ========== */
+	if (IsKeyPressed (KEY_TWO))
+		{
+			_command_set_target (command, "3");
+			command_set_code (command, ATTACK);
+			return;
+		}
+	if (IsKeyPressed (KEY_THREE))
+		{
+			_command_set_target (command, "4");
+			command_set_code (command, ATTACK);
+			return;
+		}
+	if (IsKeyPressed (KEY_FOUR))
+		{
+			_command_set_target (command, "3");
+			command_set_code (command, ATTACK);
+			return;
+		}
 
 	
 

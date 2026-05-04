@@ -183,15 +183,13 @@ game_actions_walk (Game* game)
     grid_line = space_get_grid_by_line (space, cell_y);
     if (!grid_line) { game_set_last_cmd_status (game, ERROR_walk); return; }
 
-    /* solo 0 = no transitable.
-     * Eliminamos la comprobacion vieja contra (int)N|S|E|W que era
-     * residuo de cuando el grid guardaba direcciones. */
+    /* solo 0 = no transitable.*/
     if (grid_line[cell_x] == 0)
     {
         game_set_last_cmd_status (game, ERROR_walk);
         return;
     }
-    /*Pequeño entorno disitno del resto del código doonde cnos aseguramos de actualiar la posicón del numen_active */
+    /*Pequeño entorno disitno del resto del código doonde nos aseguramos de actualizar la posicón del numen_active */
     {
         Player* p     = player;  /* ya lo tenemos */
         Id      nu_id = player_get_active_numen (p);

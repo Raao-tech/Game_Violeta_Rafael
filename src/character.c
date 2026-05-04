@@ -220,7 +220,7 @@ Status
 character_set_position (Character* cha, int x, int y)
 {
     if (!cha) return ERROR;
-    if (x < 0 || x >= WIDHT_SCREEN || y < 0 || y >= HIGHT_SCREEN) return ERROR;
+    if (x < 0 || x >= WIDHT_MAP || y < 0 || y >= HIGHT_MAP) return ERROR;
     return entity_set_position (cha->e_character, x, y);
 }
 

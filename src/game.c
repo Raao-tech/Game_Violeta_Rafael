@@ -663,7 +663,7 @@ game_get_numen_location (Game* game, Id numen_id)
 	if (!game) return NO_ID;
 	for (i = 0; i < game->n_spaces; i++)
 		{
-			if (game->spaces[i] && space_contains_character (game->spaces[i], numen_id)) return space_get_id (game->spaces[i]);
+			if (game->spaces[i] && space_contains_numen (game->spaces[i], numen_id)) return space_get_id (game->spaces[i]);
 		}
 	return NO_ID;
 }

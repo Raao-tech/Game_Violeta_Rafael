@@ -376,7 +376,7 @@ Status
 space_set_gdesc (Space* space, char* desc)
 {
     if (!space || !desc) return ERROR;
-    strncpy (space->name, desc, WORD_SIZE);
+    strncpy (space->gdesc, desc, WORD_SIZE);
     space->gdesc[WORD_SIZE] = '\0';
     return OK;
 }

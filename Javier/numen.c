@@ -118,7 +118,7 @@ Bool numen_get_corrupt(Numen *numen){
 /*======== (set/get) position ================*/
 Status numen_set_position(Numen *numen, int x, int y)
 {
-  if(!numen||x<0||x>WIDHT_SCREEN||y<0||y>HIGHT_SCREEN)
+  if(!numen||x<0||x>WIDHT_MAP||y<0||y>HIGHT_MAP)
   {
     return ERROR;
   }

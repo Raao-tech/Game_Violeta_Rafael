@@ -16,11 +16,12 @@
 #include <string.h>
 
 /*Dimensiones de la pantalla del graphic Engine*/
-#define WIDHT_SCREEN 512
-#define HIGHT_SCREEN 512
-#define SCALE 20
-#define WIDHT 25
-#define HIGHT 25
+#define WIDHT_MAP 512
+#define HIGHT_MAP 512
+#define SCALE 40
+#define WIDHT 12
+#define HIGHT 12
+
 
 /* Consts to numbers */
 #define WORD_SIZE 1000
@@ -28,7 +29,7 @@
 #define ERROR_MAIN -1
 #define ERROR_GAME -1
 #define NO_POS -9999
-#define GRID_MODULE 10
+#define GRID_MODULE 2
 #define MAX_OBJECT_TEX 32   /* 1 textura por objeto */
 
 

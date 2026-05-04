@@ -92,7 +92,7 @@ numen_has_name (Numen* numen, char* name)
 /*                               POSITION                                  */
 /*                                                                         */
 /*  set_position valida limites de pantalla .                               */
-/*  Si la coordenada esta fuera de [0..WIDHT_SCREEN] x [0..HIGHT_SCREEN]   */
+/*  Si la coordenada esta fuera de [0..WIDHT_MAP] x [0..HIGHT_MAP]   */
 /*  devolvemos ERROR sin tocar el estado                                    */
 /* ====================================================================== */
 
@@ -100,7 +100,7 @@ Status
 numen_set_position (Numen* numen, int x, int y)
 {
     if (!numen) return ERROR;
-    if (x < 0 || x >= WIDHT_SCREEN || y < 0 || y >= HIGHT_SCREEN) return ERROR;
+    if (x < 0 || x >= WIDHT_MAP || y < 0 || y >= HIGHT_MAP) return ERROR;
     return character_set_position (numen->c_numen, x, y);
 }
 

@@ -216,7 +216,7 @@ main (int argc, char* argv[])
 	}
 	else
 	{
-	    /* ----- Modo visual: input cosmetico → input de comando → action ----- */
+	    /* ----- Modo visual: input cosmetico -> input de comando → action ----- */
 	    while (!WindowShouldClose ()
 	           && command_get_code (game_loop->last_cmd) != EXIT
 	           && game_get_finished (game_loop->game) == FALSE)
@@ -232,8 +232,7 @@ main (int argc, char* argv[])
 	         && command_get_code (game_loop->last_cmd) != UNKNOWN)
 	        {
 	            game_actions_update (game_loop->game, game_loop->last_cmd);
-	            if (log_enabled)
-	                game_loop_print_log (game_loop->game, game_loop->last_cmd, log_file);
+	            if (log_enabled)	game_loop_print_log (game_loop->game, game_loop->last_cmd, log_file);
 			
 	            /* Tras procesar, devolvemos el code a NO_CMD para que el
 	             * usuario pueda volver a actuar el siguiente frame */
