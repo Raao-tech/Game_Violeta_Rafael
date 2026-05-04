@@ -109,7 +109,7 @@ int
 skill_get_radio (Skills_id id)
 {
     if (!skill_id_is_valid (id)) return -1;
-    return skill_table[id].radio;
+    return skill_table[id].radio*SCALE;
 }
 
 int

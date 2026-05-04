@@ -982,7 +982,7 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 
 	/* range fijo aproximado (4 celdas). Cuando metamos B4-skills,
 	 * cambiaremos esto por max(radio de las skills del numen activo). */
-	range_sq = (SCALE * 4) * (SCALE * 4);
+	range_sq = (SCALE * 2) * (SCALE * 2);
 
 	n_numens = game_get_n_numens (game);
 
@@ -1002,7 +1002,7 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 
 		is_corrupt = numen_get_corrupt (num);
 
-		/* ¿Este enemigo esta en rango del numen activo? */
+		/* Este enemigo esta en rango del numen activo? */
 		in_range = FALSE;
 		if (is_corrupt == TRUE && ax != NO_POS && ay != NO_POS)
 		{
@@ -1018,8 +1018,7 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 		if (ge_texture_is_valid (tex))
 		{
 			Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
-			Rectangle dst = { (float)nx, (float)ny,
-			                  (float)(SCALE*2), (float)(SCALE*2) };
+			Rectangle dst = { (float)nx, (float)ny, (float)(SCALE), (float)(SCALE) };
 			DrawTexturePro (*tex, src, dst, (Vector2){ 0, 0 }, 0.0f, WHITE);
 		}
 		else
@@ -1053,7 +1052,7 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 			               (Color){ 60, 60, 60, 200 });
 			/* Relleno rojo proporcional */
 			DrawRectangle (nx, ny - 6,
-			               (int)(SCALE*2 * hp_ratio), 4,
+			               (int)(SCALE *2* hp_ratio), 4,
 			               (Color){ 220, 40, 40, 255 });
 			/* Borde negro fino */
 			DrawRectangleLines (nx, ny - 6, SCALE*2, 4, BLACK);
@@ -1063,7 +1062,7 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 			{
 				DrawRectangleLinesEx (
 				    (Rectangle){ (float)nx, (float)ny,
-				                 (float)(SCALE*2), (float)(SCALE*2) },
+				                 (float)(SCALE), (float)(SCALE) },
 				    2.5f,
 				    (Color){ 255, 80, 80, 255 });
 
