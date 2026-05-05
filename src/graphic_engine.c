@@ -42,7 +42,7 @@
 
 /*------------------------TOTAL DE LA PANTALLA-------------------*/
 #define WIDTH_SCREEN (WIDHT_MAP + RIGHT_SIDE_PANEL_W )
-#define HIGHT_SCREEN (HIGHT_MAP + OVERLAY_PAD + OVERLAY_H)
+#define HIGHT_SCREEN (HIGHT_MAP + OVERLAY_H)
 
 /* ====================================================================== */
 /*                     COLORES (OVERALYS, TEXTO, TITULOS, ETC )           */
@@ -107,7 +107,7 @@ static void ge_paint_numen_right_panel	(Graphic_engine* ge, Numen* numen, Bool p
 static void ge_paint_active_numen		(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_objects			(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player);
-static void ge_paint_skill_panel     	(Game* game);
+
 
 
 
@@ -379,7 +379,7 @@ graphic_engine_paint_game (Graphic_engine* ge, Game* game)
 	ge_paint_player      (ge, player);
 	ge_paint_overlay     (game, player);
 	ge_paint_right_side_panel(ge, game);
-	ge_paint_skill_panel     	(game);
+
 }
 
 /* ====================================================================== */
@@ -598,7 +598,7 @@ ge_paint_numen_right_panel (Graphic_engine* ge, Numen* numen, Bool pair, int n_p
 	
 	px  = WIDHT_MAP;
 
-	py  =(int)tex->height*n_painted+10;
+	py  =(tex->height+SCALE)*n_painted;
    
 
 	if (ge_texture_is_valid (tex))
@@ -618,8 +618,7 @@ ge_paint_numen_right_panel (Graphic_engine* ge, Numen* numen, Bool pair, int n_p
 /* ====================================================================== */
 /*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
 /* ====================================================================== */
-static void
-ge_paint_skill_panel     	(Game* game);
+
 
 /* ====================================================================== */
 /*                       PRIVATE: TEXTURE LOOKUP                           */
