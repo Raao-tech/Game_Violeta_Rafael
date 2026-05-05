@@ -624,16 +624,15 @@ ge_paint_numen_right_panel (Graphic_engine* ge, Numen* numen, Bool pair, int n_p
 	
 	tex = ge_get_numen_texture (ge, numen_get_name (numen));
 	
-	if(pair==TRUE)	px  = WIDHT_MAP+(int)RIGHT_SIDE_PANEL_W/2;
-	else 			px  = WIDHT_MAP+RIGHT_SIDE_PANEL_W;
+	px  = WIDHT_MAP;
 
-	py  = HIGHT_MAP+(int)tex->height*n_painted/2;
+	py  =(int)tex->height*n_painted/2;
    
 
 	if (ge_texture_is_valid (tex))
 	{
 		Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
-		Rectangle dst = { (float)px, (float)py, (float)SCALE*2, (float)SCALE*2 };
+		Rectangle dst = { (float)px, (float)py, (float)SCALE*3, (float)SCALE*3 };
 		DrawTexturePro (*tex, src, dst,	(Vector2){ 0, 0 }, 0.0f, WHITE);
 	}
 	else
