@@ -540,19 +540,14 @@ ge_paint_overlay (Game* game, Player* player)
 /* ====================================================================== */
 static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
 {
-	Space*       	sp 			=	NULL;
 	Player*     	player		= 	NULL;
 	Numen*       	numen		= 	NULL;
 	Object*      	object		= 	NULL;
-	Command*     	last_cmd	=	NULL;
 	const char*  	space_name	=   NULL;
 	const char*  	gdesc      	=   NULL;
-	const char*  	cmd_label	=	NULL;
-	const char*  	status_label =	NULL;
-	Color        	hp_color;
 	Id           	Id_act_num = NO_ID;
 	Id				Id_act_obj = NO_ID;
-	int          	hp_numen, n_nums, n_objs, n, o, i;
+	int          	n_nums, n_objs, n, o, i;
 
 	/*Obtenemos al player*/
 	player=game_get_player_at(game, PLAYER);
@@ -595,7 +590,7 @@ static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
 				break;
 			}
 		}
-	
+	if(gdesc) free(gdesc);
 }
 
 /* ====================================================================== */
@@ -629,7 +624,7 @@ ge_paint_numen_right_panel (Graphic_engine* ge, Numen* numen, int n_painted)
 }
 
 /* ====================================================================== */
-/*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
+/*                       PRIVATE: OBJECT (RIGHT PANEL)                     */
 /* ====================================================================== */
 static void
 ge_paint_object_right_panel(Graphic_engine*ge, Object* object, int n_painted)
