@@ -33,13 +33,16 @@
 /* ====================================================================== */
 /*                     DIMENSIONES TOTALES DE LA PANTALLA                 */
 /* ====================================================================== */
-
+#define BIG_TEXT_SIZE			 28
+#define MEDIUM_TEXT_SIZE		 20
+#define SMALL_TEXT_SIZE 		 16
 /*------------------------OVERLAY (HUD MINIMO ARRIBA)---------------------*/
 #define OVERLAY_H        SCALE*2      /* franja superior con HP, nombre y objeto activo*/
 #define OVERLAY_PAD      8
 /*------------------------RIGHT SIDE PANEL (HUD DERECHA)-------------------*/
 #define RIGHT_SIDE_PANEL_W       100     /* Franja derecha con numens activos y objetos*/
-
+/*------------------------SKILL PANEL (HUD ABAJO)-------------------*/
+#define RIGHT_SIDE_PANEL_W       100     /* Franja derecha con numens activos y objetos*/
 /*------------------------TOTAL DE LA PANTALLA-------------------*/
 #define WIDTH_SCREEN (WIDHT_MAP + RIGHT_SIDE_PANEL_W )
 #define HIGHT_SCREEN (HIGHT_MAP + OVERLAY_H)
@@ -103,7 +106,8 @@ static void ge_paint_background  		(Graphic_engine* ge, Game* game, Player* play
 static void ge_paint_player      		(Graphic_engine* ge, Player* player);
 static void ge_paint_overlay     		(Game* game, Player* player);
 static void ge_paint_right_side_panel	(Graphic_engine* ge, Game* game);
-static void ge_paint_numen_right_panel	(Graphic_engine* ge, Numen* numen, Bool pair, int n_painted);
+static void ge_paint_numen_right_panel	(Graphic_engine* ge, Numen* numen, int n_painted);
+static void ge_paint_object_right_panel	(Graphic_engine* ge, Object* object, int n_painted);
 static void ge_paint_active_numen		(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_objects			(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player);
@@ -502,19 +506,19 @@ ge_paint_overlay (Game* game, Player* player)
 
 	/*Nombre del numen a la izquierda*/
 	numen_name=numen_get_name(numen);
-	DrawText(numen_name, OVERLAY_PAD ,7, 20, COLOR_TEXT);
+	DrawText(numen_name, OVERLAY_PAD ,7, MEDIUM_TEXT_SIZE, COLOR_TEXT);
 	/* HP a la izquierda */
 	hp_numen = numen_get_health (numen);
 	hp_color  = (hp_numen > 3) ? COLOR_HP_OK : COLOR_HP_LOW;
 	DrawText (TextFormat ("HP %d", hp_numen),
-			  OVERLAY_PAD+20, 36, 18, hp_color);
+			  OVERLAY_PAD+20, 36, SMALL_TEXT_SIZE, hp_color);
 
 	/* Nombre del space en el centro */
 	sp         = game_get_space (game, player_get_zone (player));
 	space_name = sp ? space_get_name (sp) : "?";
 	DrawText (space_name,
-			  WIDHT_MAP / 2 - MeasureText (space_name, 14) / 2,
-			  27, 28, COLOR_TITLE);
+			  WIDHT_MAP / 2 - MeasureText (space_name, BIG_TEXT_SIZE) / 2,
+			  27, BIG_TEXT_SIZE, COLOR_TITLE);
 	
 	/* Resultado del ultimo comando a la derecha */
 	last_cmd = game_get_last_command (game);
@@ -523,12 +527,12 @@ ge_paint_overlay (Game* game, Player* player)
 		cmd_label    = ge_cmd_to_str (command_get_code (last_cmd));
 		status_label = ge_status_to_str (game_get_last_cmd_status (game));
 		DrawText (TextFormat ("%s:%s", cmd_label, status_label),
-				  WIDHT_MAP - 60, 40, 18, COLOR_TEXT);
+				  WIDHT_MAP - 60, 40, SMALL_TEXT_SIZE, COLOR_TEXT);
 	}
 
 	/*Nombre del object a la izquierda*/
 	object_name=obj_get_name(object);
-	DrawText(object_name, WIDHT_MAP + RIGHT_SIDE_PANEL_W - MeasureText (space_name, 14) / 2, 21, 12, COLOR_TEXT); 
+	DrawText(object_name, WIDHT_MAP + RIGHT_SIDE_PANEL_W - MeasureText (space_name, MEDIUM_TEXT_SIZE) / 2, 21, MEDIUM_TEXT_SIZE, COLOR_TEXT); 
 }
  
 /* ====================================================================== */
@@ -545,8 +549,6 @@ static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
 	const char*  	gdesc      	=   NULL;
 	const char*  	cmd_label	=	NULL;
 	const char*  	status_label =	NULL;
-	char*  			numen_name =	NULL;
-	char*  			object_name =	NULL;
 	Color        	hp_color;
 	Id           	Id_act_num = NO_ID;
 	Id				Id_act_obj = NO_ID;
@@ -574,13 +576,24 @@ static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
 	 for(n=0; n<n_nums; n++)
 		{
 			if(gdesc) free(gdesc);
-			if(numen_name) free(numen_name);
 			numen= game_get_numen_by_id (game, player_get_numen_at_inventory (player, n));
 			gdesc=numen_get_gdesc(numen);
-			numen_name=numen_get_name(numen);
-			if(n%2==0) ge_paint_numen_right_panel(ge, numen,TRUE,n);
-			else ge_paint_numen_right_panel(ge, numen, FALSE,n);
-
+			ge_paint_numen_right_panel(ge, numen, n);
+			if(n==3)
+			{
+				break;
+			}
+		}
+	for(o=0; o<n_objs; o++)
+		{
+			if(gdesc) free(gdesc);
+			object= game_get_object_by_id (game, player_get_object_at_inventory (player, o));
+			gdesc=obj_get_gdesc(object);
+			ge_paint_object_right_panel(ge, object, n+o+1);
+			if(o==3)
+			{
+				break;
+			}
 		}
 	
 }
@@ -589,7 +602,7 @@ static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
 /*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
 /* ====================================================================== */
 static void
-ge_paint_numen_right_panel (Graphic_engine* ge, Numen* numen, Bool pair, int n_painted)
+ge_paint_numen_right_panel (Graphic_engine* ge, Numen* numen, int n_painted)
 {
 	int        px, py;
 	Texture2D* tex;
@@ -598,7 +611,7 @@ ge_paint_numen_right_panel (Graphic_engine* ge, Numen* numen, Bool pair, int n_p
 	
 	px  = WIDHT_MAP;
 
-	py  =(tex->height+SCALE)*n_painted;
+	py  =(int)(tex->height+SCALE)*n_painted;
    
 
 	if (ge_texture_is_valid (tex))
@@ -618,7 +631,37 @@ ge_paint_numen_right_panel (Graphic_engine* ge, Numen* numen, Bool pair, int n_p
 /* ====================================================================== */
 /*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
 /* ====================================================================== */
+static void
+ge_paint_object_right_panel(Graphic_engine*ge, Object* object, int n_painted)
+{
+		int        px, py;
+	Texture2D* tex;
+	
+	tex = ge_get_numen_texture (ge, obj_get_name (object));
+	
+	px  = WIDHT_MAP;
 
+	py  =(int)(tex->height+SCALE)*n_painted;
+   
+
+	if (ge_texture_is_valid (tex))
+	{
+		Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
+		Rectangle dst = { (float)px, (float)py, (float)SCALE*2, (float)SCALE*2 };
+		DrawTexturePro (*tex, src, dst,	(Vector2){ 0, 0 }, 0.0f, WHITE);
+	}
+	else
+	{
+		/* Cuadrado amarillo de fallback */
+		DrawRectangle (px, py, SCALE, SCALE, COLOR_FALLBACK_PLAYER);
+		DrawRectangleLines (px, py, SCALE, SCALE, BLACK);
+	}
+}
+/* ====================================================================== */
+/*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
+/* ====================================================================== */
+static void
+ge_paint_skill_panel     	(Game* game);
 
 /* ====================================================================== */
 /*                       PRIVATE: TEXTURE LOOKUP                           */
