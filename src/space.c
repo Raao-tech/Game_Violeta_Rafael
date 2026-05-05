@@ -315,7 +315,7 @@ space_set_numen (Space* space, Id new_id, Position numen_pos)
             cell_y >= 0 && cell_y < HIGHT &&
             space->grid[cell_y] != NULL)
         {
-            if (space->grid[cell_y][cell_x] == new_id)
+            if (space->grid[cell_y][cell_x] == 1)
                 space->grid[cell_y][cell_x] = 0;
         }
     }

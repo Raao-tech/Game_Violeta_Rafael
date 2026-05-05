@@ -133,15 +133,19 @@ game_actions_walk (Game* game)
 
     if (!game) { game_set_last_cmd_status (game, ERROR_walk); return; }
 
+    /*ultimo comando*/
     lst_cmd = game_get_last_command (game);
     if (!lst_cmd) { game_set_last_cmd_status (game, ERROR_walk); return; }
 
+    /*Dirección en string*/
     dir_str = command_get_target (lst_cmd);
     if (!dir_str) { game_set_last_cmd_status (game, ERROR_walk); return; }
 
+    /*Dirección parseada*/
     direction = ge_parse_direction (dir_str);
     if (direction == U) { game_set_last_cmd_status (game, ERROR_walk); return; }
 
+    /*Obtenemos player*/
     player = game_get_player_at (game, PLAYER);
     if (!player) { game_set_last_cmd_status (game, ERROR_walk); return; }
 

@@ -35,7 +35,7 @@
 /* ====================================================================== */
 
 /*------------------------OVERLAY (HUD MINIMO ARRIBA)---------------------*/
-#define OVERLAY_H        100      /* franja superior con HP, nombre y objeto activo*/
+#define OVERLAY_H        SCALE*2      /* franja superior con HP, nombre y objeto activo*/
 #define OVERLAY_PAD      8
 /*------------------------RIGHT SIDE PANEL (HUD DERECHA)-------------------*/
 #define RIGHT_SIDE_PANEL_W       100     /* Franja derecha con numens activos y objetos*/
@@ -107,6 +107,7 @@ static void ge_paint_numen_right_panel	(Graphic_engine* ge, Numen* numen, Bool p
 static void ge_paint_active_numen		(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_objects			(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player);
+static void ge_paint_skill_panel     	(Game* game);
 
 
 
@@ -378,7 +379,7 @@ graphic_engine_paint_game (Graphic_engine* ge, Game* game)
 	ge_paint_player      (ge, player);
 	ge_paint_overlay     (game, player);
 	ge_paint_right_side_panel(ge, game);
-	
+	ge_paint_skill_panel     	(game);
 }
 
 /* ====================================================================== */
@@ -501,19 +502,19 @@ ge_paint_overlay (Game* game, Player* player)
 
 	/*Nombre del numen a la izquierda*/
 	numen_name=numen_get_name(numen);
-	DrawText(numen_name, OVERLAY_PAD ,7, 14, COLOR_TEXT);
+	DrawText(numen_name, OVERLAY_PAD ,7, 20, COLOR_TEXT);
 	/* HP a la izquierda */
 	hp_numen = numen_get_health (numen);
 	hp_color  = (hp_numen > 3) ? COLOR_HP_OK : COLOR_HP_LOW;
 	DrawText (TextFormat ("HP %d", hp_numen),
-			  OVERLAY_PAD, 36, 14, hp_color);
+			  OVERLAY_PAD+20, 36, 18, hp_color);
 
 	/* Nombre del space en el centro */
 	sp         = game_get_space (game, player_get_zone (player));
 	space_name = sp ? space_get_name (sp) : "?";
 	DrawText (space_name,
 			  WIDHT_MAP / 2 - MeasureText (space_name, 14) / 2,
-			  27, 14, COLOR_TITLE);
+			  27, 28, COLOR_TITLE);
 	
 	/* Resultado del ultimo comando a la derecha */
 	last_cmd = game_get_last_command (game);
@@ -522,7 +523,7 @@ ge_paint_overlay (Game* game, Player* player)
 		cmd_label    = ge_cmd_to_str (command_get_code (last_cmd));
 		status_label = ge_status_to_str (game_get_last_cmd_status (game));
 		DrawText (TextFormat ("%s:%s", cmd_label, status_label),
-				  WIDHT_MAP - 60, 27, 12, COLOR_TEXT);
+				  WIDHT_MAP - 60, 40, 18, COLOR_TEXT);
 	}
 
 	/*Nombre del object a la izquierda*/
@@ -581,36 +582,7 @@ static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
 			else ge_paint_numen_right_panel(ge, numen, FALSE,n);
 
 		}
-	/* HP a la izquierda */
-	hp_numen = numen_get_health (numen);
-	hp_color  = (hp_numen > 3) ? COLOR_HP_OK : COLOR_HP_LOW;
-	DrawText (TextFormat ("HP %d", hp_numen),
-			  OVERLAY_PAD, 21, 14, hp_color);
-
-	/* Nombre del space en el centro */
-	sp         = game_get_space (game, player_get_zone (player));
-	space_name = sp ? space_get_name (sp) : "?";
-	DrawText (space_name,
-			  WIDHT_MAP / 2 - MeasureText (space_name, 14) / 2,
-			  7, 14, COLOR_TITLE);
 	
-	/*Nombre del numen a la izquierda*/
-	numen_name=numen_get_name(numen);
-	DrawText(numen_name, OVERLAY_PAD ,7, 14, COLOR_TEXT);  
-
-	/* Resultado del ultimo comando a la derecha */
-	last_cmd = game_get_last_command (game);
-	if (last_cmd)
-	{
-		cmd_label    = ge_cmd_to_str (command_get_code (last_cmd));
-		status_label = ge_status_to_str (game_get_last_cmd_status (game));
-		DrawText (TextFormat ("%s:%s", cmd_label, status_label),
-				  WIDHT_MAP - 120, 21, 12, COLOR_TEXT);
-	}
-
-	/*Nombre del object a la izquierda*/
-	object_name=obj_get_name(object);
-	DrawText(object_name, WIDHT_MAP - MeasureText (space_name, 14) / 2, 21, 12, COLOR_TEXT); 
 }
 
 /* ====================================================================== */
@@ -626,13 +598,13 @@ ge_paint_numen_right_panel (Graphic_engine* ge, Numen* numen, Bool pair, int n_p
 	
 	px  = WIDHT_MAP;
 
-	py  =(int)tex->height*n_painted/2;
+	py  =(int)tex->height*n_painted+10;
    
 
 	if (ge_texture_is_valid (tex))
 	{
 		Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
-		Rectangle dst = { (float)px, (float)py, (float)SCALE*3, (float)SCALE*3 };
+		Rectangle dst = { (float)px, (float)py, (float)SCALE*2, (float)SCALE*2 };
 		DrawTexturePro (*tex, src, dst,	(Vector2){ 0, 0 }, 0.0f, WHITE);
 	}
 	else
@@ -642,6 +614,12 @@ ge_paint_numen_right_panel (Graphic_engine* ge, Numen* numen, Bool pair, int n_p
 		DrawRectangleLines (px, py, SCALE, SCALE, BLACK);
 	}
 }
+
+/* ====================================================================== */
+/*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
+/* ====================================================================== */
+static void
+ge_paint_skill_panel     	(Game* game);
 
 /* ====================================================================== */
 /*                       PRIVATE: TEXTURE LOOKUP                           */

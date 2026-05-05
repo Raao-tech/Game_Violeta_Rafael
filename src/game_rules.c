@@ -18,7 +18,7 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
 {
     Player* player = NULL;
     Space* space   = NULL;
-    Numen *num = NULL, *enemy_num = NULL;
+    Numen *num = NULL, *enemy_numen = NULL;
     Skills_id skill     = NO_SKILL;
     Id space_id, num_id;
     int distance, radio, skill_indx = 0, active_pos_x, active_pos_y, enemy_pos_x, enemy_pos_y, i;
@@ -39,14 +39,14 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
 
     if (space_contains_numen (space, id_enemy) == FALSE) return ERROR_enemy_attack;
 
-    enemy_num = game_get_numen_by_id (game, id_enemy);
-    if (!enemy_num || numen_get_health (enemy_num) <= 0) return ERROR_enemy_attack;
+    enemy_numen = game_get_numen_by_id (game, id_enemy);
+    if (!enemy_numen || numen_get_health (enemy_numen) <= 0) return ERROR_enemy_attack;
 
     /* El enemigo elige una skill aleatoria entre LAS SUYAS */
     skill_indx = rand () % NUM_SKILLS;
     for (i = 0; i < NUM_SKILLS; i++)
     {
-        skill = numen_get_skill_by_index (enemy_num, skill_indx);
+        skill = numen_get_skill_by_index (enemy_numen, skill_indx);
         if (skill != NO_SKILL) break;             /* la encontre, salgo */
         skill_indx = (skill_indx + 1) % NUM_SKILLS;
     }
@@ -62,17 +62,17 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
     active_pos_x = numen_get_pos_x (num);
     active_pos_y = numen_get_pos_y (num);
 
-    enemy_pos_x  = numen_get_pos_x (enemy_num);
-    enemy_pos_y  = numen_get_pos_y (enemy_num);
+    enemy_pos_x  = numen_get_pos_x (enemy_numen);
+    enemy_pos_y  = numen_get_pos_y (enemy_numen);
 
-    if (numen_get_health (num) <= 0 && numen_get_health (enemy_num) <= 0) return ERROR_enemy_attack;
+    if (numen_get_health (num) <= 0 && numen_get_health (enemy_numen) <= 0) return ERROR_enemy_attack;
 
     radio    = skill_get_radio (skill); /*por implementar*/
 
     distance = sqrt (pow (active_pos_x - enemy_pos_x, 2) + pow (active_pos_y - enemy_pos_y, 2));
     if(radio>=distance)
     {
-    if (skill_active (enemy_num, num, skill, distance) == ERROR) /*por implementar status skill_apply_effect*/
+    if (skill_active (enemy_numen, num, skill, distance) == ERROR) /*por implementar status skill_apply_effect*/
         return ERROR_enemy_attack;
     }
     return OK;
@@ -82,42 +82,53 @@ Status
 game_rule_walk_enemy (Game* game)
 {
     Player* player      = NULL;
-    Numen* enemy_num    = NULL;
+    Numen* enemy_numen    = NULL;
     Direction direction = U;
-    Space* space        = NULL;
+    Space*  space        = NULL;
+    Set*    set_ids_nums = NULL;
     int *grid[HIGHT];
     Position pos_current, pos_player;
     Id id_enemy        = NO_ID;
-    Set* space_num_ids = NULL;
     int  i, num_enemies = 0, loop;
     Status ret = OK;
 
+    if (!game) { return ERROR; }
+
+    /*Inicializamos el grid receptor*/
     for (i = 0; i < HIGHT; i++) grid[i] = NULL;
 
-    if (!game) { return ERROR; }
+    /*Obtenemos el player*/
     player = game_get_player_at (game, PLAYER);
     if (!player) { return ERROR; }
+    /*Obtenemos la posiicon del player al mommento de ser llamada la funcion (Una sola vez)*/
+    pos_player        = player_get_position (player);
+
+    /*Obtenemos el space en el que está el player*/
     space = game_get_space (game, player_get_zone (player));
     if (!space) { return ERROR; }
+
+    /*Obtenemos el snumero de enemigos*/
     num_enemies = space_get_n_numens (space);
     if (num_enemies == 0) { return OK; }
-    space_num_ids = space_get_numens (space);
+
+    /*Obentemos el conunto (set) de ids de los numens en el space*/
+    set_ids_nums = space_get_numens (space);
 
     for (loop = 0; loop < num_enemies; loop++)
         {
-            id_enemy = set_get_id_at (space_num_ids, loop);
+            
+            id_enemy = set_get_id_at (set_ids_nums, loop);
             if (id_enemy == NO_ID || id_enemy == player_get_active_numen (player))
-                {
-                    continue; /* Skip if the ID is NO_ID or if it's the player's active numen */
-                }
-            enemy_num = game_get_numen_by_id (game, id_enemy);
+                {   continue; /* Skip if the ID is NO_ID or if it's the player's active numen */}
 
-            if (!enemy_num || numen_get_health (enemy_num) <= 0) { continue; }
+            /*Obtenemos el puntero a  objeto del numen loop-esimo */
+            enemy_numen = game_get_numen_by_id (game, id_enemy);
 
-            pos_current.pos_x = numen_get_pos_x (enemy_num);
-            pos_current.pos_y = numen_get_pos_y (enemy_num);
+            if (!enemy_numen || numen_get_health (enemy_numen) <= 0) { continue; }
 
-            pos_player        = player_get_position (player);
+            /*Obtenemos la poscion actual del numen eneigo*/
+            pos_current = numen_get_position (enemy_numen);
+
 
             if (pos_current.pos_x < pos_player.pos_x) { direction = E; }
             else if (pos_current.pos_x > pos_player.pos_x) { direction = W; }
@@ -128,7 +139,7 @@ game_rule_walk_enemy (Game* game)
                     continue; /* Enemy is already on the player's position */
                 }
 
-        if (numen_get_health (enemy_num) == 1)
+        if (numen_get_health (enemy_numen) == 1)
         {
             switch (direction)
             {
@@ -141,19 +152,19 @@ game_rule_walk_enemy (Game* game)
         }
             switch (direction) /*Falta definir cuánto se mueve*/
                 {
-                    case N: pos_current.pos_y -= SCALE*numen_get_speed(enemy_num); break;
-                    case S: pos_current.pos_y += SCALE*numen_get_speed(enemy_num); break;
-                    case W: pos_current.pos_x -= SCALE*numen_get_speed(enemy_num); break;
-                    case E: pos_current.pos_x += SCALE*numen_get_speed(enemy_num); break;
+                    case N: pos_current.pos_y -= SCALE*numen_get_speed(enemy_numen); break;
+                    case S: pos_current.pos_y += SCALE*numen_get_speed(enemy_numen); break;
+                    case W: pos_current.pos_x -= SCALE*numen_get_speed(enemy_numen); break;
+                    case E: pos_current.pos_x += SCALE*numen_get_speed(enemy_numen); break;
                     default: break;
                 }
 
             for (i = 0; i < HIGHT; i++) { grid[i] = space_get_grid_by_line (game_get_space (game, game_get_numen_location (game, id_enemy)), i); }
             if (grid[pos_current.pos_x][pos_current.pos_y] != 0)
                 {
-                    if (numen_set_pos_x (enemy_num, pos_current.pos_x) == ERROR || numen_set_pos_y (enemy_num, pos_current.pos_y) == ERROR)
+                    if (numen_set_pos_x (enemy_numen, pos_current.pos_x) == ERROR || numen_set_pos_y (enemy_numen, pos_current.pos_y) == ERROR)
                         {
-                            ret = ERROR; /*Unable to move a enemy_num*/
+                            ret = ERROR; /*Unable to move a enemy_numen*/
                         }
                     continue;
                 }
@@ -177,9 +188,9 @@ game_rule_walk_enemy (Game* game)
                 }
             if (grid[pos_current.pos_x][pos_current.pos_y] != 0)
                 {
-                    if (numen_set_pos_x (enemy_num, pos_current.pos_x) == ERROR || numen_set_pos_y (enemy_num, pos_current.pos_y) == ERROR)
+                    if (numen_set_pos_x (enemy_numen, pos_current.pos_x) == ERROR || numen_set_pos_y (enemy_numen, pos_current.pos_y) == ERROR)
                         {
-                            ret = ERROR; /*Unable to move a enemy_num*/
+                            ret = ERROR; /*Unable to move a enemy_numen*/
                         }
                 }
         }
