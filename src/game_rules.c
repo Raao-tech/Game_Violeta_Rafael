@@ -80,7 +80,7 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
 
 /*Dete*/
 Bool
-_game_actions_numen_in_area (Numen* numen_center, Numen* numen_goal, int scale)
+_game_rule_numen_in_area (Numen* numen_center, Numen* numen_goal, int scale)
 {
     Position pos_center, pos_goal;
 
@@ -102,7 +102,7 @@ _game_actions_numen_in_area (Numen* numen_center, Numen* numen_goal, int scale)
 }
 
 Direction
-_game_actions_enemy_dir (Numen* numen_center, Numen* numen_goal)
+_game_rule_enemy_dir (Numen* numen_center, Numen* numen_goal)
 {
     Position pos_center, pos_goal;
     int dx, dy;
@@ -141,7 +141,7 @@ game_rule_walk_enemy (Game* game)
     Set*     set_ids;
     Id       active_id, walker_id;
     Direction dir;
-    Position pos_now;
+    Position pos_now, pos_orig;
     int      *grid_line;
     int      n_numens, i, cell_x, cell_y;
     int      hp_max, hp_now;
@@ -177,10 +177,10 @@ game_rule_walk_enemy (Game* game)
 
         pos_now = numen_get_position (walker);
         if (pos_now.pos_x == NO_POS || pos_now.pos_y == NO_POS) continue;
-
+        pos_orig = numen_get_position (walker);
         /* === DECIDIR DIRECCION === */
         sees_active = (active_numen != NULL) &&
-                      (_game_actions_numen_in_area (walker, active_numen, SCALE * 4) == TRUE);
+                      (_game_rule_numen_in_area (walker, active_numen, SCALE * 4) == TRUE);
 
         hp_now = numen_get_health (walker);
         hp_max = (numen_get_corrupt (walker) == TRUE) ? MAX_LIFE_CORRUPT : MAX_LIFE;
@@ -191,7 +191,7 @@ game_rule_walk_enemy (Game* game)
         if (hides == TRUE && active_numen != NULL)
         {
             /* HUIR: dirección opuesta a perseguir */
-            dir = _game_actions_enemy_dir (walker, active_numen);
+            dir = _game_rule_enemy_dir (walker, active_numen);
             switch (dir)
             {
                 case N: dir = S; break;
@@ -204,7 +204,7 @@ game_rule_walk_enemy (Game* game)
         else if (sees_active == TRUE)
         {
             /* PERSEGUIR */
-            dir = _game_actions_enemy_dir (walker, active_numen);
+            dir = _game_rule_enemy_dir (walker, active_numen);
         }
         else
         {
@@ -237,11 +237,18 @@ game_rule_walk_enemy (Game* game)
 
         /* Pared: skip turno */
         grid_line = space_get_grid_by_line (space, cell_y);
-        if (!grid_line || grid_line[cell_x] == 0) continue;
+        if (!grid_line || grid_line[cell_x] == 0 || grid_line[cell_x] == 2) continue;
+
+
+        if(sees_active==TRUE) game_rule_attack_enemy(game, walker_id);
+        
 
         /* MOVER */
         numen_set_pos_x (walker, pos_now.pos_x);
         numen_set_pos_y (walker, pos_now.pos_y);
+
+        space_set_grid_by_position(space, pos_orig, 1);
+        space_set_grid_by_position(space, pos_now, 2);
     }
 
     return OK;
@@ -256,9 +263,9 @@ game_rule_walk_active (Game* game)
 	Space* space        = NULL;
 	int*    grid[HIGHT];
 	Direction direction = U;
-	Position pos_current, pos_player;
+	Position pos_current, pos_player, pos_orig;
 	Id id_active     = NO_ID;
-	int  i, radio = SCALE * 4, distance, speed;
+	int  i, radio = SCALE , distance, speed;
 
 	for (i = 0; i < HIGHT; i++) grid[i] = NULL;
 
@@ -279,23 +286,29 @@ game_rule_walk_active (Game* game)
 			return ERROR;
 		}
 
+    pos_orig.pos_x=numen_get_pos_x(active_num);
+    pos_orig.pos_y=numen_get_pos_y(active_num);
+
 	pos_current.pos_x = numen_get_pos_x (active_num);
 	pos_current.pos_y = numen_get_pos_y (active_num);
 
 	pos_player        = player_get_position (player);
 	speed             = numen_get_speed (active_num);
-
-	distance          = sqrt (pow (pos_current.pos_x - pos_player.pos_x, 2) + pow (pos_current.pos_y - pos_player.pos_y, 2));
+	
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Dividiendo distance entre SCALE, se activa el movimiento aleatorio del numen. Este es un tipo de movimiento que actualmente está defectuoso, no usar.
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	distance          = sqrt (pow (pos_current.pos_x - pos_player.pos_x, 2) + pow (pos_current.pos_y - pos_player.pos_y, 2));///SCALE
 
 	if (distance > radio) /*The active numen is too far from player, it tries to get back to the area*/
 		{
-			if (pos_current.pos_x < pos_player.pos_x) { direction = E; }
-			else if (pos_current.pos_x > pos_player.pos_x) { direction = W; }
+			if (pos_current.pos_x < pos_player.pos_x) { direction = W; }
+			else if (pos_current.pos_x > pos_player.pos_x) { direction = E; }
 			else if (pos_current.pos_y < pos_player.pos_y) { direction = S; }
 			else if (pos_current.pos_y > pos_player.pos_y) { direction = N; }
 
 			/////////////////////////////////////////////////////////
-			switch (direction) /*Falta definir cuánto se mueve*/
+			switch (direction)
 				{
 					case N: pos_current.pos_y -= SCALE*speed; break;
 					case S: pos_current.pos_y += SCALE*speed; break;
@@ -303,16 +316,21 @@ game_rule_walk_active (Game* game)
 					case E: pos_current.pos_x += SCALE*speed; break;
 					default: break;
 				}
-
+            
 			/////////////////////////////////////////////////////////
-			if (grid[pos_current.pos_x][pos_current.pos_y] != 0)
+            if(pos_current.pos_x>=0 && pos_current.pos_x<=WIDHT_MAP)
+            {
+			if (grid[pos_current.pos_y/SCALE][pos_current.pos_x/SCALE] != 0 && grid[pos_current.pos_y/SCALE][pos_current.pos_x/SCALE] != 2)
 				{
 					if (numen_set_pos_x (active_num, pos_current.pos_x) == ERROR || numen_set_pos_y (active_num, pos_current.pos_y) == ERROR)
 						{
 							return ERROR;
 						}
+                    space_set_grid_by_position(space, pos_orig, 1);
+                    space_set_grid_by_position(space, pos_current, 2);
 					return OK;
 				}
+            }
 			switch (direction) /*checks whether the direction that failed is on the x coordinate and restores it. If it isn't, then it must've been on
 														the y coordinate and there's nothing left to check*/
 				{
@@ -321,9 +339,10 @@ game_rule_walk_active (Game* game)
 					default: return ERROR;
 				}
 			/*If the error was on the x coordinate, try the y coordinate*/
+
 			if (pos_current.pos_y < pos_player.pos_y) { direction = S; }
 			else if (pos_current.pos_y > pos_player.pos_y) { direction = N; }
-
+            
 			switch (direction) /*Falta definir cuánto se mueve*/
 				{
 					case N: pos_current.pos_y -= SCALE*speed; break;
@@ -331,15 +350,21 @@ game_rule_walk_active (Game* game)
 
 					default: break;
 				}
-			if (grid[pos_current.pos_x][pos_current.pos_y] != 0)
+            
+            if(pos_current.pos_y>=0 && pos_current.pos_y<=HIGHT_MAP)
+            {
+			if (grid[pos_current.pos_y/SCALE][pos_current.pos_x/SCALE] != 0 && grid[pos_current.pos_y/SCALE][pos_current.pos_x/SCALE] != 2)
 				{
 					if (numen_set_pos_x (active_num, pos_current.pos_x) == ERROR || numen_set_pos_y (active_num, pos_current.pos_y) == ERROR)
 						{
 							return ERROR;
 						}
+                    space_set_grid_by_position(space, pos_orig, 1);
+                    space_set_grid_by_position(space, pos_current, 2);
 					return OK;
 				}
 			return ERROR; /*Unable to move the active numen any closer to the player*/
+            }
 		}
 	else /*The numen is close enough to the player, for now, it moves at any random position inside the area or 1 square out of it, it decides it
 			randomly*/
@@ -355,10 +380,10 @@ game_rule_walk_active (Game* game)
 					default: break;
 				}
 
-			if (grid[pos_current.pos_x][pos_current.pos_y] == 0)
+			if (pos_current.pos_x<0 || pos_current.pos_x>=WIDHT_MAP||pos_current.pos_y<0 || pos_current.pos_y>=HIGHT_MAP||grid[pos_current.pos_y/SCALE][pos_current.pos_x/SCALE] == 0 || grid[pos_current.pos_y/SCALE][pos_current.pos_x/SCALE] == 2)
 				{
 					direction = (direction + 1) % 4;
-					for (i = 0; grid[pos_current.pos_x][pos_current.pos_y] == 0 && i < 3; direction = (direction + 1) % 4, i++)
+					for (i = 0; (pos_current.pos_x<0|| pos_current.pos_x>=WIDHT_MAP||pos_current.pos_y<0 || pos_current.pos_y>=HIGHT_MAP||grid[pos_current.pos_y/SCALE][pos_current.pos_x/SCALE] == 0) && i < 3; direction = (direction + 1) % 4, i++)
 						{
 
 							switch ((direction + 3) % 4) /*restores the previous coordinates*/
@@ -379,27 +404,34 @@ game_rule_walk_active (Game* game)
 								}
 						}
 				}
-			if (grid[pos_current.pos_x][pos_current.pos_y] == 0) return ERROR; /*The active Numen can't move*/
+			if (grid[pos_current.pos_y/SCALE][pos_current.pos_x/SCALE] == 0||grid[pos_current.pos_y/SCALE][pos_current.pos_x/SCALE] == 2) return ERROR; /*The active Numen can't move*/
 			if (numen_set_pos_x (active_num, pos_current.pos_x) == ERROR || numen_set_pos_y (active_num, pos_current.pos_y) == ERROR)
 				{
 					return ERROR; /*Unable to move the active numen*/
 				}
+                 space_set_grid_by_position(space, pos_orig, 1);
+                 space_set_grid_by_position(space, pos_current, 2);
 			return OK;
 		}
 }
 Status
 game_rule_move (Game* game)
-{
+{   
+    Numen*    numen;
 	Player*   player;
 	Space*    dest_sp;
 	char*     dir_str;
 	Direction dir;
-	Id        origin, dest;
+	Id        origin, dest, active_id;
 	int       pos_x, pos_y;
 
 	if (!game) return ERROR;
 	player = game_get_player_at (game, PLAYER);
 	if (!player) return ERROR;
+
+    active_id=player_get_active_numen(player);
+    if(active_id!=NO_ID)
+    numen=game_get_numen_by_id(game, active_id);
 
 	origin = player_get_zone (player);
 	if (origin == NO_ID) return ERROR;
@@ -422,11 +454,55 @@ game_rule_move (Game* game)
 	 * Si sales por el norte, entras por el sur del nuevo space. */
 	switch (dir)
 	{
-		case N: player_set_position (player, pos_x, (HIGHT - 1) * SCALE); break;
-		case S: player_set_position (player, pos_x, 0);                    break;
-		case E: player_set_position (player, 0, pos_y);                    break;
-		case W: player_set_position (player, (WIDHT - 1) * SCALE, pos_y);  break;
-		default: return ERROR;
+		case N: 
+        player_set_position (player, pos_x, (HIGHT - 1) * SCALE); 
+        if(numen)
+        {
+        if(pos_x+SCALE<WIDHT_MAP)
+        numen_set_position(numen, pos_x+SCALE, (HIGHT - 1) * SCALE);
+
+        else
+         numen_set_position(numen, pos_x-SCALE, (HIGHT - 1) * SCALE);
+        }
+        break;
+
+		case S: 
+        player_set_position (player, pos_x, 0); 
+          if(numen)
+        {
+        if(pos_x+SCALE<WIDHT_MAP)
+        numen_set_position(numen, pos_x+SCALE, 0);
+
+        else
+         numen_set_position(numen, pos_x-SCALE, 0);
+        }                  
+         break;
+
+		case E: 
+        player_set_position (player, 0, pos_y);
+          if(numen)
+        {
+        if(pos_y+SCALE<WIDHT_MAP)
+        numen_set_position(numen, 0, pos_y+SCALE);
+
+        else
+         numen_set_position(numen, 0, pos_y-SCALE);
+        }         
+        break;
+
+		case W: player_set_position (player, (WIDHT - 1) * SCALE, pos_y);
+            if(numen)
+        {
+        if(pos_y+SCALE<WIDHT_MAP)
+        numen_set_position(numen, (WIDHT - 1) * SCALE, pos_y+SCALE);
+
+        else
+         numen_set_position(numen, (WIDHT - 1) * SCALE, pos_y-SCALE);
+        }    
+        break;
+
+		default: 
+        return ERROR;
 	}
 
 	player_set_zone (player, dest);

@@ -121,7 +121,8 @@ game_actions_move (Game* game)
 /* ========================================================================= */
 static void
 game_actions_walk (Game* game)
-{
+{   
+    Numen*    nu   = NULL;
     Command*  lst_cmd;
     Player*   player;
     Space*    space;
@@ -129,6 +130,10 @@ game_actions_walk (Game* game)
     int*      grid_line;
     Direction direction;
     Position  pos_current;
+    Position  pos_original;
+    Position  cur_orig;
+    Player*   p     = NULL;  
+    Id        nu_id;
     int       cell_x, cell_y;
 
     if (!game) { game_set_last_cmd_status (game, ERROR_walk); return; }
@@ -150,7 +155,7 @@ game_actions_walk (Game* game)
     if (!player) { game_set_last_cmd_status (game, ERROR_walk); return; }
 
     pos_current = player_get_position (player);
-
+    pos_original = player_get_position (player);
     /* Calculamos la posicion DESTINO en pixeles */
     switch (direction)
     {
@@ -193,29 +198,20 @@ game_actions_walk (Game* game)
         game_set_last_cmd_status (game, ERROR_walk);
         return;
     }
-    /*Pequeño entorno disitno del resto del código doonde nos aseguramos de actualizar la posicón del numen_active */
-    {
-        Player* p     = player;  /* ya lo tenemos */
-        Id      nu_id = player_get_active_numen (p);
-        if (nu_id != NO_ID)
-        {
-            Numen* nu = game_get_numen_by_id (game, nu_id);
-            if (nu)
-            {
-                Position cur = player_get_position (p);
-                numen_set_pos_x (nu, cur.pos_x);
-                numen_set_pos_y (nu, cur.pos_y);
-            }
-        }
-    }
 
-
-    if (player_set_position (player, pos_current.pos_x, pos_current.pos_y) == ERROR)
+      if (player_set_position (player, pos_current.pos_x, pos_current.pos_y) == ERROR)
     {
         game_set_last_cmd_status (game, ERROR_walk);
         return;
     }
+    space_set_grid_by_position(space, pos_original, 1); 
+    space_set_grid_by_position(space, pos_current, 0);
+    /*Pequeño entorno disitno del resto del código doonde nos aseguramos de actualizar la posicón del numen_active */
+    {
 
+        game_rule_walk_active(game);
+    }
+   
     /*==== MOVIMIENTO del los Numens Enemigos ====*/
     game_rule_walk_enemy (game);
 
@@ -727,7 +723,7 @@ game_actions_kick (Game* game)
 
     player_delete_numen (player, numen_id);
 
-    /*No hay necesidad de tocar la posición del numen en la gradiente, ya está fuera del inventario del player y eso es lo que importa*/
+    numen_destroy(numen);
 
     game_set_last_cmd_status (game, OK);
 }
