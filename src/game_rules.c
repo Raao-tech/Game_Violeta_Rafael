@@ -78,170 +78,175 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
 	return OK;
 }
 
+/*Dete*/
+Bool
+_game_actions_numen_in_area (Numen* numen_center, Numen* numen_goal, int scale)
+{
+    Position pos_center, pos_goal;
+
+    if (!numen_center || !numen_goal || scale <= 0) return FALSE;
+
+    pos_center = numen_get_position (numen_center);
+    pos_goal   = numen_get_position (numen_goal);
+
+    if (pos_center.pos_x == NO_POS || pos_center.pos_y == NO_POS) return FALSE;
+    if (pos_goal.pos_x   == NO_POS || pos_goal.pos_y   == NO_POS) return FALSE;
+
+    if (pos_goal.pos_x <= (pos_center.pos_x + scale) &&
+        pos_goal.pos_x >= (pos_center.pos_x - scale) &&
+        pos_goal.pos_y <= (pos_center.pos_y + scale) &&
+        pos_goal.pos_y >= (pos_center.pos_y - scale))
+        return TRUE;
+
+    return FALSE;
+}
+
+Direction
+_game_actions_enemy_dir (Numen* numen_center, Numen* numen_goal)
+{
+    Position pos_center, pos_goal;
+    int dx, dy;
+
+    if (!numen_center || !numen_goal) return U;
+
+    pos_center = numen_get_position (numen_center);
+    pos_goal   = numen_get_position (numen_goal);
+
+    if (pos_center.pos_x == NO_POS || pos_goal.pos_x == NO_POS) return U;
+
+    dx = pos_goal.pos_x - pos_center.pos_x;   /* >0 goal a la derecha */
+    dy = pos_goal.pos_y - pos_center.pos_y;   /* >0 goal abajo        */
+
+    /* Nos movemos en el eje con mayor diferencia absoluta. */
+    if (abs (dx) >= abs (dy))
+    {
+        if (dx > 0) return E;
+        if (dx < 0) return W;
+    }
+    else
+    {
+        if (dy > 0) return S;
+        if (dy < 0) return N;
+    }
+    return U; 
+}
+
 Status
 game_rule_walk_enemy (Game* game)
 {
-	Player* player      = NULL;
-	Numen* enemy_numen    = NULL;
-	Direction direction = U;
-	Space*  space        = NULL;
-	Set*    set_ids_nums = NULL;
-	int *grid[HIGHT];
-	Position pos_current, pos_player;
-	Id id_enemy        = NO_ID;
-	int  i, num_enemies = 0, loop;
-	Status ret = OK;
+    Player*  player;
+    Numen*   active_numen = NULL;
+    Numen*   walker;
+    Space*   space;
+    Set*     set_ids;
+    Id       active_id, walker_id;
+    Direction dir;
+    Position pos_now;
+    int      *grid_line;
+    int      n_numens, i, cell_x, cell_y;
+    int      hp_max, hp_now;
+    Bool     hides;        /* TRUE si el numen quiere huir */
+    Bool     sees_active;
 
-	if (!game) { return ERROR; }
+    if (!game) return ERROR;
 
-	/*Inicializamos el grid receptor*/
-	for (i = 0; i < HIGHT; i++) grid[i] = NULL;
+    player = game_get_player_at (game, PLAYER);
+    if (!player) return ERROR;
 
-	/*Obtenemos el player*/
-	player = game_get_player_at (game, PLAYER);
-	if (!player) { return ERROR; }
-	/*Obtenemos la posiicon del player al mommento de ser llamada la funcion (Una sola vez)*/
-	pos_player        = player_get_position (player);
+    /* El numen activo es el "objetivo" del que perseguir o huir.
+     * Si no hay activo, los enemigos solo patrullan. */
+    active_id = player_get_active_numen (player);
+    if (active_id != NO_ID)
+        active_numen = game_get_numen_by_id (game, active_id);
 
-	/*Obtenemos el space en el que está el player*/
-	space = game_get_space (game, player_get_zone (player));
-	if (!space) { return ERROR; }
+    space = game_get_space (game, player_get_zone (player));
+    if (!space) return ERROR;
 
-	/*Obtenemos el snumero de enemigos*/
-	num_enemies = space_get_n_numens (space);
-	if (num_enemies == 0) { return OK; }
+    set_ids  = space_get_numens (space);
+    n_numens = space_get_n_numens (space);
+    if (n_numens == 0 || !set_ids) return OK;
 
-	/*Obentemos el conunto (set) de ids de los numens en el space*/
-	set_ids_nums = space_get_numens (space);
+    for (i = 0; i < n_numens; i++)
+    {
+        walker_id = set_get_id_at (set_ids, i);
+        if (walker_id == NO_ID || walker_id == active_id) continue;
 
-	for (loop = 0; loop < num_enemies; loop++)
-		{
-			
-			id_enemy = set_get_id_at (set_ids_nums, loop);
-			if (id_enemy == NO_ID || id_enemy == player_get_active_numen (player))
-				{   continue; /* Skip if the ID is NO_ID or if it's the player's active numen */}
+        walker = game_get_numen_by_id (game, walker_id);
+        if (!walker) continue;
+        if (numen_get_health (walker) <= 0) continue;
 
-			/*Obtenemos el puntero a  objeto del numen loop-esimo */
-			enemy_numen = game_get_numen_by_id (game, id_enemy);
+        pos_now = numen_get_position (walker);
+        if (pos_now.pos_x == NO_POS || pos_now.pos_y == NO_POS) continue;
 
-			if (!enemy_numen || numen_get_health (enemy_numen) <= 0) { continue; }
+        /* === DECIDIR DIRECCION === */
+        sees_active = (active_numen != NULL) &&
+                      (_game_actions_numen_in_area (walker, active_numen, SCALE * 4) == TRUE);
 
-			/*Obtenemos la poscion actual del numen eneigo*/
-			pos_current = numen_get_position (enemy_numen);
+        hp_now = numen_get_health (walker);
+        hp_max = (numen_get_corrupt (walker) == TRUE) ? MAX_LIFE_CORRUPT : MAX_LIFE;
+        hides  = (numen_get_corrupt (walker) == TRUE) &&
+                 (hp_now > 0) &&
+                 (hp_now <= hp_max * 30 / 100);
 
+        if (hides == TRUE && active_numen != NULL)
+        {
+            /* HUIR: dirección opuesta a perseguir */
+            dir = _game_actions_enemy_dir (walker, active_numen);
+            switch (dir)
+            {
+                case N: dir = S; break;
+                case S: dir = N; break;
+                case E: dir = W; break;
+                case W: dir = E; break;
+                default: dir = U; break;
+            }
+        }
+        else if (sees_active == TRUE)
+        {
+            /* PERSEGUIR */
+            dir = _game_actions_enemy_dir (walker, active_numen);
+        }
+        else
+        {
+            /* PATRULLAR: aleatorio.  rand()%4 → 0..3 → N/S/E/W */
+            switch (rand () % 4)
+            {
+                case 0:  dir = N; break;
+                case 1:  dir = S; break;
+                case 2:  dir = E; break;
+                default: dir = W; break;
+            }
+        }
 
-			/**
-			 * =============================================
-			 *         Numen Enemigo (pos_x, pos_y)
-			 * ==========================================================================================
-			 * |		|		||		||		||		   ||		|		||		||		||		   |    
-			 * |		|		||		||		||		   ||		|		||		||		||		   |
-			 * |		|		||		||		||		   ||		|		||		||		||		   |
-			 * |========|=======||======||======||=========||========|=======||======||======||========|
-			 * |		|		||w+Scal||		||	H-Scal ||		|		||		||		||		   |
-			 * |		|		||		||H-Scal||		   ||		|		||		||		||		   |
-			 * |		|		||H-Scal||		|| w+Scale ||		|		||		||		||		   |
-			 * |========|=======||======||======||=========||========|=======||======||======||========|
-			 * |		|		||		||		||		   ||		|		||		||		||		   |
-			 * |		|		||w+Scal||	N_e1|| w+Scale ||		|		||		||		||		   |
-			 * |		|		||		||		||		   ||		|		||		||		||		   |
-			 * |========|=======||======||======||=========||========|=======||======||======||========|
-			 * |		|		||w+Scal||		||w+Scale  ||		|		||		||		||		   |
-			 * |		|		||		||H+Scal||		   !|		|		||		||		||		   |
-			 * |		|		||H+Scal||		||H+Scal   ||		|		||		||		||		   |
-			 * |========|=======||======||======||=========||========|=======||======||======||========|
-			 * |		|		||w+Scal||		||	H-Scal ||		|		||		||		||		   |
-			 * |		|		||		||H-Scal||		   ||		|		||		||		||		   |
-			 * |		|		||H-Scal||		|| w+Scale ||		|		||		||		||		   |
-			 * |========|=======||======||======||=========||========|=======||======||======||========|
-			 * |		|		||		||		||		   ||		|		||		||		||		   |
-			 * |		|		||w+Scal||	N_e2|| w+Scale ||		|		||		||		||		   |
-			 * |		|		||		||		||		   ||		|		||		||		||		   |
-			 * |========|=======||======||======||=========||========|=======||======||======||========|
-			 * |		|		||w+Scal||		||w+Scale  ||		|		||		||		||		   |
-			 * |		|		||		||H+Scal||		   !|		|		||		||		||		   |
-			 * |		|		||H+Scal||		||H+Scal   ||		|		||		||		||		   |
-			 * |========|=======||======||======||=========||========|=======||======||======||========|
-			 * |		|		||		||		||		   ||		|		||		||		||		   |
-			 * |		|		||		||		||		   ||		|		||		||		||		   |
-			 * =========================================================================================
-			 * 
-			 * 
-			 * El Numen Enemigo tendrá un área rectangualar.  Si llega a coincidir con la pos_numenActive
-			 * Comenzará a perseguirlo
-			 * 
-			 */
+        /* === CALCULAR CELDA DESTINO === */
+        switch (dir)
+        {
+            case N: pos_now.pos_y -= SCALE; break;
+            case S: pos_now.pos_y += SCALE; break;
+            case E: pos_now.pos_x += SCALE; break;
+            case W: pos_now.pos_x -= SCALE; break;
+            default: continue;   /* sin dirección, no se mueve */
+        }
 
-		/*Si esta el Numen active en el campo de vision del numen enemigo ----> acercate*/
-/* 		if (_game_actions_numen_in_area (enemy_numen)) */
+        cell_x = pos_now.pos_x / SCALE;
+        cell_y = pos_now.pos_y / SCALE;
 
+        /* Fuera del grid: no se sale del space */
+        if (cell_x < 0 || cell_x >= WIDHT ||
+            cell_y < 0 || cell_y >= HIGHT) continue;
 
+        /* Pared: skip turno */
+        grid_line = space_get_grid_by_line (space, cell_y);
+        if (!grid_line || grid_line[cell_x] == 0) continue;
 
-		/*Protocolo de Escape*/
-		if (numen_get_health (enemy_numen) == 1)
-		{
-			switch (direction)
-			{
-				case N: direction = S; break;
-				case S: direction = N; break;
-				case E: direction = W; break;
-				case W: direction = E; break;
-				default: continue;
-			}
-		}
-			switch (direction) /*Falta definir cuánto se mueve*/
-				{
-					case N: pos_current.pos_y -= SCALE*numen_get_speed(enemy_numen); break;
-					case S: pos_current.pos_y += SCALE*numen_get_speed(enemy_numen); break;
-					case W: pos_current.pos_x -= SCALE*numen_get_speed(enemy_numen); break;
-					case E: pos_current.pos_x += SCALE*numen_get_speed(enemy_numen); break;
-					default: break;
-				}
+        /* MOVER */
+        numen_set_pos_x (walker, pos_now.pos_x);
+        numen_set_pos_y (walker, pos_now.pos_y);
+    }
 
-			for (i = 0; i < HIGHT; i++) { grid[i] = space_get_grid_by_line (game_get_space (game, game_get_numen_location (game, id_enemy)), i); }
-			if (grid[pos_current.pos_x][pos_current.pos_y] != 0)
-				{
-					if (numen_set_pos_x (enemy_numen, pos_current.pos_x) == ERROR || numen_set_pos_y (enemy_numen, pos_current.pos_y) == ERROR)
-						{
-							ret = ERROR; /*Unable to move a enemy_numen*/
-						}
-					continue;
-				}
-			switch (direction) /*checks whether the direction that failed is on the x coordinate and restores it. If it isn't, then it must've been on
-											the y coordinate and there's nothing left to check*/
-				{
-					case W: pos_current.pos_x += SCALE; break;
-					case E: pos_current.pos_x -= SCALE; break;
-					default: continue;
-				}
-			/*If the error was on the x coordinate, try the y coordinate*/
-			if (pos_current.pos_y < pos_player.pos_y) { direction = S; }
-			else if (pos_current.pos_y > pos_player.pos_y) { direction = N; }
-
-			switch (direction) /*Falta definir cuánto se mueve*/
-				{
-					case N: pos_current.pos_y -= SCALE; break;
-					case S: pos_current.pos_y += SCALE; break;
-
-					default: break;
-				}
-			if (grid[pos_current.pos_x][pos_current.pos_y] != 0)
-				{
-					if (numen_set_pos_x (enemy_numen, pos_current.pos_x) == ERROR || numen_set_pos_y (enemy_numen, pos_current.pos_y) == ERROR)
-						{
-							ret = ERROR; /*Unable to move a enemy_numen*/
-						}
-				}
-		}
-	return ret;
+    return OK;
 }
 
-/*Dete*/
-Bool 
-_game_actions_numen_in_area (Game* game)
-{
-
-}
 
 Status
 game_rule_walk_active (Game* game)

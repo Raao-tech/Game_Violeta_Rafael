@@ -309,20 +309,40 @@ game_loop_init_user (GameLoop* game_loop)
 	/* 5. Establecer Numen inicial como active si entro por NEW_GAME*/
 	if (result_ge.menu_out == NEW_GAME && result_ge.init_numen != NO_ID)
 	{
-	    Player* p = game_get_player (game_loop->game);
-	    if (p)
-	    {
-	        player_set_loading (p, TRUE);  /* permite asignar antes de validar */
-	        player_add_numen        (p, result_ge.init_numen);
-	        player_set_active_numen (p, result_ge.init_numen);
-	        player_set_loading (p, FALSE);
-		
-	        /* Y le decimos al numen que ahora "sigue" a este player */
-	        Numen* nu = game_get_numen_by_id (game_loop->game, result_ge.init_numen);
-	        if (nu) numen_set_following (nu, player_get_id (p));
-	    }
-	}
+    	Player* p = game_get_player (game_loop->game);
+    	if (p)
+    	{
+    	    Numen*   nu;
+    	    Space*   sp;
+    	    Position pp;
+    	    Position dummy;
 
+    	    player_set_loading (p, TRUE);
+    	    player_add_numen        (p, result_ge.init_numen);
+    	    player_set_active_numen (p, result_ge.init_numen);
+    	    player_set_loading (p, FALSE);
+
+    	    nu = game_get_numen_by_id (game_loop->game, result_ge.init_numen);
+    	    if (nu)
+    	    {
+    	        numen_set_following (nu, player_get_id (p));
+
+    	        pp = player_get_position (p);
+    	        if (pp.pos_x != NO_POS && pp.pos_y != NO_POS)
+    	        {
+    	            numen_set_pos_x (nu, pp.pos_x - SCALE);
+    	            numen_set_pos_y (nu, pp.pos_y);
+    	        }
+    	    }
+    	    sp = game_get_space (game_loop->game, player_get_zone (p));
+    	    if (sp)
+    	    {
+    	        dummy.pos_x = NO_POS;
+    	        dummy.pos_y = NO_POS;
+    	        space_remove_numen (sp, result_ge.init_numen, dummy);
+    	    }
+    	}
+	}
 	return INIT_OK;
 }
 

@@ -15,9 +15,7 @@
 
 /* lugar de #include "numen.h":
  * skills.h NO necesita ver la struct interna de Numen, solo
- * recibirlo como puntero opaco. Esto rompe el ciclo
- * skills.h ↔ numen.h y permite que numen.h incluya skills.h
- * sin problemas. */
+ * recibirlo como puntero opaco.*/
 typedef struct _Numen Numen;
 
 typedef enum

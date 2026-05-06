@@ -112,40 +112,47 @@ command_raylib_get_user_input (Command* command)
 			command_set_code (command, TAKE);
 			return;
 		}
-	/*========== ========== DROP ========== ============*/
-	if (IsKeyPressed (KEY_R))
-		{
-			command_set_code (command, DROP);
-			return;
-		}
-	/*========== ========== ATTACK con skill 0..3 ========== ============*/
-	/* Las teclas 1, 2, 3, 4 disparan el skill[0], skill[1], skill[2], skill[3]*/
-	if (IsKeyPressed (KEY_ONE))
-		{
-			_command_set_target (command, "2");
-			command_set_code (command, ATTACK);
-			return;
-		}
-	if (IsKeyPressed (KEY_TWO))
-		{
-			_command_set_target (command, "3");
-			command_set_code (command, ATTACK);
-			return;
-		}
-	if (IsKeyPressed (KEY_THREE))
-		{
-			_command_set_target (command, "4");
-			command_set_code (command, ATTACK);
-			return;
-		}
-	if (IsKeyPressed (KEY_FOUR))
-		{
-			_command_set_target (command, "3");
-			command_set_code (command, ATTACK);
-			return;
-		}
+		/*========== ========== DROP ========== ============*/
+		if (IsKeyPressed (KEY_R))
+			{
+				command_set_code (command, DROP);
+				return;
+			}
 
-	
+		/*========== ========== CAPTURE (RECRUIT) ========== ============*/
+		/* Tecla C: captura al numen errante mas cercano que cumpla las
+		* condiciones (vivo, debil, NO corrupto, errante, no en mochila). */
+		if (IsKeyPressed (KEY_C))
+			{
+				command_set_code (command, RECRUIT);
+				return;
+			}
+
+		/*========== ========== ATTACK con skill 0..3 ========== ============*/
+		if (IsKeyPressed (KEY_ONE))
+			{
+				_command_set_target (command, "0");        /* CORRECCION */
+				command_set_code (command, ATTACK);
+				return;
+			}
+		if (IsKeyPressed (KEY_TWO))
+			{
+				_command_set_target (command, "1");        /* CORRECCION */
+				command_set_code (command, ATTACK);
+				return;
+			}
+		if (IsKeyPressed (KEY_THREE))
+			{
+				_command_set_target (command, "2");        /* CORRECCION */
+				command_set_code (command, ATTACK);
+				return;
+			}
+		if (IsKeyPressed (KEY_FOUR))
+			{
+				_command_set_target (command, "3");
+				command_set_code (command, ATTACK);
+				return;
+			}
 
 
 

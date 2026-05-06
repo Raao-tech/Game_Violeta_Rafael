@@ -154,7 +154,7 @@ game_actions_walk (Game* game)
     /* Calculamos la posicion DESTINO en pixeles */
     switch (direction)
     {
-        case N: pos_current.pos_y -= SCALE; break;
+        case N: pos_current.pos_y -= SCALE; break;	
         case S: pos_current.pos_y += SCALE; break;
         case W: pos_current.pos_x -= SCALE; break;
         case E: pos_current.pos_x += SCALE; break;
@@ -215,6 +215,9 @@ game_actions_walk (Game* game)
         game_set_last_cmd_status (game, ERROR_walk);
         return;
     }
+
+    /*==== MOVIMIENTO del los Numens Enemigos ====*/
+    game_rule_walk_enemy (game);
 
     game_set_last_cmd_status (game, OK);
 }
@@ -555,7 +558,7 @@ game_actions_use (Game* game)
 
 /* ========================================================================= */
 /*                       SAVE / LOAD RECRUIT / KICK                         */
-/*  (MEJORA: las 4 son `static` para que el dispatcher las vea correctamente) */
+/*                                                          */
 /* ========================================================================= */
 static void
 game_actions_save (Game* game)
@@ -577,49 +580,91 @@ static void game_actions_load (Game *game)
 static void
 game_actions_recruit (Game* game)
 {
-     Position vision;
-    Player* player = NULL;
-    Space* space   = NULL;
-    Numen* numen   = NULL;
-    Id id_space;
-    if (!game)
-        {
-            game_set_last_cmd_status (game, ERROR_recruit);
-            return;
-        }
+    Player*  player;
+    Space*   space;
+    Numen*   active_numen = NULL;
+    Numen*   candidate;
+    Numen*   best         = NULL;
+    Set*     set_ids;
+    Id       active_id, cand_id, space_id;
+    int      n_numens, i, dx, dy, dist_sq, best_dist_sq;
+    int      ax, ay;
+    int      hp;
+    Position pos_cand;
 
-    vision.pos_x = NO_POS;
-    vision.pos_y = NO_POS;
+    if (!game) { game_set_last_cmd_status (game, ERROR_recruit); return; }
 
-    player       = game_get_player_at (game, PLAYER);
-    vision       = player_get_vision (player);
-    if (vision.pos_x == NO_POS || vision.pos_y == NO_POS)
+    player = game_get_player_at (game, PLAYER);
+    if (!player) { game_set_last_cmd_status (game, ERROR_recruit); return; }
+
+    if (player_get_n_numens (player) >= player_get_max_numens (player))
+    { game_set_last_cmd_status (game, ERROR_recruit); return; }
+
+    space_id = player_get_zone (player);
+    space    = game_get_space (game, space_id);
+    if (!space) { game_set_last_cmd_status (game, ERROR_recruit); return; }
+
+    /* Centro de captura: el numen activo. Sin activo no se puede capturar. */
+    active_id = player_get_active_numen (player);
+    if (active_id == NO_ID)
+    { game_set_last_cmd_status (game, ERROR_recruit); return; }
+
+    active_numen = game_get_numen_by_id (game, active_id);
+    if (!active_numen) { game_set_last_cmd_status (game, ERROR_recruit); return; }
+
+    ax = numen_get_pos_x (active_numen);
+    ay = numen_get_pos_y (active_numen);
+
+    /* Buscar al mas cercano que cumpla con las condiciones, es más sencillo que lo del visual*/
+    set_ids  = space_get_numens (space);
+    n_numens = space_get_n_numens (space);
+
+    best_dist_sq = (SCALE * 4) * (SCALE * 4);
+
+    for (i = 0; i < n_numens; i++)
+    {
+        cand_id = set_get_id_at (set_ids, i);
+        if (cand_id == NO_ID || cand_id == active_id) continue;
+
+        candidate = game_get_numen_by_id (game, cand_id);
+        if (!candidate) continue;
+
+        /*FILTROS para capturar*/
+        if (numen_get_corrupt (candidate) == TRUE) continue;
+        if (numen_is_errant   (candidate) == FALSE) continue;
+        if (player_contains_numen (player, cand_id) == TRUE) continue;
+
+        hp = numen_get_health (candidate);
+        if (hp <= 0 || hp > MAX_LIFE * 30 / 100) continue;
+
+        pos_cand = numen_get_position (candidate);
+        if (pos_cand.pos_x == NO_POS) continue;
+
+        dx = pos_cand.pos_x - ax;
+        dy = pos_cand.pos_y - ay;
+        dist_sq = dx*dx + dy*dy;
+
+        if (dist_sq <= best_dist_sq)
         {
-            game_set_last_cmd_status (game, ERROR_recruit);
-            return;
+            best_dist_sq = dist_sq;
+            best         = candidate;
         }
-    id_space = player_get_zone (player);
-    space    = game_get_space (game, id_space);
-    numen    = game_get_numen_by_vision (game, vision);
-    if (!numen || player_get_n_numens (player) == player_get_max_numens (player))
-        {
-            game_set_last_cmd_status (game, ERROR_recruit);
-            return;
-        }
-    if (0 < numen_get_health (numen) && numen_get_health (numen) <= MAX_LIFE * 30 / 100 && numen_get_corrupt (numen) == FALSE
-        && numen_is_errant (numen))
-        {
-            if (player_add_numen (player, numen_get_id (numen)) == ERROR || space_remove_numen (space, numen_get_id (numen), vision) == ERROR
-                || numen_set_following (numen, player_get_id (player)) == ERROR)
-                {
-                    game_set_last_cmd_status (game, ERROR_recruit);
-                    return;
-                }
-            game_set_last_cmd_status (game, OK);
-            return;
-        }
-    game_set_last_cmd_status (game, ERROR_recruit);
-    return;
+    }
+
+    if (!best) { game_set_last_cmd_status (game, ERROR_recruit); return; }
+
+    /* CAPTURAR: pasa al backpack y deja de ser errante */
+    if (player_add_numen (player, numen_get_id (best)) == ERROR)
+    { game_set_last_cmd_status (game, ERROR_recruit); return; }
+
+    if (numen_set_following (best, player_get_id (player)) == ERROR)
+    { game_set_last_cmd_status (game, ERROR_recruit); return; }
+
+    /* Lo sacamos del set del space, ya no esta en el mundo, esta en la bolsa*/
+    space_remove_numen (space, numen_get_id (best),
+                        numen_get_position (best));
+
+    game_set_last_cmd_status (game, OK);
 }
 
 static void
