@@ -184,6 +184,18 @@ int space_get_n_characters (Space* space);
  * @return OK if set, ERROR if space is NULL or line is out of bounds
  */
 Status space_set_grid_by_line (Space* space, int line, int* content);
+
+/**
+ * @brief It sets a value of the grid for the space
+ * @author Rafael and Salvador
+ *
+ * @param space a pointer to the space
+ * @param position the position of the number to set
+ * @param value the value to be set in the grid
+ * @return OK if set, ERROR otherwise
+ */
+Status space_set_grid_by_position (Space* space, Position position, int value);
+
 /**
  * @brief It gets a line of the grid for the space
  * @author Rafael

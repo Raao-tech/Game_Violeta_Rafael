@@ -544,7 +544,7 @@ static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
 	Numen*       	numen		= 	NULL;
 	Object*      	object		= 	NULL;
 	const char*  	space_name	=   NULL;
-	const char*  	gdesc      	=   NULL;
+	char*  	gdesc      	=   NULL;
 	Id           	Id_act_num = NO_ID;
 	Id				Id_act_obj = NO_ID;
 	int          	n_nums, n_objs, n, o, i;
@@ -713,6 +713,7 @@ ge_cycle_active_numen (Game* game, Player* player)
 {
     Id      active_id, new_active_id;
     Numen*  new_active;
+	Numen*  old_active=NULL;
     Position p;
     int     n, current_idx, next_idx;
 
@@ -728,7 +729,7 @@ ge_cycle_active_numen (Game* game, Player* player)
 
     if (active_id != NO_ID)
     {
-        Numen* old_active = game_get_numen_by_id (game, active_id);
+      	old_active = game_get_numen_by_id (game, active_id);
         if (old_active)
         {
             numen_set_pos_x (old_active, NO_POS);

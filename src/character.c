@@ -238,7 +238,7 @@ character_get_position (Character* cha)
 Status
 character_set_pos_x (Character* cha, int pos_x)
 {
-    if (!cha) return ERROR;
+    if (!cha||pos_x < 0 || pos_x >= WIDHT_MAP) return ERROR;
     return entity_set_pos_x (cha->e_character, pos_x);
 }
 
@@ -252,7 +252,7 @@ character_get_pos_x (Character* cha)
 Status
 character_set_pos_y (Character* cha, int pos_y)
 {
-    if (!cha) return ERROR;
+    if (!cha||pos_y < 0 || pos_y >= HIGHT_MAP) return ERROR;
     return entity_set_pos_y (cha->e_character, pos_y);  
 }
 

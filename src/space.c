@@ -254,6 +254,14 @@ space_set_grid_by_line (Space* space, int line, int* l)
     return OK;
 }
 
+Status
+space_set_grid_by_position (Space* space, Position position, int value)
+{
+    if(!space||position.pos_x<0||position.pos_y<0||position.pos_x>WIDHT_MAP||position.pos_y>HIGHT_MAP||value<0||value>9) return ERROR;
+    space->grid[position.pos_y/SCALE][position.pos_x/SCALE]=value;
+    return OK;
+}
+
 int*
 space_get_grid_by_line (Space* space, int line)
 {
