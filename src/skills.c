@@ -43,7 +43,7 @@ skill_id_is_valid (Skills_id id)
 }
 
 /**
- * @brief Aplica daño plano del receptor en funcion del damage de la skill.
+ * @brief Aplica daño plano del receptor en funcion del damage de la skill 
  *
  * Es la logica que repetian las 6 skill_active_takle/quick_attack/etc.
  * Tener una sola funcion evita que un bugfix futuro se aplique a 5
@@ -52,11 +52,11 @@ skill_id_is_valid (Skills_id id)
  * @return OK si golpea, ERROR si esta fuera de rango.
  */
 static Status
-apply_basic_damage (Numen* receiver, Skills_id id, int distance)
+apply_basic_damage (Numen* receiver,Numen* sender, Skills_id id, int distance)
 {
-    int radio, damage, current_hp;
+    int radio,damage, current_hp, attack_sender;
 
-    if (!receiver || !skill_id_is_valid (id)) return ERROR;
+    if (!receiver || !skill_id_is_valid (id) || !sender) return ERROR;
 
     radio  = skill_table[id].radio;
     damage = skill_table[id].damage;
@@ -65,9 +65,10 @@ apply_basic_damage (Numen* receiver, Skills_id id, int distance)
     if (distance > radio) return ERROR;
 
     current_hp = numen_get_health (receiver);
+    attack_sender = numen_get_attack (sender);
     /* numen_set_health pasa por entity_set_health, que recorta
      * automaticamente a MIN_LIFE.*/
-    return numen_set_health (receiver, current_hp - damage);
+    return numen_set_health (receiver, current_hp - damage - attack_sender);
 }
 
 /* ====================================================================== */
@@ -95,7 +96,7 @@ skill_active (Numen* sender, Numen* receiver, Skills_id id_skill, int distance)
     /* 3. Aplicamos el efecto. Para todas las skills basicas el efecto
      *    es daño plano; las que necesiten algo mas (FIRE_BALL en area)
      *    se manejan desde game_actions_attack. */
-    return apply_basic_damage (receiver, id_skill, distance);
+    return apply_basic_damage (receiver, sender,id_skill, distance);
 }
 
 char*

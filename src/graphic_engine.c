@@ -118,9 +118,11 @@ static void ge_paint_space_numens		(Graphic_engine* ge, Game* game, Player* play
 static const char* ge_status_to_str (Status s);
 static const char* ge_cmd_to_str    (CommandCode c);
 
-static int  ge_find_idx_in_list (Id active_id, int n, Id (*get_at)(Player*, int), Player* player);
-static void ge_cycle_active_object (Player* player);
-static void ge_cycle_active_numen  (Game* game, Player* player);
+static int		ge_find_idx_in_list (Id active_id, int n, Id (*get_at)(Player*, int), Player* player);
+static void		ge_cycle_active_object (Player* player);
+static void		ge_cycle_active_numen  (Game* game, Player* player);
+static 	int		_ge_max_radio_skill_of_numen (Numen* numen);
+Status	_ge_draw_bars (Numen* numen);
 
 /* ====================================================================== */
 /*                         PUBLIC: CREATE / DESTROY                        */
@@ -433,9 +435,7 @@ ge_paint_background (Graphic_engine* ge, Game* game, Player* player)
 		DrawRectangle (0, 0, WIDHT_MAP, HIGHT_MAP, COLOR_FALLBACK_BG);
 	}
 
-	/* Pintamos el grid muy tenue por encima — solo para que se vean
-	 * las casillas mientras desarrollas. Quita estas dos lineas cuando
-	 * las casillas ya no te aporten visualmente. */
+
 	{
 		int i;
 		for (i = 1; i < WIDHT;  i++)
@@ -574,10 +574,7 @@ static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
 			numen= game_get_numen_by_id (game, player_get_numen_at_inventory (player, n));
 			gdesc=numen_get_gdesc(numen);
 			ge_paint_numen_right_panel(ge, numen, n);
-			if(n==3)
-			{
-				break;
-			}
+			if(n==3)	break;
 		}
 	for(o=0; o<n_objs; o++)
 		{
@@ -585,10 +582,7 @@ static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
 			object= game_get_object_by_id (game, player_get_object_at_inventory (player, o));
 			gdesc=obj_get_gdesc(object);
 			ge_paint_object_right_panel(ge, object, n+o+1);
-			if(o==3)
-			{
-				break;
-			}
+			if(o==3)	break;
 		}
 	if(gdesc) free(gdesc);
 }
@@ -632,7 +626,7 @@ ge_paint_object_right_panel(Graphic_engine*ge, Object* object, int n_painted)
 		int        px, py;
 	Texture2D* tex;
 	
-	tex = ge_get_numen_texture (ge, obj_get_name (object));
+	tex = ge_get_object_texture (ge, obj_get_name (object));
 	
 	px  = WIDHT_MAP;
 
@@ -655,8 +649,7 @@ ge_paint_object_right_panel(Graphic_engine*ge, Object* object, int n_painted)
 /* ====================================================================== */
 /*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
 /* ====================================================================== */
-static void
-ge_paint_skill_panel     	(Game* game);
+static void	ge_paint_skill_panel     	(Game* game);
 
 /* ====================================================================== */
 /*                       PRIVATE: TEXTURE LOOKUP                           */
@@ -838,7 +831,7 @@ ge_paint_active_numen (Graphic_engine* ge, Game* game, Player* player)
 	Numen*     num;
 	Texture2D* tex;
 	Id         active_id;
-	int        nx, ny;
+	int        pos_x_numen, pos_y_numen;
 
 	active_id = player_get_active_numen (player);
 	if (active_id == NO_ID) return;
@@ -846,15 +839,15 @@ ge_paint_active_numen (Graphic_engine* ge, Game* game, Player* player)
 	num = game_get_numen_by_id (game, active_id);
 	if (!num) return;
 
-	nx = numen_get_pos_x (num);
-	ny = numen_get_pos_y (num);
+	pos_x_numen = numen_get_pos_x (num);
+	pos_y_numen = numen_get_pos_y (num);
 
 	/* Si por algun motivo no tiene posicion valida, lo colocamos
 	 * a la derecha del player. */
-	if (nx == NO_POS || ny == NO_POS)
+	if (pos_x_numen == NO_POS || pos_y_numen == NO_POS)
 	{
-		nx = player_get_pos_x (player) + SCALE;
-		ny = player_get_pos_y (player);
+		pos_x_numen = player_get_pos_x (player) + SCALE;
+		pos_y_numen = player_get_pos_y (player);
 	}
 
 	tex = ge_get_numen_texture (ge, numen_get_name (num));
@@ -862,7 +855,7 @@ ge_paint_active_numen (Graphic_engine* ge, Game* game, Player* player)
 	if (ge_texture_is_valid (tex))
 	{
 		Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
-		Rectangle dst = { (float)nx, (float)ny, (float)SCALE, (float)SCALE };
+		Rectangle dst = { (float)pos_x_numen, (float)pos_y_numen, (float)SCALE, (float)SCALE };
 		DrawTexturePro (*tex, src, dst, (Vector2){ 0, 0 }, 0.0f, WHITE);
 	}
 	else
@@ -877,13 +870,13 @@ ge_paint_active_numen (Graphic_engine* ge, Game* game, Player* player)
 			? (Color){ 200, 60, 60, 255 }     /* enemigo: rojo */
 			: (Color){ 80, 200, 80, 255 };    /* amigo: verde  */
 
-		DrawCircle (nx + SCALE / 2, ny + SCALE / 2, SCALE / 2 - 2, col);
-		DrawCircleLines (nx + SCALE / 2, ny + SCALE / 2, SCALE / 2 - 2, BLACK);
+		DrawCircle (pos_x_numen + SCALE / 2, pos_y_numen + SCALE / 2, SCALE / 2 - 2, col);
+		DrawCircleLines (pos_x_numen + SCALE / 2, pos_y_numen + SCALE / 2, SCALE / 2 - 2, BLACK);
 
 		gd = numen_get_gdesc (num);
 		if (gd && gd[0])
 			DrawText (TextFormat ("%c", gd[0]),
-					  nx + SCALE / 2 - 4, ny + SCALE / 2 - 6, 12, BLACK);
+					  pos_x_numen + SCALE / 2 - 4, pos_y_numen + SCALE / 2 - 6, 12, BLACK);
 	}
 }
 
@@ -980,6 +973,7 @@ ge_get_object_texture (Graphic_engine* ge, const char* name)
 /*                                                                         */
 /* Para los corruptos, ademas:                                             */
 /*   - Pinta una barra de HP roja encima del enemigo.                      */
+/*   - Pinta una barra de HP energia encima del enemigo.                      */
 /*   - Si el numen activo del player esta dentro del radio de combate,     */
 /*     resalta el enemigo con marco rojo brillante y une con linea al      */
 /*     numen activo (feedback visual de "amenaza/objetivo").               */
@@ -991,35 +985,32 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 	Numen*     active_num;
 	Texture2D* tex;
 	Id         active_id, num_id, space_id;
-	int        nx, ny, n_numens, i;
-	int        ax, ay, dx, dy, dist_sq, range_sq;
-	Bool       is_corrupt, in_range;
+	Position	pos_active, pos_numen;
+	int        n_numens, i;
+	int        dx, dy, dist_sq, range_sq;
+	Bool       is_corrupt, is_errant, in_range;
 	Color      col;
 	char*      gd;
-	int        max_health, hp;
+	int        max_health, max_radio;
 	float      hp_ratio;
 
 	if (!ge || !game || !player) return;
+	pos_active.pos_x = pos_active.pos_x = NO_POS;
 
-	active_id = player_get_active_numen (player);
+	active_id = player_get_active_numen (player); /*Puede ser NO_ID si se  mueren todos, se cerraría el jeugo*/
 	space_id  = player_get_zone (player);
+
 	if (space_id == NO_ID) return;
 
-	/* Posicion del numen activo (para calcular distancias).
-	 * Si no hay activo o no tiene posicion valida, in_range siempre FALSE. */
+
 	active_num = (active_id != NO_ID)
 	             ? game_get_numen_by_id (game, active_id)
 	             : NULL;
-	if (active_num)
-	{
-		ax = numen_get_pos_x (active_num);
-		ay = numen_get_pos_y (active_num);
-	}
-	else { ax = ay = NO_POS; }
+	if (!active_num) return;
 
-	/* range fijo aproximado (4 celdas). Cuando metamos B4-skills,
-	 * cambiaremos esto por max(radio de las skills del numen activo). */
-	range_sq = (SCALE * 2) * (SCALE * 2);
+	pos_active = numen_get_position (active_num);
+	max_radio = _ge_max_radio_skill_of_numen (active_num);
+	range_sq = max_radio * max_radio;
 
 	n_numens = game_get_n_numens (game);
 
@@ -1033,30 +1024,25 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 
 		if (game_get_numen_location (game, num_id) != space_id) continue;
 
-		nx = numen_get_pos_x (num);
-		ny = numen_get_pos_y (num);
-		if (nx == NO_POS || ny == NO_POS) continue;
+		pos_numen = numen_get_position (num);
+		if (pos_numen.pos_x == NO_POS || pos_numen.pos_y == NO_POS) continue;
 
 		is_corrupt = numen_get_corrupt (num);
+		is_errant = numen_get_following (num);
 
-		/* Este enemigo esta en rango del numen activo? */
-		in_range = FALSE;
-		if (is_corrupt == TRUE && ax != NO_POS && ay != NO_POS)
-		{
-			dx = nx - ax;
-			dy = ny - ay;
-			dist_sq = dx*dx + dy*dy;
-			if (dist_sq <= range_sq) in_range = TRUE;
-		}
+
+
+
 
 		/* === SPRITE / FALLBACK === */
 		tex = ge_get_numen_texture (ge, numen_get_name (num));
 
-		if (ge_texture_is_valid (tex))
+		if (ge_texture_is_valid (tex) == TRUE)
 		{
 			Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
-			Rectangle dst = { (float)nx, (float)ny, (float)(SCALE), (float)(SCALE) };
+			Rectangle dst = { (float)pos_numen.pos_x, (float)pos_numen.pos_y, (float)(SCALE), (float)(SCALE) };
 			DrawTexturePro (*tex, src, dst, (Vector2){ 0, 0 }, 0.0f, WHITE);
+
 		}
 		else
 		{
@@ -1064,52 +1050,124 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 			    ? (Color){ 200, 60, 60, 255 }
 			    : (Color){ 80, 200, 80, 255 };
 
-			DrawCircle (nx + SCALE, ny + SCALE, SCALE - 2, col);
-			DrawCircleLines (nx + SCALE, ny + SCALE, SCALE - 2, BLACK);
+			DrawCircle (pos_numen.pos_x + SCALE, pos_numen.pos_y + SCALE, SCALE - 2, col);
+			DrawCircleLines (pos_numen.pos_x + SCALE, pos_numen.pos_y + SCALE, SCALE - 2, BLACK);
 
 			gd = numen_get_gdesc (num);
 			if (gd && gd[0])
 				DrawText (TextFormat ("%c", gd[0]),
-				          nx + SCALE - 4, ny + SCALE - 6, 14, BLACK);
+				          pos_numen.pos_x + SCALE - 4, pos_numen.pos_y + SCALE - 6, 14, BLACK);
+
+
 		}
 
-		/* === ELEMENTOS EXCLUSIVOS DE CORRUPTOS === */
-		if (is_corrupt == TRUE)
-		{
-			max_health = 12;   /* TODO: leer del initial_health real */
-			hp = numen_get_health (num);
-			hp_ratio = (max_health > 0)
-			         ? (float)hp / (float)max_health
-			         : 0.0f;
-			if (hp_ratio < 0.0f) hp_ratio = 0.0f;
-			if (hp_ratio > 1.0f) hp_ratio = 1.0f;
+		/*	=====BARRAS DE VIDA Y ENERGIA ===== */
+			_ge_draw_bars (num); 
+		/*	=================================== */
 
-			/* Fondo gris de la barra */
-			DrawRectangle (nx, ny - 6, SCALE*2, 4,
-			               (Color){ 60, 60, 60, 200 });
-			/* Relleno rojo proporcional */
-			DrawRectangle (nx, ny - 6,
-			               (int)(SCALE *2* hp_ratio), 4,
-			               (Color){ 220, 40, 40, 255 });
-			/* Borde negro fino */
-			DrawRectangleLines (nx, ny - 6, SCALE*2, 4, BLACK);
 
-			/* Si esta en rango: marco brillante + linea de objetivo */
-			if (in_range == TRUE)
-			{
-				DrawRectangleLinesEx (
-				    (Rectangle){ (float)nx, (float)ny,
-				                 (float)(SCALE), (float)(SCALE) },
-				    2.5f,
-				    (Color){ 255, 80, 80, 255 });
 
-				/* Linea suave del centro del activo al centro del enemigo */
-				DrawLineEx (
-				    (Vector2){ ax + SCALE, ay + SCALE },
-				    (Vector2){ nx + SCALE, ny + SCALE },
-				    1.5f,
-				    (Color){ 255, 100, 100, 120 });
-			}
-		}
+
 	}
+
+}
+
+
+Status _ge_draw_bars (Numen* numen)
+{
+	int 	hp, max_life = MAX_LIFE;
+	int 	energy, max_energy = MAX_ENGY;
+	float	hp_ratio, eng_ratio;
+	Color	color_bar_life   = GREEN;
+	Color	color_bar_energy = YELLOW;
+	Position	position;
+	if (!numen) return ERROR;
+
+	position.pos_x = NO_POS;
+	position.pos_y = NO_POS;
+	/*Características de los numnes corruptos*/
+	if ( numen_get_corrupt (numen) == TRUE)
+	{
+		max_life = MAX_LIFE_CORRUPT;
+		max_energy = MAX_ENGY_CORRUPT;
+		color_bar_life = RED;
+	}
+
+	position = numen_get_position (numen);
+
+	/*Cuanto de la barra  de vida hay llena?*/
+	hp = numen_get_health (numen);
+	hp_ratio = (hp > MIN_LIFE)
+	         ? (float)hp / (float)max_life
+	         : 0.0f;
+	if (hp_ratio < 0.0f) hp_ratio = 0.0f;
+	if (hp_ratio > 1.0f) hp_ratio = 1.0f;
+
+
+
+
+	/*Cuanto de la barra  de energia hay llena?*/
+	energy = numen_get_energy (numen);
+	eng_ratio = (energy > MIN_ENGY)
+	         	? (float)energy / (float)max_energy
+	         	: 0.0f;
+	if (eng_ratio < 0.0f) eng_ratio = 0.0f;
+	if (eng_ratio > 1.0f) eng_ratio = 1.0f;
+
+
+
+
+	/*================ DIBUJO DE LA BARRA DE VIDA =====================*/
+		/* Fondo gris de la barra */
+		DrawRectangle (position.pos_x, position.pos_y - 20, 
+								SCALE, 4,
+		               (Color){ 60, 60, 60, 200 });
+		/* Relleno rojo proporcional */
+		DrawRectangle (position.pos_x, position.pos_y - 20,
+		               (int)(SCALE * hp_ratio), 4, /*<-----  RECORDAR PROBAR (SCALE * hp_ratio)*/
+		               color_bar_life);
+		/* Borde negro fino */
+		DrawRectangleLines (position.pos_x, position.pos_y - 14, SCALE, 4, BLACK);
+	/*===========================================================================*/
+
+
+
+
+	/*================ DIBUJO DE LA BARRA DE ENERGIA =====================*/
+		/* Fondo gris de la barra */
+		DrawRectangle (position.pos_x, position.pos_y - 10, 
+					   			SCALE, 4,
+		               (Color){ 60, 60, 60, 200 });
+		/* Relleno rojo proporcional */
+		DrawRectangle (position.pos_x, position.pos_y - 10,
+		               (int)(SCALE * eng_ratio ), 4, /*<-----  RECORDAR PROBAR (SCALE * energia_ratio)*/
+		               color_bar_energy);
+		/* Borde negro fino */
+		DrawRectangleLines (position.pos_x, position.pos_y - 4, SCALE, 4, BLACK);
+	/*===========================================================================*/
+
+
+
+
+	return OK;
+}
+
+
+static int	_ge_max_radio_skill_of_numen (Numen* numen)
+{
+	Skills_id	skills[NUM_SKILLS];
+	int	i, max_radio;
+
+	if (!numen) return -1;
+
+	/*Inicializamos todos los posibles skills para visualizar cada uno*/
+	for (i = 0; i < NUM_SKILLS; i++)	{skills[i] = numen_get_skill_by_index(numen, i);}
+
+	/*Buscamos el skill con el radio más grande*/
+	for (i = 0, max_radio = skill_get_radio (skills[i]) ; i < NUM_SKILLS; i++)
+	{
+		if (max_radio <  skill_get_radio (skills[i])) max_radio =  skill_get_radio (skills[i]);
+	}
+
+	return max_radio;
 }

@@ -9,3 +9,17 @@ Centro del main anterior
 		if (log_enabled && log_file) game_loop_print_log(game, last_cmd, log_file);			/* 4. LOG — if enabled, write the command and its result */
 		game_turn_update(game);																/* 5. TURN — advance to the next player (F11 multiplayer) */
 	}
+
+
+
+
+
+		/* Este numen errante esta en rango del numen activo? */
+		in_range = FALSE;
+		if ((is_errant != NO_ID || is_corrupt == TRUE )  && pos_x_numen_act != NO_POS && pos_y_numen_act != NO_POS)
+		{
+			dx = pos_x_numen - pos_x_numen_act;
+			dy = pos_y_numen - pos_y_numen_act;
+			dist_sq = (dx*dx) + (dy*dy);
+			if (dist_sq <= range_sq) in_range = TRUE;
+		}

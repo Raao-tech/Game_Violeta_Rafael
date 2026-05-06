@@ -13,6 +13,12 @@
 #include "game_actions.h"
 #include "raymath.h"
 
+
+/*COmprueba si el el numen goal está en el area (Cuadrada) del numen Center*/
+Bool		_game_rules_numen_in_area 	(Numen* numen_center, Numen* numen_goal, int scale);
+/*Devuelve la direccion a donde debe de ir el numen center para llegar a goal*/
+Direction	_game_rules_enemy_dir 		(Numen* numen_center, Numen* numen_goal);
+
 Status
 game_rule_attack_enemy (Game* game, Id id_enemy)
 {
@@ -78,58 +84,6 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
 	return OK;
 }
 
-/*Dete*/
-Bool
-_game_actions_numen_in_area (Numen* numen_center, Numen* numen_goal, int scale)
-{
-    Position pos_center, pos_goal;
-
-    if (!numen_center || !numen_goal || scale <= 0) return FALSE;
-
-    pos_center = numen_get_position (numen_center);
-    pos_goal   = numen_get_position (numen_goal);
-
-    if (pos_center.pos_x == NO_POS || pos_center.pos_y == NO_POS) return FALSE;
-    if (pos_goal.pos_x   == NO_POS || pos_goal.pos_y   == NO_POS) return FALSE;
-
-    if (pos_goal.pos_x <= (pos_center.pos_x + scale) &&
-        pos_goal.pos_x >= (pos_center.pos_x - scale) &&
-        pos_goal.pos_y <= (pos_center.pos_y + scale) &&
-        pos_goal.pos_y >= (pos_center.pos_y - scale))
-        return TRUE;
-
-    return FALSE;
-}
-
-Direction
-_game_actions_enemy_dir (Numen* numen_center, Numen* numen_goal)
-{
-    Position pos_center, pos_goal;
-    int dx, dy;
-
-    if (!numen_center || !numen_goal) return U;
-
-    pos_center = numen_get_position (numen_center);
-    pos_goal   = numen_get_position (numen_goal);
-
-    if (pos_center.pos_x == NO_POS || pos_goal.pos_x == NO_POS) return U;
-
-    dx = pos_goal.pos_x - pos_center.pos_x;   /* >0 goal a la derecha */
-    dy = pos_goal.pos_y - pos_center.pos_y;   /* >0 goal abajo        */
-
-    /* Nos movemos en el eje con mayor diferencia absoluta. */
-    if (abs (dx) >= abs (dy))
-    {
-        if (dx > 0) return E;
-        if (dx < 0) return W;
-    }
-    else
-    {
-        if (dy > 0) return S;
-        if (dy < 0) return N;
-    }
-    return U; 
-}
 
 Status
 game_rule_walk_enemy (Game* game)
@@ -141,9 +95,9 @@ game_rule_walk_enemy (Game* game)
     Set*     set_ids;
     Id       active_id, walker_id;
     Direction dir;
-    Position pos_now;
+    Position pos_now, pos_active;
     int      *grid_line;
-    int      n_numens, i, cell_x, cell_y;
+    int      n_numens, i, cell_x, cell_y, dist_x, dist_y;
     int      hp_max, hp_now;
     Bool     hides;        /* TRUE si el numen quiere huir */
     Bool     sees_active;
@@ -180,7 +134,7 @@ game_rule_walk_enemy (Game* game)
 
         /* === DECIDIR DIRECCION === */
         sees_active = (active_numen != NULL) &&
-                      (_game_actions_numen_in_area (walker, active_numen, SCALE * 4) == TRUE);
+                      (_game_rules_numen_in_area (walker, active_numen, SCALE * 4) == TRUE);
 
         hp_now = numen_get_health (walker);
         hp_max = (numen_get_corrupt (walker) == TRUE) ? MAX_LIFE_CORRUPT : MAX_LIFE;
@@ -191,7 +145,7 @@ game_rule_walk_enemy (Game* game)
         if (hides == TRUE && active_numen != NULL)
         {
             /* HUIR: dirección opuesta a perseguir */
-            dir = _game_actions_enemy_dir (walker, active_numen);
+            dir = _game_rules_enemy_dir (walker, active_numen);
             switch (dir)
             {
                 case N: dir = S; break;
@@ -204,7 +158,7 @@ game_rule_walk_enemy (Game* game)
         else if (sees_active == TRUE)
         {
             /* PERSEGUIR */
-            dir = _game_actions_enemy_dir (walker, active_numen);
+            dir = _game_rules_enemy_dir (walker, active_numen);
         }
         else
         {
@@ -238,6 +192,10 @@ game_rule_walk_enemy (Game* game)
         /* Pared: skip turno */
         grid_line = space_get_grid_by_line (space, cell_y);
         if (!grid_line || grid_line[cell_x] == 0) continue;
+
+
+		if (sees_active == TRUE) game_rule_attack_enemy(game, walker_id);
+
 
         /* MOVER */
         numen_set_pos_x (walker, pos_now.pos_x);
@@ -435,4 +393,58 @@ game_rule_move (Game* game)
 	if (dest_sp) space_set_discovered (dest_sp, TRUE);
 
 	return OK;
+}
+
+
+/*Dete*/
+Bool
+_game_rules_numen_in_area (Numen* numen_center, Numen* numen_goal, int scale)
+{
+    Position pos_center, pos_goal;
+
+    if (!numen_center || !numen_goal || scale <= 0) return FALSE;
+
+    pos_center = numen_get_position (numen_center);
+    pos_goal   = numen_get_position (numen_goal);
+
+    if (pos_center.pos_x == NO_POS || pos_center.pos_y == NO_POS) return FALSE;
+    if (pos_goal.pos_x   == NO_POS || pos_goal.pos_y   == NO_POS) return FALSE;
+
+    if (pos_goal.pos_x <= (pos_center.pos_x + scale) &&
+        pos_goal.pos_x >= (pos_center.pos_x - scale) &&
+        pos_goal.pos_y <= (pos_center.pos_y + scale) &&
+        pos_goal.pos_y >= (pos_center.pos_y - scale))
+        return TRUE;
+
+    return FALSE;
+}
+
+Direction
+_game_rules_enemy_dir (Numen* numen_center, Numen* numen_goal)
+{
+    Position pos_center, pos_goal;
+    int dx, dy;
+
+    if (!numen_center || !numen_goal) return U;
+
+    pos_center = numen_get_position (numen_center);
+    pos_goal   = numen_get_position (numen_goal);
+
+    if (pos_center.pos_x == NO_POS || pos_goal.pos_x == NO_POS) return U;
+
+    dx = pos_goal.pos_x - pos_center.pos_x;   /* >0 goal a la derecha */
+    dy = pos_goal.pos_y - pos_center.pos_y;   /* >0 goal abajo        */
+
+    /* Nos movemos en el eje con mayor diferencia absoluta. */
+    if (abs (dx) >= abs (dy))
+    {
+        if (dx > 0) return E;
+        if (dx < 0) return W;
+    }
+    else
+    {
+        if (dy > 0) return S;
+        if (dy < 0) return N;
+    }
+    return U; 
 }

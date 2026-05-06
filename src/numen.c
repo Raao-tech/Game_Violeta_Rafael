@@ -295,9 +295,7 @@ Status
 numen_set_corrupt (Numen* numen, Bool corrupt)
 {
     if (!numen) return ERROR;
-    /* corrupt = TRUE → no friendly. La inversion vive aqui para que
-     * el codigo cliente piense en terminos de "es enemigo" sin tener
-     * que recordar que internamente Character usa "friendly". */
+    /* corrupt = TRUE -> no friendly.*/
     return character_set_friendly (numen->c_numen, corrupt == TRUE ? FALSE : TRUE);
 }
 
