@@ -4,9 +4,9 @@
  * 
  * 
  * @file graphic_engine.c
- * @author Rafael
- * @version 3
- * @date 02-05-2026
+ * @author Rafael and Salvador
+ * @version 3.5
+ * @date 05-05-2026
  * @copyright GNU Public License
  */
 
@@ -110,8 +110,8 @@ static void ge_paint_numen_right_panel	(Graphic_engine* ge, Numen* numen, int n_
 static void ge_paint_object_right_panel	(Graphic_engine* ge, Object* object, int n_painted);
 static void ge_paint_active_numen		(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_objects			(Graphic_engine* ge, Game* game, Player* player);
-static void ge_paint_space_numens		(Graphic_engine* ge, Game* game, Player* player);
-
+static void ge_paint_space_numens 		(Graphic_engine* ge, Game* game, Player* player);
+//static void ge_paint_skill_panel     	(Game* game);
 
 
 
@@ -120,7 +120,7 @@ static const char* ge_cmd_to_str    (CommandCode c);
 
 static int  ge_find_idx_in_list (Id active_id, int n, Id (*get_at)(Player*, int), Player* player);
 static void ge_cycle_active_object (Player* player);
-static void ge_cycle_active_numen  (Game* game, Player* player);
+static void ge_cycle_active_numen  (Player* player);
 
 /* ====================================================================== */
 /*                         PUBLIC: CREATE / DESTROY                        */
@@ -348,7 +348,7 @@ graphic_engine_load_textures (Graphic_engine* ge, Game* game)
 			o = game_get_object_at (game, i);
 			if (!o) continue;
 		
-			snprintf (path, sizeof (path),	"./img_src/sprites/objects/%s.png", obj_get_gdesc (o));
+			snprintf (path, sizeof (path),	"./img_src/sprites/objects/%s.png", obj_get_name (o));
 		
 			strncpy (ge->object_textures[slot].name, obj_get_name (o), 63);
 			ge->object_textures[slot].name[63] = '\0';
@@ -383,7 +383,7 @@ graphic_engine_paint_game (Graphic_engine* ge, Game* game)
 	ge_paint_player      (ge, player);
 	ge_paint_overlay     (game, player);
 	ge_paint_right_side_panel(ge, game);
-
+	//ge_paint_skill_panel     	(game);
 }
 
 /* ====================================================================== */
@@ -401,7 +401,7 @@ graphic_engine_handle_ui_input (Graphic_engine* ge, Game* game)
 	if (!player) return;
 
 	if (IsKeyPressed (KEY_TAB)) 			ge_cycle_active_object (player);
-	if (IsKeyPressed (KEY_LEFT_SHIFT))		ge_cycle_active_numen  (game, player);
+	if (IsKeyPressed (KEY_LEFT_SHIFT))		ge_cycle_active_numen  (player);
 }
 
 /* ====================================================================== */
@@ -632,11 +632,11 @@ ge_paint_object_right_panel(Graphic_engine*ge, Object* object, int n_painted)
 		int        px, py;
 	Texture2D* tex;
 	
-	tex = ge_get_numen_texture (ge, obj_get_name (object));
+	tex = ge_get_object_texture (ge, obj_get_name (object));
 	
 	px  = WIDHT_MAP;
 
-	py  =(SCALE)*n_painted;
+	py  =(int)(tex->height+SCALE)*n_painted;
    
 
 	if (ge_texture_is_valid (tex))
@@ -648,15 +648,16 @@ ge_paint_object_right_panel(Graphic_engine*ge, Object* object, int n_painted)
 	else
 	{
 		/* Cuadrado amarillo de fallback */
-		DrawRectangle (px, py, SCALE*2, SCALE*2, COLOR_FALLBACK_PLAYER);
-		DrawRectangleLines (px, py, SCALE*2, SCALE*2, BLACK);
+		DrawRectangle (px, py, SCALE, SCALE, COLOR_FALLBACK_PLAYER);
+		DrawRectangleLines (px, py, SCALE, SCALE, BLACK);
 	}
 }
+
 /* ====================================================================== */
 /*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
 /* ====================================================================== */
-static void
-ge_paint_skill_panel     	(Game* game);
+/*static void
+ge_paint_skill_panel     	(Game* game);*/
 
 /* ====================================================================== */
 /*                       PRIVATE: TEXTURE LOOKUP                           */
@@ -716,64 +717,41 @@ ge_find_idx_in_list (Id active_id, int n, Id (*get_at)(Player*, int), Player* pl
 }
 
 static void
-ge_cycle_active_numen (Game* game, Player* player)
+ge_cycle_active_object (Player* player)
 {
-    Id      active_id, new_active_id;
-    Numen*  new_active;
-    Position p;
-    int     n, current_idx, next_idx;
+	Id  active_id;
+	int n, current_idx, next_idx;
 
-    if (!game || !player) return;
-    n = player_get_n_numens (player);
-    if (n <= 1) return;
+	if (!player) return;
+	n = player_get_n_objects (player);
+	if (n <= 0) return;
 
-    active_id   = player_get_active_numen (player);
-    current_idx = ge_find_idx_in_list (active_id, n,
-                                       player_get_numen_at_inventory, player);
-    next_idx    = (current_idx + 1) % n;
-    new_active_id = player_get_numen_at_inventory (player, next_idx);
+	active_id   = player_get_active_object (player);
+	current_idx = ge_find_idx_in_list (active_id, n,
+									   player_get_object_at_inventory, player);
+	next_idx    = (current_idx + 1) % n;
 
-    if (active_id != NO_ID)
-    {
-        Numen* old_active = game_get_numen_by_id (game, active_id);
-        if (old_active)
-        {
-            numen_set_pos_x (old_active, NO_POS);
-            numen_set_pos_y (old_active, NO_POS);
-        }
-    }
-
-    new_active = game_get_numen_by_id (game, new_active_id);
-    if (new_active)
-    {
-        p = player_get_position (player);
-        if (p.pos_x != NO_POS && p.pos_y != NO_POS)
-        {
-            numen_set_pos_x (new_active, p.pos_x - SCALE);
-            numen_set_pos_y (new_active, p.pos_y);
-        }
-    }
-
-    player_set_active_numen (player, new_active_id);
+	player_set_active_object (player,
+		player_get_object_at_inventory (player, next_idx));
 }
 
 static void
-ge_cycle_active_object (Player* player)
+ge_cycle_active_numen (Player* player)
 {
-    Id      active_id	= NO_ID;
-	Id		new_active_id = NO_ID;
-    Position p;
-    int     n, current_idx, next_idx;
+	Id  active_id;
+	int n, current_idx, next_idx;
 
-    if (!player) return;
-    n = player_get_n_numens (player);
-    if (n <= 1) return;
+	if (!player) return;
+	n = player_get_n_numens (player);
+	if (n <= 1) return;
 
-    active_id   = player_get_active_object (player);
-    current_idx = ge_find_idx_in_list (active_id, n,	player_get_object_at_inventory, player);
-    next_idx    = (current_idx + 1) % n; /*Nos movemos al siguiente object en el inventario*/
+	active_id   = player_get_active_numen (player);
+	current_idx = ge_find_idx_in_list (active_id, n,
+									   player_get_numen_at_inventory, player);
+	next_idx    = (current_idx + 1) % n;
 
-    player_set_active_object (player, new_active_id);
+	player_set_active_numen (player,
+		player_get_numen_at_inventory (player, next_idx));
 }
 
 /* ====================================================================== */
@@ -918,17 +896,17 @@ ge_paint_objects (Graphic_engine* ge, Game* game, Player* player)
 	space_id = player_get_zone (player);
 	sp       = game_get_space (game, space_id);
 	if (!sp) return;
-
 	n_objs = game_get_n_objects (game);
 	for (i = 0; i < n_objs; i++)
 	{
 		obj = game_get_object_at (game, i);
 		if (!obj) continue;
 
-		/* Solo pintamos los objetos cuyo space coincide con el actual.
-		 * Usamos space_contains_object para no asumir nada de la
+		/* Solo pintamos los objetos cuyo space coincide con el actual
+		 * o están en el inventario del player .
+		 * Usamos space_contains_object y player_contains_object para no asumir nada de la
 		 * implementacion interna. */
-		if (space_contains_object (sp, obj_get_id (obj)) == FALSE) continue;
+		if (space_contains_object (sp, obj_get_id (obj)) == FALSE && player_contains_object(player, obj_get_id (obj))==FALSE) continue;
 
 		ox  = obj_get_pos_x (obj);
 		oy  = obj_get_pos_y (obj);
