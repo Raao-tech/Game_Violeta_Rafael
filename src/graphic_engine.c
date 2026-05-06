@@ -973,8 +973,8 @@ ge_get_object_texture (Graphic_engine* ge, const char* name)
 /* del player y NO son el active_numen (que ya lo pinta paint_active_numen)*/
 /*                                                                         */
 /* Para los corruptos, ademas:                                             */
-/*   - Pinta una barra de HP roja encima del enemigo.                      */
-/*   - Pinta una barra de HP energia encima del enemigo.                      */
+/*   - Pinta una barra de HP y de energia encima de los numens              */
+/*   - Pinta una barra de HP energia encima del enemigo.                    */
 /*   - Si el numen activo del player esta dentro del radio de combate,     */
 /*     resalta el enemigo con marco rojo brillante y une con linea al      */
 /*     numen activo (feedback visual de "amenaza/objetivo").               */
@@ -1055,10 +1055,10 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 			DrawCircleLines (pos_numen.pos_x + SCALE, pos_numen.pos_y + SCALE, SCALE - 2, BLACK);
 
 			gd = numen_get_gdesc (num);
-			if (gd && gd[0])
-				DrawText (TextFormat ("%c", gd[0]),
-				          pos_numen.pos_x + SCALE - 4, pos_numen.pos_y + SCALE - 6, 14, BLACK);
-
+			if (gd && gd[0])	DrawText (TextFormat ("%c", gd[0]),
+				          					pos_numen.pos_x + SCALE - 4, 
+											pos_numen.pos_y + SCALE - 6, 
+											14, BLACK);
 
 		}
 
@@ -1074,85 +1074,65 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 }
 
 
-Status _ge_draw_bars (Numen* numen)
+Status
+_ge_draw_bars (Numen* numen)
 {
-	int 	hp, max_life = MAX_LIFE;
-	int 	energy, max_energy = MAX_ENGY;
-	float	hp_ratio, eng_ratio;
-	Color	color_bar_life   = GREEN;
-	Color	color_bar_energy = YELLOW;
-	Position	position;
-	if (!numen) return ERROR;
+    int       hp, energy;
+    int       max_life, max_energy;
+    float     hp_ratio, eng_ratio;
+    int       bar_w = SCALE * 2;
+    int       bar_h = 4;
+    Color     color_bar_life   = GREEN;
+    Color     color_bar_energy = (Color){ 230, 200, 40, 255 };
+    Position  pos;
 
-	position.pos_x = NO_POS;
-	position.pos_y = NO_POS;
-	/*Características de los numnes corruptos*/
-	if ( numen_get_corrupt (numen) == TRUE)
-	{
-		max_life = MAX_LIFE_CORRUPT;
-		max_energy = MAX_ENGY_CORRUPT;
-		color_bar_life = RED;
-	}
+    if (!numen) return ERROR;
 
-	position = numen_get_position (numen);
+	/*Si está en mochila no continuar, o si no estaá non hace falta pitnar ninguna barra*/
+    pos = numen_get_position (numen);
+    if (pos.pos_x == NO_POS || pos.pos_y == NO_POS) return OK;
 
-	/*Cuanto de la barra  de vida hay llena?*/
-	hp = numen_get_health (numen);
-	hp_ratio = (hp > MIN_LIFE)
-	         ? (float)hp / (float)max_life
-	         : 0.0f;
-	if (hp_ratio < 0.0f) hp_ratio = 0.0f;
-	if (hp_ratio > 1.0f) hp_ratio = 1.0f;
-
+    if (numen_get_corrupt (numen) == TRUE)
+    {
+        max_life       = MAX_LIFE_CORRUPT;
+        max_energy     = MAX_ENGY_CORRUPT;
+        color_bar_life = RED;
+    }
+    else
+    {
+        max_life   = MAX_LIFE;
+        max_energy = MAX_ENGY;
+    }
 
 
+    hp = numen_get_health (numen);
+    hp_ratio = (max_life > 0) ? (float)hp / (float)max_life : 0.0f;
+    if (hp_ratio < 0.0f) hp_ratio = 0.0f;
+    if (hp_ratio > 1.0f) hp_ratio = 1.0f;
 
-	/*Cuanto de la barra  de energia hay llena?*/
-	energy = numen_get_energy (numen);
-	eng_ratio = (energy > MIN_ENGY)
-	         	? (float)energy / (float)max_energy
-	         	: 0.0f;
-	if (eng_ratio < 0.0f) eng_ratio = 0.0f;
-	if (eng_ratio > 1.0f) eng_ratio = 1.0f;
+    energy = numen_get_energy (numen);
+    eng_ratio = (max_energy > 0) ? (float)energy / (float)max_energy : 0.0f;
+    if (eng_ratio < 0.0f) eng_ratio = 0.0f;
+    if (eng_ratio > 1.0f) eng_ratio = 1.0f;
 
+    /* === Barra de VIDA  === */
+    DrawRectangle (pos.pos_x, pos.pos_y - 8, bar_w, bar_h,
+                   (Color){ 60, 60, 60, 200 });
+    DrawRectangle (pos.pos_x, pos.pos_y - 8,
+                   (int)(bar_w * hp_ratio), bar_h,
+                   color_bar_life);
+    DrawRectangleLines (pos.pos_x, pos.pos_y - 8, bar_w, bar_h, BLACK);
 
+    /* === Barra de ENERGIA  === */
+    DrawRectangle (pos.pos_x, pos.pos_y - 3, bar_w, bar_h,
+                   (Color){ 60, 60, 60, 200 });
+    DrawRectangle (pos.pos_x, pos.pos_y - 3,
+                   (int)(bar_w * eng_ratio), bar_h,
+                   color_bar_energy);
+    DrawRectangleLines (pos.pos_x, pos.pos_y - 3, bar_w, bar_h, BLACK);
 
-
-	/*================ DIBUJO DE LA BARRA DE VIDA =====================*/
-		/* Fondo gris de la barra */
-		DrawRectangle (position.pos_x, position.pos_y - 20, 
-								SCALE, 4,
-		               (Color){ 60, 60, 60, 200 });
-		/* Relleno rojo proporcional */
-		DrawRectangle (position.pos_x, position.pos_y - 20,
-		               (int)(SCALE * hp_ratio), 4, /*<-----  RECORDAR PROBAR (SCALE * hp_ratio)*/
-		               color_bar_life);
-		/* Borde negro fino */
-		DrawRectangleLines (position.pos_x, position.pos_y - 14, SCALE, 4, BLACK);
-	/*===========================================================================*/
-
-
-
-
-	/*================ DIBUJO DE LA BARRA DE ENERGIA =====================*/
-		/* Fondo gris de la barra */
-		DrawRectangle (position.pos_x, position.pos_y - 10, 
-					   			SCALE, 4,
-		               (Color){ 60, 60, 60, 200 });
-		/* Relleno rojo proporcional */
-		DrawRectangle (position.pos_x, position.pos_y - 10,
-		               (int)(SCALE * eng_ratio ), 4, /*<-----  RECORDAR PROBAR (SCALE * energia_ratio)*/
-		               color_bar_energy);
-		/* Borde negro fino */
-		DrawRectangleLines (position.pos_x, position.pos_y - 4, SCALE, 4, BLACK);
-	/*===========================================================================*/
-
-
-
-
-	return OK;
+    return OK;
 }
-
 
 static int	_ge_max_radio_skill_of_numen (Numen* numen)
 {

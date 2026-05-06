@@ -75,10 +75,10 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
 
 	radio    = skill_get_radio (skill); /*por implementar*/
 
-	distance = sqrt (pow (active_pos_x - enemy_pos_x, 2) + pow (active_pos_y - enemy_pos_y, 2));
+	distance = sqrt (pow (active_pos_x - enemy_pos_x, 2) + pow (active_pos_y - enemy_pos_y, 2))/SCALE;
 	if(radio>=distance)
 	{
-	if (skill_active (enemy_numen, num, skill, distance) == ERROR) /*por implementar status skill_apply_effect*/
+	if (skill_active (enemy_numen, num, skill, distance) == ERROR) 
 		return ERROR_enemy_attack;
 	}
 	return OK;
@@ -194,6 +194,14 @@ game_rule_walk_enemy (Game* game)
                  (hp_now > 0) &&
                  (hp_now <= hp_max * 30 / 100);
 
+		/* Verificamos si el active está vivo, si el  ealker es corrupto, y si el active está en elaárea de visión de walker*/
+		if (active_numen != NULL && numen_get_corrupt (walker) == TRUE && numen_get_health (active_numen) > 0 &&
+            _game_rules_numen_in_area (walker, active_numen, SCALE) == TRUE)
+        {
+            game_rule_attack_enemy (game, walker_id);
+            continue;  /*Si todo se cumple, ataca, luego continua al sigueinte numen, y este lo deja pausado, porque debe ser: movimiento y leugo ataque*/
+        }
+
         if (hides == TRUE && active_numen != NULL)
         {
             /* HUIR: dirección opuesta a perseguir */
@@ -246,7 +254,6 @@ game_rule_walk_enemy (Game* game)
         if (!grid_line || grid_line[cell_x] == 0 || grid_line[cell_x] == 2) continue;
 
 
-        if(sees_active==TRUE) game_rule_attack_enemy(game, walker_id);
         
 
         /* MOVER */
@@ -308,8 +315,8 @@ game_rule_walk_active (Game* game)
 
 	if (distance > radio) /*The active numen is too far from player, it tries to get back to the area*/
 		{
-			if (pos_current.pos_x < pos_player.pos_x) { direction = W; }
-			else if (pos_current.pos_x > pos_player.pos_x) { direction = E; }
+			if (pos_current.pos_x < pos_player.pos_x) { direction = E; }
+			else if (pos_current.pos_x > pos_player.pos_x) { direction = W; }
 			else if (pos_current.pos_y < pos_player.pos_y) { direction = S; }
 			else if (pos_current.pos_y > pos_player.pos_y) { direction = N; }
 

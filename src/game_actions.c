@@ -406,9 +406,9 @@ game_actions_attack (Game* game)
         distance    = (int)sqrt (pow (active_pos_x - enemy_pos_x, 2) +
                                  pow (active_pos_y - enemy_pos_y, 2));
 
-        if (distance > radio) continue;
+        if ((int)(distance/SCALE) > (int)(radio/SCALE)) continue;
 
-        if (skill_active (num, enemy_num, skill, distance) == ERROR)
+        if (skill_active (num, enemy_num, skill, (int)(distance/SCALE)) == ERROR)
         { game_set_last_cmd_status (game, ERROR_Attack); return; }
 
         /* Propagacion de FIRE_BALL: salpicadura a vecinos del impactado */
