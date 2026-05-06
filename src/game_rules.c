@@ -2,7 +2,7 @@
  * @brief It implements the game rules
  *
  * @file game_rules.c
- * @author Salvador
+ * @author Salvador y Rafael
  * @version 1.5
  * @date 01-05-2026
  * @copyright GNU Public License
@@ -73,7 +73,7 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
 
 	if (numen_get_health (num) <= 0 && numen_get_health (enemy_numen) <= 0) return ERROR_enemy_attack;
 
-	radio    = skill_get_radio (skill); /*por implementar*/
+	radio    = skill_get_radio (skill)/SCALE; 
 
 	distance = sqrt (pow (active_pos_x - enemy_pos_x, 2) + pow (active_pos_y - enemy_pos_y, 2))/SCALE;
 	if(radio>=distance)

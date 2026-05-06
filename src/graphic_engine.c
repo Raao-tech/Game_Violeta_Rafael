@@ -1009,6 +1009,8 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 	             : NULL;
 	if (!active_num) return;
 
+	_ge_draw_bars (active_num);
+
 	pos_active = numen_get_position (active_num);
 	max_radio = _ge_max_radio_skill_of_numen (active_num);
 	range_sq = max_radio * max_radio;
