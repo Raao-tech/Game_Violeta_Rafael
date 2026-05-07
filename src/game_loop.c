@@ -223,9 +223,9 @@ main (int argc, char* argv[])
 	           && command_get_code (game_loop->last_cmd) != EXIT
 	           && game_get_finished (game_loop->game) == FALSE)
 	    {	
-			game_rules_win_condition(game_loop->game);
+/* 			game_rules_win_condition(game_loop->game);
 			game_rules_loose_condition(game_loop->game);
-			game_rules_regen(game_loop->game);
+			game_rules_regen(game_loop->game); */
 	        BeginDrawing ();
 	        graphic_engine_paint_game     (game_loop->gp_raylib, game_loop->game);
 	        EndDrawing ();

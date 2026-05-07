@@ -122,7 +122,7 @@ static int		ge_find_idx_in_list (Id active_id, int n, Id (*get_at)(Player*, int)
 static void		ge_cycle_active_object (Player* player);
 static void		ge_cycle_active_numen  (Game* game, Player* player);
 static 	int		_ge_max_radio_skill_of_numen (Numen* numen);
-Status	_ge_draw_bars (Numen* numen);
+static void		_ge_draw_bars (Numen* numen);
 
 /* ====================================================================== */
 /*                         PUBLIC: CREATE / DESTROY                        */
@@ -586,7 +586,7 @@ static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
 			if(gdesc) free(gdesc);
 			object= game_get_object_by_id (game, player_get_object_at_inventory (player, o));
 			gdesc=obj_get_gdesc(object);
-			ge_paint_object_right_panel(ge, object, n+o+1);
+			ge_paint_object_right_panel(ge, object, n+o+2);
 			if(o==3)	break;
 		}
 	if(gdesc) free(gdesc);
@@ -1083,7 +1083,7 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 }
 
 
-Status _ge_draw_bars (Numen* numen)
+static void		_ge_draw_bars (Numen* numen)
 {
 	int 	hp, max_life = MAX_LIFE;
 	int 	energy, max_energy = MAX_ENGY;
@@ -1091,7 +1091,7 @@ Status _ge_draw_bars (Numen* numen)
 	Color	color_bar_life   = GREEN;
 	Color	color_bar_energy = YELLOW;
 	Position	position;
-	if (!numen) return ERROR;
+	if (!numen) return;
 
 	position.pos_x = NO_POS;
 	position.pos_y = NO_POS;
@@ -1159,7 +1159,7 @@ Status _ge_draw_bars (Numen* numen)
 
 
 
-	return OK;
+	return;
 }
 
 

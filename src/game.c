@@ -102,7 +102,7 @@ game_destroy (Game* game)
 }
 
 /* ========================================================================= */
-/*                     ACCESS: ENFOQUE B (expose pointers)                   */
+/*                     ACCESS: Pointers                                        */
 /* ========================================================================= */
 
 Player**
@@ -191,6 +191,23 @@ game_connection_is_open (Game* game, Id space, Direction dir)
 	return FALSE;
 }
 
+
+
+
+/* ========================================================================= */
+/*                       BUSQEUDA GENÉRICA EN CUALQUIER LISTA                */
+/* ========================================================================= */
+
+int	ge_find_idx_in_list (Id active_id, int n, Id (*get_at)(Player*, int), Player* player)
+{
+	int i;
+	if (!get_at || !player) return -1;
+	for (i = 0; i < n; i++)
+	{
+		if (get_at (player, i) == active_id) return i;
+	}
+	return -1;
+}
 /* ========================================================================= */
 /*                   ADD ELEMENTS (used by game_reader)                      */
 /* ========================================================================= */
