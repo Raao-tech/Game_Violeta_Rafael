@@ -132,6 +132,7 @@ game_actions_walk (Game* game)
     Position  pos_current;
     Position  pos_original;
     Position  cur_orig;
+    Position  ply_vision;
     Player*   p     = NULL;  
     Id        nu_id;
     int       cell_x, cell_y;
@@ -156,17 +157,21 @@ game_actions_walk (Game* game)
 
     pos_current = player_get_position (player);
     pos_original = player_get_position (player);
+    ply_vision = pos_original;
+
     /* Calculamos la posicion DESTINO en pixeles */
     switch (direction)
     {
-        case N: pos_current.pos_y -= SCALE; break;	
-        case S: pos_current.pos_y += SCALE; break;
-        case W: pos_current.pos_x -= SCALE; break;
-        case E: pos_current.pos_x += SCALE; break;
+        case N: pos_current.pos_y -= SCALE; ply_vision.pos_y -= SCALE;  break;
+        case S: pos_current.pos_y += SCALE; ply_vision.pos_y += SCALE;  break;
+        case W: pos_current.pos_x -= SCALE; ply_vision.pos_x -= SCALE;  break;
+        case E: pos_current.pos_x += SCALE; ply_vision.pos_x += SCALE;  break;
         default:
             game_set_last_cmd_status (game, ERROR_walk);
             return;
     }
+    player_set_vision (player, ply_vision.pos_x, ply_vision.pos_y);
+
 
     /*convertir a celdas y validar contra el grid */
     cell_x = pos_current.pos_x / SCALE;
@@ -194,26 +199,30 @@ game_actions_walk (Game* game)
 
     /* solo 0 = no transitable.*/
     if (grid_line[cell_x] == 0)
-    {
-        game_set_last_cmd_status (game, ERROR_walk);
-        return;
-    }
+        {
+            game_set_last_cmd_status (game, ERROR_walk);
+            return;
+        }
 
-      if (player_set_position (player, pos_current.pos_x, pos_current.pos_y) == ERROR)
-    {
-        game_set_last_cmd_status (game, ERROR_walk);
-        return;
-    }
+    if (player_set_position (player, pos_current.pos_x, pos_current.pos_y) == ERROR)
+        {
+            game_set_last_cmd_status (game, ERROR_walk);
+            return;
+        }
     space_set_grid_by_position(space, pos_original, 1); 
     space_set_grid_by_position(space, pos_current, 0);
     /*Pequeño entorno disitno del resto del código doonde nos aseguramos de actualizar la posicón del numen_active */
     {
 
+
+
+
         game_rule_walk_active(game);
+        /*==== MOVIMIENTO del los Numens Enemigos ====*/
+        game_rule_walk_enemy (game);
     }
    
-    /*==== MOVIMIENTO del los Numens Enemigos ====*/
-    game_rule_walk_enemy (game);
+
 
     game_set_last_cmd_status (game, OK);
 }
@@ -270,22 +279,22 @@ game_actions_take (Game* game)
         game_set_last_cmd_status (game, ERROR_take);
         return;
     }
+    player_set_active_object (player, obj_id);
 
     game_set_last_cmd_status (game, OK);
 }
 
 /* ========================================================================= */
 /*                                 DROP                                       */
-/*  (UNA SOLA DEFINICION)                                                     */
 /* ========================================================================= */
 static void
 game_actions_drop (Game* game)
 {
-    Player*  player;
-    Space*   space;
-    Object*  obj          = NULL;
-    Command* last_command;
-    char*    obj_char;
+    Player*  player         = NULL;
+    Space*   space          = NULL;
+    Object*  obj            = NULL;
+    Command* last_command   = NULL;
+    char*    obj_char       = NULL;
     Id       space_id, obj_id;
     Position ply_vision;
 
@@ -331,9 +340,9 @@ game_actions_drop (Game* game)
     space_set_object     (space, obj_id, ply_vision);
     obj_set_position     (obj, ply_vision.pos_x, ply_vision.pos_y);
 
-    /* Si era el active_object, lo deseleccionamos */
-    if (player_get_active_object (player) == obj_id)
-        player_set_active_object (player, NO_ID);
+
+
+
 
     game_set_last_cmd_status (game, OK);
 }

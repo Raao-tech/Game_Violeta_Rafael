@@ -112,47 +112,70 @@ command_raylib_get_user_input (Command* command)
 			command_set_code (command, TAKE);
 			return;
 		}
-		/*========== ========== DROP ========== ============*/
-		if (IsKeyPressed (KEY_R))
-			{
-				command_set_code (command, DROP);
-				return;
-			}
-
-		/*========== ========== CAPTURE (RECRUIT) ========== ============*/
-		/* Tecla C: captura al numen errante mas cercano que cumpla las
-		* condiciones (vivo, debil, NO corrupto, errante, no en mochila). */
-		if (IsKeyPressed (KEY_C))
-			{
-				command_set_code (command, RECRUIT);
-				return;
-			}
-
-		/*========== ========== ATTACK con skill 0..3 ========== ============*/
-		if (IsKeyPressed (KEY_ONE))
-			{
-				_command_set_target (command, "0");        /* CORRECCION */
-				command_set_code (command, ATTACK);
-				return;
-			}
-		if (IsKeyPressed (KEY_TWO))
-			{
-				_command_set_target (command, "1");        /* CORRECCION */
-				command_set_code (command, ATTACK);
-				return;
-			}
-		if (IsKeyPressed (KEY_THREE))
-			{
-				_command_set_target (command, "2");        /* CORRECCION */
-				command_set_code (command, ATTACK);
-				return;
-			}
-		if (IsKeyPressed (KEY_FOUR))
-			{
-				_command_set_target (command, "3");
-				command_set_code (command, ATTACK);
-				return;
-			}
+	/*========== ========== DROP ========== ============*/
+	if (IsKeyPressed (KEY_R))
+		{
+			command_set_code (command, DROP);
+			return;
+		}
+	/*========== ========== CAPTURE (RECRUIT) ========== ============*/
+	/* Tecla C: captura al numen errante mas cercano que cumpla las
+	* condiciones (vivo, debil, NO corrupto, errante, no en mochila). */
+	if (IsKeyPressed (KEY_C))
+		{
+			command_set_code (command, RECRUIT);
+			return;
+		}
+	/*========== ========== FREE (KICK) ========== ============*/
+	/* Tecla X: Libera al Numen Active destruyéndolo de forma "gentil" :)*/
+	if (IsKeyPressed (KEY_X))
+		{
+			command_set_code (command, KICK);
+			return;
+		}
+	/*========== ========== Chat ========== ============*/
+	if (IsKeyPressed (KEY_A))
+		{
+			command_set_code (command, CHAT);
+			return;
+		}
+	/*========== ========== Inspect ========== ============*/
+	if (IsKeyPressed (KEY_F))
+		{
+			command_set_code (command, CHAT);
+			return;
+		}
+	/*========== ========== Use ========== ============*/
+	if (IsKeyPressed (KEY_SPACE))
+		{
+			command_set_code (command, CHAT);
+			return;
+		}
+	/*========== ========== ATTACK con skill 0..3 ========== ============*/
+	if (IsKeyPressed (KEY_ONE))
+		{
+			_command_set_target (command, "0");
+			command_set_code (command, ATTACK);
+			return;
+		}
+	if (IsKeyPressed (KEY_TWO))
+		{
+			_command_set_target (command, "1");
+			command_set_code (command, ATTACK);
+			return;
+		}
+	if (IsKeyPressed (KEY_THREE))
+		{
+			_command_set_target (command, "2");
+			command_set_code (command, ATTACK);
+			return;
+		}
+	if (IsKeyPressed (KEY_FOUR))
+		{
+			_command_set_target (command, "3");
+			command_set_code (command, ATTACK);
+			return;
+		}
 
 
 

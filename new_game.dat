@@ -63,7 +63,7 @@
 #                  Para Atlas lo dejamos en -1: el menu lo asigna tras elegir starter.
 #   active_obj_id: opcional. -1 o vacio si no hay objeto activo.
 # ====================================================================
-#p:100|Atlas|1|240|240|240|240|@|3|3|-1|
+#p:100|Atlas|1|240|240|240|320|@|3|3|-1|69
 
 
 # ====================================================================

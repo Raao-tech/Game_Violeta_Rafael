@@ -341,6 +341,11 @@ game_loop_init_user (GameLoop* game_loop)
     	        dummy.pos_y = NO_POS;
     	        space_remove_numen (sp, result_ge.init_numen, dummy);
     	    }
+			if (player_get_active_object (p) == NO_ID &&
+            player_get_n_objects (p) > 0)
+        	{
+        	    player_set_active_object (p, player_get_object_at_inventory (p, 0));
+        	}
     	}
 	}
 	return INIT_OK;

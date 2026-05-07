@@ -972,7 +972,6 @@ ge_get_object_texture (Graphic_engine* ge, const char* name)
 /* Recorre los numens del juego y pinta los que viven en el space actual   */
 /* del player y NO son el active_numen (que ya lo pinta paint_active_numen)*/
 /*                                                                         */
-/* Para los corruptos, ademas:                                             */
 /*   - Pinta una barra de HP y de energia encima de los numens              */
 /*   - Pinta una barra de HP energia encima del enemigo.                    */
 /*   - Si el numen activo del player esta dentro del radio de combate,     */
@@ -1009,7 +1008,7 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 	             : NULL;
 	if (!active_num) return;
 
-	_ge_draw_bars (active_num);
+
 
 	pos_active = numen_get_position (active_num);
 	max_radio = _ge_max_radio_skill_of_numen (active_num);
@@ -1072,6 +1071,9 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 
 
 	}
+		/*	=====BARRAS DE VIDA Y ENERGIA ===== */
+		_ge_draw_bars (active_num);
+		/*	=================================== */
 
 }
 
