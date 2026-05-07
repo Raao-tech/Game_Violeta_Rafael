@@ -25,4 +25,12 @@ Status game_rule_walk_active (Game* game);
 
 Status game_rule_move (Game* game);
 
+Status game_rules_regen (Game* game);
+
+Bool game_rules_win_condition (Game* game);
+
+Bool game_rules_loose_condition (Game* game);
+
+void game_rules_death_numen(Game* game, Numen* num);
+
 #endif
