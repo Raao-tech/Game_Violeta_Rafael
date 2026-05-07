@@ -46,7 +46,8 @@
 /*------------------------TOTAL DE LA PANTALLA-------------------*/
 #define WIDTH_SCREEN (WIDHT_MAP + RIGHT_SIDE_PANEL_W )
 #define HIGHT_SCREEN (HIGHT_MAP + OVERLAY_H)
-
+//(0, HIGHT )
+#define HIGHT_SKILL_PANEL = HIGHT_SCREEN-HIGHT_MAP
 /* ====================================================================== */
 /*                     COLORES (OVERALYS, TEXTO, TITULOS, ETC )           */
 /* ====================================================================== */
@@ -111,6 +112,7 @@ static void ge_paint_object_right_panel	(Graphic_engine* ge, Object* object, int
 static void ge_paint_active_numen		(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_objects			(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_space_numens		(Graphic_engine* ge, Game* game, Player* player);
+static void ge_paint_skill_panel     	(Game* game, Player* player);
 
 
 
@@ -385,6 +387,7 @@ graphic_engine_paint_game (Graphic_engine* ge, Game* game)
 	ge_paint_player      (ge, player);
 	ge_paint_overlay     (game, player);
 	ge_paint_right_side_panel(ge, game);
+	ge_paint_skill_panel     	(game, player);
 
 }
 
@@ -654,8 +657,35 @@ ge_paint_object_right_panel(Graphic_engine*ge, Object* object, int n_painted)
 /* ====================================================================== */
 /*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
 /* ====================================================================== */
-static void	ge_paint_skill_panel     	(Game* game);
+static void
+ge_paint_skill_panel     	(Game* game, Player* player)
+{
+	if (!game || !player) return;
+	Numen* numen;
+	Id id_numen;
+	Skills_id id_skill[3];
+	char* names[3];
+	int i;
+	int j;
+	int pos_x;
+	int pos_y;
 
+	id_numen = player_get_active_numen(player);
+	numen = game_get_numen_by_id(game, id_numen);
+	for (i = 0; i < 4; i++)
+	{
+		id_skill[i] = numen_get_skill_by_index(numen, i);
+		if (id_skill[i] == NO_SKILL) break;
+		names[i] = skill_get_name(id_skill[i]);
+	}
+	
+	for ( j = 0; j < i; j++)
+	{
+		DrawText (names[j], (MeasureText (names[i], MEDIUM_TEXT_SIZE) / 2)+(j*(WIDTH_SCREEN/4)), 40*2, MEDIUM_TEXT_SIZE, COLOR_TEXT);
+	}
+	
+	
+}
 /* ====================================================================== */
 /*                       PRIVATE: TEXTURE LOOKUP                           */
 /* ====================================================================== */

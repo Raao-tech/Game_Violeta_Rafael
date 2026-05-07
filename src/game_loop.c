@@ -210,6 +210,9 @@ main (int argc, char* argv[])
 	    while (command_get_code (game_loop->last_cmd) != EXIT
 	           && game_get_finished (game_loop->game) == FALSE)
 	    {
+			game_rules_win_condition(game_loop->game);
+			game_rules_loose_condition(game_loop->game);
+			game_rules_regen(game_loop->game);
 	        command_get_user_input (game_loop->last_cmd);
 	        game_actions_update    (game_loop->game, game_loop->last_cmd);
 	        if (log_enabled)

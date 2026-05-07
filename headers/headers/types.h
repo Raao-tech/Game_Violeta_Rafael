@@ -126,10 +126,6 @@ typedef enum
     HEALTH_LESS,
     SPEED_PLUS,
     SPEED_LESS,
-    ATTACK_PLUS,
-    ATTACK_LESS,
-    ENERGY_PLUS,
-    ENERGY_LESS,
     OPEN,
     MAX_EFFECT
 }Effect;
@@ -140,7 +136,6 @@ typedef enum
 #define MAX_LIFE 10
 #define MAX_LIFE_CORRUPT 20
 #define MAX_ENGY 100
-#define MAX_ENGY_CORRUPT 200
 #define MAX_ATTACK 10
 #define ERROR_LIFE -1
 #define ERROR_ATTACK -1
