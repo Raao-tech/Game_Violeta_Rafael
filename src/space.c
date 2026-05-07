@@ -324,7 +324,7 @@ space_set_numen (Space* space, Id new_id, Position numen_pos)
             space->grid[cell_y] != NULL)
         {
             if (space->grid[cell_y][cell_x] == 1)
-                space->grid[cell_y][cell_x] = 0;
+                space->grid[cell_y][cell_x] = 2;
         }
     }
 
@@ -347,7 +347,7 @@ space_remove_numen (Space* space, Id id_numen, Position numen_pos)
             cell_y >= 0 && cell_y < HIGHT &&
             space->grid[cell_y] != NULL)
         {
-            if (space->grid[cell_y][cell_x] == id_numen)
+            if (space->grid[cell_y][cell_x] == 2)
                 space->grid[cell_y][cell_x] = 1;
         }
     }
