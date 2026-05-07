@@ -126,6 +126,10 @@ typedef enum
     HEALTH_LESS,
     SPEED_PLUS,
     SPEED_LESS,
+    ATTACK_PLUS,
+    ATTACK_LESS,
+    ENERGY_PLUS,
+    ENERGY_LESS,
     OPEN,
     MAX_EFFECT
 }Effect;
