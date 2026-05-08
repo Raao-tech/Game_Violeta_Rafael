@@ -21,57 +21,53 @@ Direction _game_rules_enemy_dir (Numen* numen_center, Numen* numen_goal);
 Status
 game_rules_regen (Game* game)
 {
+    /* Controla la cadencia: solo regeneramos cada REGEN_TICKS frames.
+     * A 60 fps → 1 tick de regen cada ~1.5 s. */
+    static int regen_tick = 0;
     Player* player;
-    Space* space;
-    Numen* numen;
-    Set* numen_set;
-    Id zone_id;
-    int i;
+    Numen*  numen;
+    int     i, hp, energy, hp_max, engy_max;
+
     if (!game) return ERROR;
-    
-    if (game_get_last_cmd_status (game) == OK)
+
+    regen_tick++;
+    if (regen_tick < 90) return OK;
+    regen_tick = 0;
+
+    player = game_get_player_at (game, PLAYER);
+    if (!player) return ERROR;
+
+    /* Numens en el equipo del jugador */
+    for (i = 0; i < player_get_n_numens (player); i++)
         {
-            
-            player = game_get_player_at(game, PLAYER);
-            if (!player) return ERROR;
+            numen = game_get_numen_by_id (game, player_get_numen_at_inventory (player, i));
+            if (!numen || numen_get_health (numen) <= 0) continue;
 
-            zone_id  = player_get_zone (player);
+            hp_max   = (numen_get_corrupt (numen) == TRUE) ? MAX_LIFE_CORRUPT   : MAX_LIFE;
+            engy_max = (numen_get_corrupt (numen) == TRUE) ? MAX_ENGY_CORRUPT   : MAX_ENGY;
 
-            space = game_get_space (game, zone_id);
+            energy = numen_get_energy (numen);
 
-
-            if (space_get_n_numens (space) != 0)
+            if (numen_get_id (numen) == player_get_active_numen (player))
                 {
-                    numen_set = space_get_numens (space);
-                    for (i = 0; i < space_get_n_numens (space); i++)
-                        {
-                            if (!numen_set) { return ERROR; }
-                            numen = game_get_numen_by_id (game, set_get_id_at (numen_set, i));
-                            if (!numen) { return ERROR; }
-
-                            numen_set_energy (numen, numen_get_energy (numen) + 1);
-                            numen_set_health (numen, numen_get_health (numen) + 1);
-                        }
+                    /* Numen activo: solo recupera energía (en combate, no puede descansar) */
+                    if (energy < engy_max) numen_set_energy (numen, energy + 1);
                 }
-
-            if (player_get_n_numens (player) > 0)
+            else
                 {
-                    for (i = 0; i < player_get_n_numens (player); i++)
-                        {
-                            
-                            numen = game_get_numen_by_id(game,player_get_numen_at_inventory (player, i));
-
-                            if (!numen) { return ERROR; }
-                            if (numen_get_id (numen) == player_get_active_numen (player)) continue;
-                            numen_set_energy (numen, numen_get_energy (numen) + 1);
-                            numen_set_health (numen, numen_get_health (numen) + 1);
-                        }
-                    return OK;
+                    /* Numen en reserva: recupera HP y energía */
+                    hp = numen_get_health (numen);
+                    if (hp < hp_max) numen_set_health (numen, hp + 1);
+                    if (energy < engy_max) numen_set_energy (numen, energy + 1);
                 }
-            if (game_rules_loose_condition (game) == TRUE) return OK;
-
-            return ERROR;
         }
+
+    /* Los numens en el space (enemigos corruptos y capturables errants) NO regeneran:
+     * el jugador tiene que poder debilitarlos para capturarlos. */
+
+    if (player_get_n_numens (player) == 0)
+        game_rules_loose_condition (game);
+
     return OK;
 }
 
@@ -83,7 +79,8 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
     Numen *num = NULL, *enemy_numen = NULL;
     Skills_id skill = NO_SKILL;
     Id space_id, num_id;
-    int distance, radio, skill_indx = 0, active_pos_x, active_pos_y, enemy_pos_x, enemy_pos_y, i;
+    int distance, radio, skill_indx = 0, active_pos_x, active_pos_y, enemy_pos_x, enemy_pos_y;
+    int i;
 
     if (!game || id_enemy == NO_ID) return ERROR_enemy_attack;
 
@@ -115,11 +112,7 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
     if (skill == NO_SKILL) return ERROR_enemy_attack;
 
     num = game_get_numen_by_id (game, num_id); /* el del jugador, va a recibir */
-    if (!num) return ERROR_enemy_attack;
-    if (skill == NO_SKILL) return ERROR_enemy_attack; /* Enemy has no valid skills to attack */
-
-    num = game_get_numen_by_id (game, num_id);
-    if (!space || !num) return ERROR_enemy_attack;
+    if (!num || !space) return ERROR_enemy_attack;
 
     active_pos_x = numen_get_pos_x (num);
     active_pos_y = numen_get_pos_y (num);
@@ -127,14 +120,16 @@ game_rule_attack_enemy (Game* game, Id id_enemy)
     enemy_pos_x  = numen_get_pos_x (enemy_numen);
     enemy_pos_y  = numen_get_pos_y (enemy_numen);
 
-    if (numen_get_health (num) <= 0 && numen_get_health (enemy_numen) <= 0) return ERROR_enemy_attack;
+    if (numen_get_health (num) <= 0) return ERROR_enemy_attack;
 
-    radio    = skill_get_radio (skill); /*por implementar*/
+    radio    = skill_get_radio (skill);
+    /* Distancia en píxeles — consistente con game_actions_attack. */
+    distance = (int)sqrt (pow (active_pos_x - enemy_pos_x, 2)
+                         + pow (active_pos_y - enemy_pos_y, 2));
 
-    distance = sqrt (pow (active_pos_x - enemy_pos_x, 2) + pow (active_pos_y - enemy_pos_y, 2)) / SCALE;
-    if (radio >= distance)
+    if (distance <= radio)
         {
-            if (skill_active (enemy_numen, num, skill, distance) == ERROR) /*por implementar status skill_apply_effect*/
+            if (skill_active (enemy_numen, num, skill, distance) == ERROR)
                 return ERROR_enemy_attack;
         }
     if (numen_get_health (num) <= 0) game_rules_death_numen (game, num);
@@ -206,7 +201,7 @@ game_rule_walk_enemy (Game* game)
     Direction dir;
     Position pos_now, pos_orig;
     int* grid_line;
-    int n_numens, i, cell_x, cell_y, dist_x, dist_y;
+    int n_numens, i, cell_x, cell_y;
     int hp_max, hp_now;
     Bool hides; /* TRUE si el numen quiere huir */
     Bool sees_active;
@@ -578,7 +573,6 @@ game_rule_move (Game* game)
     Direction dir;
     Id origin, dest, active_id;
     Position num, play;
-    int pos_x, pos_y;
 
     if (!game) return ERROR;
     player = game_get_player_at (game, PLAYER);
@@ -734,7 +728,7 @@ Bool
 game_rules_loose_condition (Game* game) /*in this game, you loose when you run out of numens*/
 {
     Player* player;
-    int n_players, n_numens, i;
+    int n_players, i;
     Bool defeat = TRUE;
 
     n_players   = game_get_n_players (game);
@@ -742,7 +736,7 @@ game_rules_loose_condition (Game* game) /*in this game, you loose when you run o
     for (i = 0; i < n_players; i++)
         {
             player = game_get_player_at (game, i);
-            if (!player) return ERROR;
+            if (!player) return (Bool)ERROR;
 
             if (player_get_n_numens (player) > 0)
                 {
@@ -770,7 +764,7 @@ game_rules_death_numen (Game* game, Numen* num)
     Player* player = NULL;
     Space* space = NULL;
     Id space_id;
-    int i, n_nums;
+    int n_nums;
     Position pos;
 
     if (!game || !num) return;

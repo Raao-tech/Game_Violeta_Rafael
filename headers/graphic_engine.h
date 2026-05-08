@@ -100,4 +100,13 @@ void graphic_engine_paint_game     (Graphic_engine* ge, Game* game);
  */
 void graphic_engine_handle_ui_input (Graphic_engine* ge, Game* game);
 
+/**
+ * @brief Shows the game-over / victory screen with music.
+ *        Blocks until the player presses ENTER, ESC or closes the window.
+ *
+ * @param ge   a pointer to the graphic engine
+ * @param game the finished game (used to decide win/loss)
+ */
+void graphic_engine_game_over (Graphic_engine* ge, Game* game);
+
 #endif

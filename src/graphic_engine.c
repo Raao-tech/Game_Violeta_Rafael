@@ -40,14 +40,12 @@
 #define OVERLAY_H        SCALE*2      /* franja superior con HP, nombre y objeto activo*/
 #define OVERLAY_PAD      8
 /*------------------------RIGHT SIDE PANEL (HUD DERECHA)-------------------*/
-#define RIGHT_SIDE_PANEL_W       100     /* Franja derecha con numens activos y objetos*/
+#define RIGHT_SIDE_PANEL_W  100          /* Franja derecha con numens activos y objetos*/
 /*------------------------SKILL PANEL (HUD ABAJO)-------------------*/
-#define RIGHT_SIDE_PANEL_W       100     /* Franja derecha con numens activos y objetos*/
+#define SKILL_PANEL_H       OVERLAY_H    /* Franja inferior con los 4 ataques */
 /*------------------------TOTAL DE LA PANTALLA-------------------*/
-#define WIDTH_SCREEN (WIDHT_MAP + RIGHT_SIDE_PANEL_W )
-#define HIGHT_SCREEN (HIGHT_MAP + OVERLAY_H)
-//(0, HIGHT )
-#define HIGHT_SKILL_PANEL = HIGHT_SCREEN-HIGHT_MAP
+#define WIDTH_SCREEN  (WIDHT_MAP + RIGHT_SIDE_PANEL_W)
+#define HIGHT_SCREEN  (HIGHT_MAP + SKILL_PANEL_H)
 /* ====================================================================== */
 /*                     COLORES (OVERALYS, TEXTO, TITULOS, ETC )           */
 /* ====================================================================== */
@@ -88,6 +86,17 @@ struct _Graphic_engine
 	TexEntryName  object_textures [MAX_OBJECT_TEX];
 
 	Bool textures_loaded;
+
+	/* Música del menú y pantalla final */
+	Music menu_music;
+	Music gameover_music;
+	Bool  menu_music_loaded;
+	Bool  gameover_music_loaded;
+
+	/* Música en partida — cambia con el space */
+	Music game_music;
+	Bool  game_music_loaded;
+	Id    game_music_space_id;   /* space cuya OST está sonando; NO_ID = ninguna */
 };
 
 /* ====================================================================== */
@@ -111,7 +120,7 @@ static void ge_paint_numen_right_panel	(Graphic_engine* ge, Numen* numen, int n_
 static void ge_paint_object_right_panel	(Graphic_engine* ge, Object* object, int n_painted);
 static void ge_paint_active_numen		(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_objects			(Graphic_engine* ge, Game* game, Player* player);
-static void ge_paint_space_numens		(Graphic_engine* ge, Game* game, Player* player);
+static void ge_paint_space_numens		(Graphic_engine* ge, Game* game, Player* player, float* opacity);
 static void ge_paint_skill_panel     	(Game* game, Player* player);
 
 
@@ -119,12 +128,14 @@ static void ge_paint_skill_panel     	(Game* game, Player* player);
 
 static const char* ge_status_to_str (Status s);
 static const char* ge_cmd_to_str    (CommandCode c);
+static void        ge_update_space_music (Graphic_engine* ge, Game* game, Player* player);
 
 static int		ge_find_idx_in_list (Id active_id, int n, Id (*get_at)(Player*, int), Player* player);
 static void		ge_cycle_active_object (Player* player);
 static void		ge_cycle_active_numen  (Game* game, Player* player);
 static 	int		_ge_max_radio_skill_of_numen (Numen* numen);
 static void		_ge_draw_bars (Numen* numen);
+static void		_ge_draw_effect_attack (Numen* numen, float opacity);
 
 /* ====================================================================== */
 /*                         PUBLIC: CREATE / DESTROY                        */
@@ -145,9 +156,14 @@ graphic_engine_create (void)
 	for (i = 0; i < MAX_NUMEN_TEX;  i++) ge->numen_textures[i].name[0]  = '\0';
 	for (i = 0; i < MAX_OBJECT_TEX; i++) ge->object_textures[i].name[0] = '\0';
 
-	ge->textures_loaded = FALSE;
+	ge->textures_loaded       = FALSE;
+	ge->menu_music_loaded     = FALSE;
+	ge->gameover_music_loaded = FALSE;
+	ge->game_music_loaded     = FALSE;
+	ge->game_music_space_id   = NO_ID;
 
-	InitWindow (WIDHT_MAP+OVERLAY_H, HIGHT_MAP+RIGHT_SIDE_PANEL_W, TITLE);
+	InitWindow (WIDTH_SCREEN, HIGHT_SCREEN, TITLE);
+	InitAudioDevice ();
 	SetTargetFPS (FPS);
 	return ge;
 }
@@ -175,6 +191,13 @@ graphic_engine_destroy (Graphic_engine* ge)
 				UnloadTexture (ge->object_textures[i].tex);
 	}
 
+	/* Descargamos la música si fue cargada */
+	if (ge->menu_music_loaded)     UnloadMusicStream (ge->menu_music);
+	if (ge->gameover_music_loaded) UnloadMusicStream (ge->gameover_music);
+	if (ge->game_music_loaded)     UnloadMusicStream (ge->game_music);
+
+	CloseAudioDevice ();
+
 	/* La ventana se cierra DESPUES de descargar texturas */
 	if (IsWindowReady ()) CloseWindow ();
 
@@ -197,10 +220,16 @@ graphic_engine_init (Graphic_engine* ge)
 
 	if (!ge) return result;
 
-
+	/* Música del menú */
+	ge->menu_music        = LoadMusicStream ("./msc_src/OST/musica_chill_persona_5_v1.mp3");
+	ge->menu_music_loaded = TRUE;
+	SetMusicVolume (ge->menu_music, 0.5f);
+	PlayMusicStream (ge->menu_music);
 
 	while (!WindowShouldClose () && exit_on == FALSE)
 	{
+		UpdateMusicStream (ge->menu_music);
+
 		BeginDrawing ();
 		ClearBackground (RAYWHITE);
 
@@ -273,6 +302,14 @@ graphic_engine_init (Graphic_engine* ge)
 
 	if (WindowShouldClose () && result.menu_out == OUT_ERR)
 		result.menu_out = EXIT_Q;
+
+	/* Detenemos la música del menú */
+	if (ge->menu_music_loaded)
+	{
+		StopMusicStream (ge->menu_music);
+		UnloadMusicStream (ge->menu_music);
+		ge->menu_music_loaded = FALSE;
+	}
 
 	return result;
 }
@@ -354,8 +391,9 @@ graphic_engine_load_textures (Graphic_engine* ge, Game* game)
 			o = game_get_object_at (game, i);
 			if (!o) continue;
 		
-			snprintf (path, sizeof (path),	"./img_src/sprites/objects/%s.png", obj_get_name (o));
-		
+			/* gdesc holds the image filename; name is the cache key */
+			snprintf (path, sizeof (path), "./img_src/sprites/objects/%s.png", obj_get_gdesc (o));
+
 			strncpy (ge->object_textures[slot].name, obj_get_name (o), 63);
 			ge->object_textures[slot].name[63] = '\0';
 			ge->object_textures[slot].tex = LoadTexture (path);
@@ -368,6 +406,50 @@ graphic_engine_load_textures (Graphic_engine* ge, Game* game)
 }
 
 /* ====================================================================== */
+/*           PRIVATE: SPACE MUSIC — carga y reproduce el OST del space    */
+/* ====================================================================== */
+
+static void
+ge_update_space_music (Graphic_engine* ge, Game* game, Player* player)
+{
+	Id     zone_id;
+	Space* sp;
+	char*  ost_path;
+
+	if (!ge || !game || !player) return;
+
+	zone_id = player_get_zone (player);
+	if (zone_id == ge->game_music_space_id)
+	{
+		/* Mismo space: solo actualizar el stream */
+		if (ge->game_music_loaded)
+			UpdateMusicStream (ge->game_music);
+		return;
+	}
+
+	/* Space distinto: parar y descargar la música anterior */
+	if (ge->game_music_loaded)
+	{
+		StopMusicStream   (ge->game_music);
+		UnloadMusicStream (ge->game_music);
+		ge->game_music_loaded   = FALSE;
+		ge->game_music_space_id = NO_ID;
+	}
+
+	sp = game_get_space (game, zone_id);
+	if (!sp) return;
+
+	ost_path = space_get_ost (sp);
+	if (!ost_path || ost_path[0] == '\0') return;
+
+	ge->game_music        = LoadMusicStream (ost_path);
+	ge->game_music_loaded = TRUE;
+	ge->game_music_space_id = zone_id;
+	SetMusicVolume (ge->game_music, 0.45f);
+	PlayMusicStream (ge->game_music);
+}
+
+/* ====================================================================== */
 /*                  PUBLIC: PAINT GAME (cada frame)                        */
 /* ====================================================================== */
 
@@ -375,16 +457,20 @@ void
 graphic_engine_paint_game (Graphic_engine* ge, Game* game)
 {
 	Player* player;
+	float	opacity = 0.0f;
 
 	if (!ge || !game) return;
 	player = game_get_player_by_turn (game);
 	if (!player) return;
 
+	/* Actualizar / cambiar música del space actual */
+	ge_update_space_music (ge, game, player);
+
 	ClearBackground (BLACK);
 
 	ge_paint_background  (ge, game, player);
 	ge_paint_objects       (ge, game, player);
-	ge_paint_space_numens  (ge, game, player);
+	ge_paint_space_numens  (ge, game, player, &opacity);
 	ge_paint_active_numen (ge, game, player);
 	ge_paint_player      (ge, player);
 	ge_paint_overlay     (game, player);
@@ -416,12 +502,13 @@ graphic_engine_handle_ui_input (Graphic_engine* ge, Game* game)
 /* ====================================================================== */
 
 static void
-ge_paint_background (Graphic_engine* ge, Game* game, Player* player)
+ge_paint_background (Graphic_engine* ge, Game* game_unused, Player* player)
 {
 	Id         space_id;
 	Texture2D* tex;
 	Rectangle  src, dst;
 
+	(void)game_unused;
 	space_id = player_get_zone (player);
 	tex      = ge_get_space_texture (ge, space_id);
 
@@ -491,11 +578,11 @@ ge_paint_overlay (Game* game, Player* player)
 	Numen*       numen=NULL;
 	Object*      object=NULL;
 	Command*     last_cmd = NULL;
-	char*  		 space_name = NULL;
-	char*  		 cmd_label = NULL;
-	char*  		 status_label = NULL;
-	char*  		 numen_name = NULL;
-	char*  		 object_name = NULL;
+	const char*  space_name = NULL;
+	const char*  cmd_label = NULL;
+	const char*  status_label = NULL;
+	const char*  numen_name = NULL;
+	const char*  object_name = NULL;
 	Id           Id_act_num=NO_ID, Id_act_obj=NO_ID;
 	Color        hp_color, sp_color;
 	int          hp_numen, sp_numen;
@@ -660,41 +747,72 @@ ge_paint_object_right_panel(Graphic_engine*ge, Object* object, int n_painted)
 	}
 }
 /* ====================================================================== */
-/*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
+/*                   PRIVATE: SKILL PANEL (HUD INFERIOR)                  */
+/*                                                                         */
+/* Dibuja N_SKILLS slots horizontales justo debajo del mapa (y=HIGHT_MAP). */
+/* Cada slot muestra: número de hotkey, nombre del skill y daño.           */
 /* ====================================================================== */
-/*Hay que cambiar la codnicion del numen   if (Existe numen haz) si no continua*/
 static void
-ge_paint_skill_panel(Game* game, Player* player)
+ge_paint_skill_panel (Game* game, Player* player)
 {
+	Numen*    numen    = NULL;
+	Id        id_numen = NO_ID;
+	Skills_id skill;
+	char*     name;
+	int       i, slot_x, dmg, slot_w;
+	Color     bg_active, bg_empty, border_col;
+
 	if (!game || !player) return;
-	Numen* numen;
-	Id id_numen;
-	Skills_id id_skill[3];
-	char* names[3];
-	int i;
-	int j;
-	int pos_x;
-	int pos_y;
 
-    id_numen = player_get_active_numen(player);
-    numen    = game_get_numen_by_id(game, id_numen);
-    if (!numen) return;
+	slot_w    = WIDHT_MAP / N_SKILLS;
+	bg_active = (Color){ 40, 40, 65, 230 };
+	bg_empty  = (Color){ 25, 25, 35, 200 };
 
-    for (i = 0; i < N_SKILLS; i++)
-    {
-        id_skill[i] = numen_get_skill_by_index(numen, i);
-        if (id_skill[i] == NO_SKILL) break;
-        names[i] = skill_get_name(id_skill[i]);
-        if (!names[i]) names[i] = "?"; 
-    }
+	/* Fondo del panel completo */
+	DrawRectangle (0, HIGHT_MAP, WIDHT_MAP, SKILL_PANEL_H, (Color){ 15, 15, 25, 240 });
+	DrawLine (0, HIGHT_MAP, WIDHT_MAP, HIGHT_MAP, GOLD);
 
-    for (j = 0; j < i; j++)
-    {
-        if (!names[j]) continue;
-        DrawText(names[j],
-                 MeasureText(names[j], MEDIUM_TEXT_SIZE) / 2 + j * (WIDTH_SCREEN / 4),
-                 40 * 2, MEDIUM_TEXT_SIZE, COLOR_TEXT);
-    }
+	id_numen = player_get_active_numen (player);
+	numen    = game_get_numen_by_id (game, id_numen);
+
+	for (i = 0; i < N_SKILLS; i++)
+	{
+		slot_x = i * slot_w;
+
+		skill = (numen) ? numen_get_skill_by_index (numen, i) : NO_SKILL;
+		name  = (skill != NO_SKILL) ? skill_get_name (skill) : NULL;
+		dmg   = (skill != NO_SKILL) ? skill_get_damage (skill) : 0;
+
+		/* Fondo del slot */
+		DrawRectangle (slot_x + 2, HIGHT_MAP + 2, slot_w - 4, SKILL_PANEL_H - 4,
+		               (skill != NO_SKILL) ? bg_active : bg_empty);
+
+		border_col = (skill != NO_SKILL) ? GOLD : DARKGRAY;
+		DrawRectangleLines (slot_x + 2, HIGHT_MAP + 2, slot_w - 4, SKILL_PANEL_H - 4, border_col);
+
+		/* Número de hotkey */
+		DrawText (TextFormat ("%d", i + 1),
+		          slot_x + 6, HIGHT_MAP + 5,
+		          SMALL_TEXT_SIZE,
+		          (skill != NO_SKILL) ? COLOR_TITLE : DARKGRAY);
+
+		/* Nombre del skill */
+		DrawText (name ? name : "---",
+		          slot_x + 22, HIGHT_MAP + 5,
+		          SMALL_TEXT_SIZE,
+		          (skill != NO_SKILL) ? COLOR_TEXT : DARKGRAY);
+
+		/* Daño */
+		if (skill != NO_SKILL)
+			DrawText (TextFormat ("DMG %d", dmg),
+			          slot_x + 6, HIGHT_MAP + 26,
+			          SMALL_TEXT_SIZE, COLOR_HP_LOW);
+
+		/* Separador vertical entre slots */
+		if (i < N_SKILLS - 1)
+			DrawLine (slot_x + slot_w, HIGHT_MAP, slot_x + slot_w, HIGHT_SCREEN,
+			          (Color){ 80, 80, 80, 180 });
+	}
 }
 /* ====================================================================== */
 /*                       PRIVATE: TEXTURE LOOKUP                           */
@@ -801,7 +919,6 @@ ge_cycle_active_object (Player* player)
 {
     Id      active_id	= NO_ID;
 	Id		new_active_id = NO_ID;
-    Position p;
     int     n, current_idx, next_idx;
 
     if (!player) return;
@@ -876,34 +993,37 @@ ge_cmd_to_str (CommandCode code)
 static void
 ge_paint_active_numen (Graphic_engine* ge, Game* game, Player* player)
 {
-	Numen*     num;
-	Texture2D* tex;
-	Id         active_id;
-	int        pos_x_numen, pos_y_numen;
+	Numen*     		num = NULL;
+	Texture2D* 		tex = NULL;
+	Id         		active_id = NO_ID;
+	Position        pos_numen;
 
-	active_id = player_get_active_numen (player);
-	if (active_id == NO_ID) return;
+	/*==================== GET ===============================*/
+		active_id = player_get_active_numen (player);
+		if (active_id == NO_ID) return;
 
-	num = game_get_numen_by_id (game, active_id);
-	if (!num) return;
+		num = game_get_numen_by_id (game, active_id);
+		if (!num) return;
+	/*=======================================================*/
+	/*==================== POSITION  ==========================*/
+		pos_numen = numen_get_position (num);
 
-	pos_x_numen = numen_get_pos_x (num);
-	pos_y_numen = numen_get_pos_y (num);
+		/* Si por algun motivo no tiene posicion valida, lo colocamos a la derecha del player. */
+		if (types_position_is_valid (num,(Position (*) (void*)) numen_get_position, 0, 0, WIDHT_MAP, HIGHT_MAP) == FALSE)
+		{
+			pos_numen.pos_x = player_get_pos_x (player) + SCALE;
+			pos_numen.pos_y = player_get_pos_y (player);
+			numen_set_position (num, pos_numen.pos_x, pos_numen.pos_y);
+		}
+	/*=======================================================*/
 
-	/* Si por algun motivo no tiene posicion valida, lo colocamos
-	 * a la derecha del player. */
-	if (pos_x_numen == NO_POS || pos_y_numen == NO_POS)
-	{
-		pos_x_numen = player_get_pos_x (player) + SCALE;
-		pos_y_numen = player_get_pos_y (player);
-	}
-
+	
 	tex = ge_get_numen_texture (ge, numen_get_name (num));
 
 	if (ge_texture_is_valid (tex))
 	{
 		Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
-		Rectangle dst = { (float)pos_x_numen, (float)pos_y_numen, (float)SCALE, (float)SCALE };
+		Rectangle dst = { (float)pos_numen.pos_x, (float)pos_numen.pos_y, (float)SCALE, (float)SCALE };
 		DrawTexturePro (*tex, src, dst, (Vector2){ 0, 0 }, 0.0f, WHITE);
 	}
 	else
@@ -918,13 +1038,13 @@ ge_paint_active_numen (Graphic_engine* ge, Game* game, Player* player)
 			? (Color){ 200, 60, 60, 255 }     /* enemigo: rojo */
 			: (Color){ 80, 200, 80, 255 };    /* amigo: verde  */
 
-		DrawCircle (pos_x_numen + SCALE / 2, pos_y_numen + SCALE / 2, SCALE / 2 - 2, col);
-		DrawCircleLines (pos_x_numen + SCALE / 2, pos_y_numen + SCALE / 2, SCALE / 2 - 2, BLACK);
+		DrawCircle (pos_numen.pos_x + (SCALE / 2), pos_numen.pos_y + (SCALE / 2), (SCALE / 2) - 2, col);
+		DrawCircleLines (pos_numen.pos_x  + SCALE / 2, pos_numen.pos_y  + SCALE / 2, SCALE / 2 - 2, BLACK);
 
 		gd = numen_get_gdesc (num);
 		if (gd && gd[0])
 			DrawText (TextFormat ("%c", gd[0]),
-					  pos_x_numen + SCALE / 2 - 4, pos_y_numen + SCALE / 2 - 6, 12, BLACK);
+					  pos_numen.pos_x + SCALE / 2 - 4, pos_numen.pos_y + SCALE / 2 - 6, 12, BLACK);
 	}
 }
 
@@ -953,58 +1073,68 @@ ge_paint_objects (Graphic_engine* ge, Game* game, Player* player)
 	Space*     sp = NULL;
 	Object*    obj = NULL;
 	Texture2D* tex = NULL;
-	Position 	vision;
+	Position 	vision, position;
 	Id         space_id = NO_ID;
-	int        i, n_objs, ox, oy;
+	int        i, n_objs;
 
 	if (!ge || !game || !player) return;
 
-	space_id = player_get_zone (player);
-	sp       = game_get_space (game, space_id);
-	if (!sp) return;
+	/*================ SPACE =======================================*/
+		/*nos aseguramos de tener el objeto del sapce en el que está el player*/
+		space_id = player_get_zone (player);
+		sp       = game_get_space (game, space_id);
+		if (!sp) return;
+	/*===============================================================*/
 
 	/*================ DIBUJAR RECUADRO SEMIBLANCO ================*/
-	vision = player_get_vision(player);
-	if (vision.pos_x != NO_POS || vision.pos_y == NO_POS) 
-		DrawRectangle(vision.pos_x, vision.pos_y, SCALE, SCALE, (Color){255,255,255,150});
+		vision = player_get_vision(player);
+		if (vision.pos_x != NO_POS && vision.pos_y != NO_POS)
+			DrawRectangle(vision.pos_x, vision.pos_y, SCALE, SCALE, (Color){255,255,255,150});
 	/*================ ==============================================*/
 
-	n_objs = game_get_n_objects (game);
-	for (i = 0; i < n_objs; i++)
-	{
-		obj = game_get_object_at (game, i);
-		if (!obj) continue;
+	/*================ PINTAMOS =======================================*/
 
-		/* Solo pintamos los objetos cuyo space coincide con el actual.
-		 * Usamos space_contains_object para no asumir nada de la
-		 * implementacion interna. */
-		if (space_contains_object (sp, obj_get_id (obj)) == FALSE) continue;
-		
-
-
-		ox  = obj_get_pos_x (obj);
-		oy  = obj_get_pos_y (obj);
-		if (types_position_is_valid (obj, (Position (*)(void *)) obj_get_position, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE) continue;
-
-		tex = ge_get_object_texture (ge, obj_get_name (obj));
-
-		if (ge_texture_is_valid (tex))
+		n_objs = game_get_n_objects (game);
+		for (i = 0; i < n_objs; i++)
 		{
-			Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
-			Rectangle dst = { (float)ox, (float)oy, (float)SCALE, (float)SCALE };
-			DrawTexturePro (*tex, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
+			/*Obtenemos el objecto*/
+			obj = game_get_object_at (game, i);
+			if (!obj) continue;
+			/* Si el objeto está en el epsacio, lo pintamos */
+			if (space_contains_object (sp, obj_get_id (obj)) == FALSE) continue;
+
+
+			/*Aduirimos su posición, y revismao que sea una posición valida*/
+			position = obj_get_position (obj);
+			if (types_position_is_valid (obj, (Position (*)(void *)) obj_get_position, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE) continue;
+
+
+
+			/*Pintamos*/
+			tex = ge_get_object_texture (ge, obj_get_name (obj));
+			if (ge_texture_is_valid (tex))
+			{
+				Rectangle src = { 0, 0, (float)tex->width, (float)tex->height };
+				Rectangle dst = { (float)position.pos_x, (float)position.pos_y, (float)SCALE, (float)SCALE };
+				DrawTexturePro (*tex, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
+			}
+			else
+			{
+				/* cuadrado gris con la letra del gdesc */
+				char* gd = obj_get_gdesc (obj);
+				DrawRectangle (position.pos_x, position.pos_y, SCALE, SCALE, (Color){ 150, 150, 150, 200 });
+				DrawRectangleLines (position.pos_x, position.pos_y, SCALE, SCALE, BLACK);
+				if (gd && gd[0])
+					DrawText (TextFormat ("%c", gd[0]),
+							  position.pos_x + SCALE/2 - 4, position.pos_y + SCALE/2 - 6, 12, BLACK);
+			}
 		}
-		else
-		{
-			/* cuadrado gris con la letra del gdesc */
-			char* gd = obj_get_gdesc (obj);
-			DrawRectangle (ox, oy, SCALE, SCALE, (Color){ 150, 150, 150, 200 });
-			DrawRectangleLines (ox, oy, SCALE, SCALE, BLACK);
-			if (gd && gd[0])
-				DrawText (TextFormat ("%c", gd[0]),
-						  ox + SCALE/2 - 4, oy + SCALE/2 - 6, 12, BLACK);
-		}
-	}
+
+	/*===============================================================*/
+
+	
+
+
 }
 
 
@@ -1037,39 +1167,50 @@ ge_get_object_texture (Graphic_engine* ge, const char* name)
 /*     numen activo (feedback visual de "amenaza/objetivo").               */
 /* ====================================================================== */
 static void
-ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
+ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player, float* opacity)
 {
-	Numen*     num = NULL;
-	Numen*     active_num = NULL;
-	Texture2D* tex = NULL;
-	char*      gd = NULL;
+	Numen*     	num = NULL;
+	Numen*     	active_num = NULL;
+	Texture2D* 	tex = NULL;
+	char*      	gd = NULL;
+	Command*	last_cmd = NULL;
 	Id         active_id, num_id, space_id;
 	Position	pos_active, pos_numen;
 	int        n_numens, i;
 	int        dx, dy, dist_sq, range_sq;
 	Bool       is_corrupt, is_errant, in_range;
 	Color      col;
-	int        max_health, max_radio;
-	float      hp_ratio;
+	int        max_radio;
 
 	if (!ge || !game || !player) return;
 	pos_active.pos_x = pos_active.pos_y = NO_POS;
+	max_radio = 0;
 
-	active_id = player_get_active_numen (player); /*Puede ser NO_ID si se  mueren todos, se cerraría el jeugo*/
+	active_id = player_get_active_numen (player);
 	space_id  = player_get_zone (player);
-
 	if (space_id == NO_ID) return;
 
+	last_cmd = game_get_last_command (game);
 
 	active_num = (active_id != NO_ID)
 	             ? game_get_numen_by_id (game, active_id)
 	             : NULL;
 
-	if (active_num) _ge_draw_bars (active_num);
+	if (active_num)
+	{
+		_ge_draw_bars (active_num);
+		pos_active = numen_get_position (active_num);
+		max_radio  = _ge_max_radio_skill_of_numen (active_num);
+	}
+	range_sq = (max_radio > 0) ? max_radio * max_radio : (SCALE * 3) * (SCALE * 3);
 
-	pos_active = numen_get_position (active_num);
-	max_radio = _ge_max_radio_skill_of_numen (active_num);
-	range_sq = max_radio * max_radio;
+	if (command_get_code (last_cmd) == ATTACK) (*opacity) = 1.0f;
+
+	if (*opacity > 0.0f)
+	{
+		*opacity -= GetFrameTime ();
+		_ge_draw_effect_attack (active_num, *opacity);
+	}
 
 	n_numens = game_get_n_numens (game);
 
@@ -1087,7 +1228,23 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 		if (pos_numen.pos_x == NO_POS || pos_numen.pos_y == NO_POS) continue;
 
 		is_corrupt = numen_get_corrupt (num);
-		is_errant = numen_get_following (num);
+		is_errant  = numen_is_errant   (num);
+
+		/* Distancia al numen activo — para resaltar enemigos en rango */
+		dx       = pos_numen.pos_x - pos_active.pos_x;
+		dy       = pos_numen.pos_y - pos_active.pos_y;
+		dist_sq  = dx * dx + dy * dy;
+		in_range = (is_corrupt == TRUE
+		            && pos_active.pos_x != NO_POS
+		            && dist_sq <= range_sq);
+
+		/* Marco de alerta: rojo si en rango, naranja si errant fuera de rango */
+		if (in_range)
+			DrawRectangleLines (pos_numen.pos_x - 2, pos_numen.pos_y - 2,
+			                    SCALE + 4, SCALE + 4, RED);
+		else if (is_errant == TRUE && is_corrupt == FALSE)
+			DrawRectangleLines (pos_numen.pos_x - 1, pos_numen.pos_y - 1,
+			                    SCALE + 2, SCALE + 2, GREEN);
 
 
 
@@ -1127,6 +1284,31 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 		/*	=====BARRAS DE VIDA Y ENERGIA  DEL NUMEN ACTIVE===== */
 			_ge_draw_bars (active_num);
 		/*	=================================== */
+}
+
+static void
+_ge_draw_effect_attack (Numen* numen, float opacity)
+{
+	Position position;
+	int      max_radio = 0;
+	int      cx, cy;
+
+	if (!numen) return;
+
+	position = numen_get_position (numen);
+	if (types_position_is_valid (numen, (Position (*)(void *)) numen_get_position,
+	                             0, 0, WIDHT_MAP, HIGHT_MAP) == FALSE)
+		return;
+
+	max_radio = _ge_max_radio_skill_of_numen (numen);
+	if (max_radio <= 0) max_radio = SCALE * 3;
+
+	cx = position.pos_x + SCALE / 2;
+	cy = position.pos_y + SCALE / 2;
+
+	/* Círculo relleno tenue + anillo sólido para mostrar el radio de ataque */
+	DrawCircle      (cx, cy, (float)max_radio, Fade (ORANGE, opacity * 0.25f));
+	DrawCircleLines (cx, cy, (float)max_radio, Fade (RED,    opacity));
 }
 
 
@@ -1227,4 +1409,86 @@ static int	_ge_max_radio_skill_of_numen (Numen* numen)
 	}
 
 	return max_radio;
+}
+
+/* ====================================================================== */
+/*               PUBLIC: GAME-OVER / VICTORY SCREEN                        */
+/*                                                                         */
+/* Muestra una pantalla final con resultado (victoria o derrota) y música. */
+/* Espera a que el jugador pulse ENTER, ESC o cierre la ventana.           */
+/* ====================================================================== */
+void
+graphic_engine_game_over (Graphic_engine* ge, Game* game)
+{
+	/* Detectamos si fue victoria o derrota comparando las condiciones de juego */
+	Bool won;
+	const char* headline;
+	const char* sub;
+	Color       headline_color;
+	int         hl_w, sub_w;
+
+	if (!ge || !IsWindowReady ()) return;
+
+	won = game_get_last_cmd_status (game) != ERROR;
+	/* Usamos la condición guardada en el juego: si el jugador tiene numens vivos = victoria */
+	{
+		Player* p = game ? game_get_player (game) : NULL;
+		won = (p && player_get_n_numens (p) > 0);
+	}
+
+	headline       = won ? "VICTORIA"   : "GAME OVER";
+	sub            = won ? "Pulsa ENTER para salir"
+	                     : "Pulsa ENTER para salir";
+	headline_color = won ? GOLD : RED;
+
+	/* Música del game-over
+	 * El archivo "Judas" debe estar en ./msc_src/OST/Judas.mp3
+	 * Si no existe, raylib carga silencio y el juego sigue sin crashear. */
+	ge->gameover_music        = LoadMusicStream ("./msc_src/OST/the_final_countdown_musica_epica_boss.mp3");
+	ge->gameover_music_loaded = TRUE;
+	SetMusicVolume (ge->gameover_music, 0.6f);
+	PlayMusicStream (ge->gameover_music);
+
+	while (!WindowShouldClose ()
+	       && !IsKeyPressed (KEY_ENTER)
+	       && !IsKeyPressed (KEY_ESCAPE))
+	{
+		UpdateMusicStream (ge->gameover_music);
+
+		BeginDrawing ();
+		ClearBackground (BLACK);
+
+		/* Fondo semi-transparente oscuro sobre todo */
+		DrawRectangle (0, 0, WIDTH_SCREEN, HIGHT_SCREEN, (Color){ 0, 0, 0, 200 });
+
+		/* Título */
+		hl_w = MeasureText (headline, 60);
+		DrawText (headline,
+		          WIDTH_SCREEN / 2 - hl_w / 2,
+		          HIGHT_SCREEN / 2 - 60,
+		          60, headline_color);
+
+		/* Subtítulo */
+		sub_w = MeasureText (sub, MEDIUM_TEXT_SIZE);
+		DrawText (sub,
+		          WIDTH_SCREEN / 2 - sub_w / 2,
+		          HIGHT_SCREEN / 2 + 20,
+		          MEDIUM_TEXT_SIZE, RAYWHITE);
+
+		/* Parpadeo "ENTER" */
+		if (((int)(GetTime () * 2)) % 2 == 0)
+		{
+			int enter_w = MeasureText ("[ ENTER ]", BIG_TEXT_SIZE);
+			DrawText ("[ ENTER ]",
+			          WIDTH_SCREEN / 2 - enter_w / 2,
+			          HIGHT_SCREEN / 2 + 60,
+			          BIG_TEXT_SIZE, GRAY);
+		}
+
+		EndDrawing ();
+	}
+
+	StopMusicStream (ge->gameover_music);
+	UnloadMusicStream (ge->gameover_music);
+	ge->gameover_music_loaded = FALSE;
 }

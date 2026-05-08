@@ -680,22 +680,26 @@ game_management_save_file (Game** game)
     Links*    link    = NULL;
     Direction dir     = U;
     Effect    effect  = NO_EFECT;
-    Id        id          = NO_ID;
-    Id        zone        = NO_ID;
-    Id        origin      = NO_ID;
-    Id        dest        = NO_ID;
-    Id        dependency  = NO_ID;
-    Id        following   = NO_ID;
+    Id        id             = NO_ID;
+    Id        zone           = NO_ID;
+    Id        origin         = NO_ID;
+    Id        dest           = NO_ID;
+    Id        dependency     = NO_ID;
+    Id        following      = NO_ID;
+    Id        active_num_id  = NO_ID;
+    Id        active_obj_id  = NO_ID;
     Skills_id skills[N_SKILLS];
     int       check, bucle, bucle2;
-    int       n_play  = 0;
-    int       pos_x   = 0;
-    int       pos_y   = 0;
-    int       health  = 0;
-    int       attack  = 0;
-    int       energy  = 0;
-    int       speed   = 0;
-    int       max_bag = 0;
+    int       n_play    = 0;
+    int       pos_x     = 0;
+    int       pos_y     = 0;
+    int       vision_x  = 0;
+    int       vision_y  = 0;
+    int       health    = 0;
+    int       attack    = 0;
+    int       energy    = 0;
+    int       speed     = 0;
+    int       max_bag   = 0;
     int       max_numens = 0;
     int*      grid_line;
     Bool      open_otd, open_dto, consumable, movable;
@@ -751,21 +755,27 @@ game_management_save_file (Game** game)
         if (!player) continue;
         players_game[n_play++] = player;
 
-        id         = player_get_id          (player);
-        name       = player_get_name        (player);
-        zone       = player_get_zone        (player);
-        pos_x      = player_get_pos_x       (player);
-        pos_y      = player_get_pos_y       (player);
-        gdesc      = player_get_gdesc       (player);
-        max_bag    = player_get_max_objects (player);
-        max_numens = player_get_max_numens  (player);
+        id            = player_get_id           (player);
+        name          = player_get_name         (player);
+        zone          = player_get_zone         (player);
+        pos_x         = player_get_pos_x        (player);
+        pos_y         = player_get_pos_y        (player);
+        vision_x      = player_get_vision_x     (player);
+        vision_y      = player_get_vision_y     (player);
+        gdesc         = player_get_gdesc        (player);
+        max_bag       = player_get_max_objects  (player);
+        max_numens    = player_get_max_numens   (player);
+        active_num_id = player_get_active_numen (player);
+        active_obj_id = player_get_active_object(player);
 
-        fprintf (new_sfile, "#p:%ld|%s|%ld|%d|%d|%s|%d|%d|\n",
+        fprintf (new_sfile, "#p:%ld|%s|%ld|%d|%d|%d|%d|%s|%d|%d|%ld|%ld|\n",
                  id,
                  name  ? name  : "",
                  zone, pos_x, pos_y,
+                 vision_x, vision_y,
                  gdesc ? gdesc : "",
-                 max_bag, max_numens);
+                 max_bag, max_numens,
+                 active_num_id, active_obj_id);
     }
 
     /* ============================== OBJECTS ============================== */
@@ -839,7 +849,7 @@ game_management_save_file (Game** game)
         following = numen_get_following (numen);
 
         fprintf (new_sfile,
-                 "#n:%ld|%s|%ld|%d|%d|%s|%d|%d|%d|%d|%d|%d|%d|%d|%ld|\n",
+                 "#n:%ld|%s|%ld|%d|%d|%s|%d|%d|%d|%d|%d|%d|%d|%d|%ld|%d|\n",
                  id,
                  name  ? name  : "",
                  zone, pos_x, pos_y,
@@ -847,7 +857,8 @@ game_management_save_file (Game** game)
                  health, energy, attack, speed,
                  (int)skills[0], (int)skills[1],
                  (int)skills[2], (int)skills[3],
-                 following);
+                 following,
+                 numen_get_corrupt (numen) == TRUE ? 1 : 0);
     }
 
     /* ============================== LINKS ============================== */

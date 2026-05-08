@@ -212,8 +212,7 @@ main (int argc, char* argv[])
 
 	        command_get_user_input (game_loop->last_cmd);
 	        game_actions_update    (game_loop->game, game_loop->last_cmd);
-	        if (log_enabled)
-	            game_loop_print_log (game_loop->game, game_loop->last_cmd, log_file);
+	        if (log_enabled) game_loop_print_log (game_loop->game, game_loop->last_cmd, log_file);
 	    }
 	}
 	else
@@ -232,12 +231,13 @@ main (int argc, char* argv[])
 		
 	        graphic_engine_handle_ui_input (game_loop->gp_raylib, game_loop->game);
 	        command_raylib_get_user_input  (game_loop->last_cmd);
+
 		
 	        if (command_get_code (game_loop->last_cmd) != NO_CMD
 	         && command_get_code (game_loop->last_cmd) != UNKNOWN)
 	        {
 	            game_actions_update (game_loop->game, game_loop->last_cmd);
-	            if (log_enabled)	game_loop_print_log (game_loop->game, game_loop->last_cmd, log_file);
+				if (log_enabled)	game_loop_print_log (game_loop->game, game_loop->last_cmd, log_file);
 			
 	            /* Tras procesar, devolvemos el code a NO_CMD para que el
 	             * usuario pueda volver a actuar el siguiente frame */
@@ -246,8 +246,15 @@ main (int argc, char* argv[])
 			
 	    }
 	}
-	
 
+	/* Pantalla de fin de juego (solo en modo visual) */
+	if (test_enabled == FALSE
+	    && game_loop->gp_raylib
+	    && game_loop->game
+	    && game_get_finished (game_loop->game) == TRUE)
+	{
+		graphic_engine_game_over (game_loop->gp_raylib, game_loop->game);
+	}
 
 	game_loop_cleanup (game_loop, log_file);
 	return 0;
@@ -337,7 +344,7 @@ game_loop_init_user (GameLoop* game_loop)
     	        if (pp.pos_x != NO_POS && pp.pos_y != NO_POS)
     	        {
 					player_set_vision_x (p, pp.pos_x);
-					player_set_vision_y (p, pp.pos_y -SCALE);
+					player_set_vision_y (p, pp.pos_y +SCALE);
     	            numen_set_pos_x (nu, pp.pos_x - SCALE);
     	            numen_set_pos_y (nu, pp.pos_y);
     	        }

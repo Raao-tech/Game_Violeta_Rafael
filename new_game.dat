@@ -9,25 +9,34 @@
 # ====================================================================
 # SPACES (10)
 # Cada space tiene su PNG en ./img_src/background/<filename>
-# Layout del juego: 3 caminos paralelos desde el Loby hasta los bosses
+# Layout del juego:
+#   Loby conectado W→Cor_l, S→Cor_c, E→Cor_r
+#   Cor_c conectado E→Boss_r, W→Boss_l, S→Cor_e→Boss_e
+#   Cor_r S→End_r W→Cor_e (camino alternativo al corredor final)
+#   Cor_l S→End_l (sala auxiliar, sin salida)
 #
-#                        +---------+
-#                        |  Loby   | (1)
-#                        +---------+
-#                       /     |     \
-#                      W      S      E
-#                      |      |      |
-#                +-------+ +-------+ +-------+
-#                | Cor_l | | Cor_c | | Cor_r |  (4) (6) (2)
-#                +-------+ +-------+ +-------+
-#                    |        |        |
-#                +-------+ +-------+ +-------+
-#                | End_l | | Cor_e | | End_r |  (5) (7) (3)
-#                +-------+ +-------+ +-------+
-#                    |        |        |
-#                +-------+ +-------+ +-------+
-#                |Boss_l | |Boss_e | |Boss_r |  (9) (10) (8)
-#                +-------+ +-------+ +-------+
+#              +---------+
+#              |  Loby   | (1)
+#              +---------+
+#             W /   | S   \ E
+#              |    |      |
+#         +------+ +------+ +------+
+#         |Cor_l | |Cor_c | |Cor_r |  (4) (6) (2)
+#         +------+ +------+ +------+
+#            S    W/ S \E    S
+#            |    /    \     |
+#         +------+   +------+ +------+
+#         |End_l | W |Boss_l| |End_r |  (5) (9) (3)
+#         +------+   +------+ +------+
+#         (dead end)          W|
+#                         +------+
+#                         |Cor_e |  (7)
+#                         +------+
+#                           S|
+#                     +------+------+
+#                     |Boss_e|     |  (10)
+#                     +------+     |
+#                     Boss_r (8) accessible via Cor_c E
 #
 # Formato: id|name|gdesc(path_to_png)|OST|line0|line1|...|line24
 # Cada line es WIDHT (=25) caracteres: '1'=transitable, '0'=pared
@@ -63,7 +72,7 @@
 #                  Para Atlas lo dejamos en -1: el menu lo asigna tras elegir starter.
 #   active_obj_id: opcional. -1 o vacio si no hay objeto activo.
 # ====================================================================
-#p:100|Atlas|1|240|240|240|320|@|3|3|-1|69
+#p:100|Atlas|1|240|240|240|320|@|3|3|-1|-1
 
 
 # ====================================================================
@@ -104,14 +113,15 @@
 #              (si solo se da open_otd, open_dto se asume igual)
 # ====================================================================
 #l:401|Loby-Corridor_r|1|2|2|1|1
-#l:402|Corridor_r-End_r|2|3|2|1|1
-#l:403|End_r-Boss_r|3|8|1|1|1
+#l:402|Corridor_r-End_r|2|3|1|1|1
+#l:403|End_r-Corridor_e|3|7|3|1|1
 #l:404|Loby-Corridor_l|1|4|3|1|1
-#l:405|Corridor_l-End_l|4|5|3|1|1
-#l:406|End_l-Boss_l|5|9|1|1|1
-#l:407|Loby-Corridor_c|1|6|1|1|1
-#l:408|Corridor_c-Corridor_e|6|7|1|0|1
-#l:409|Corridor_e-Boss_e|7|10|1|0|1
+#l:405|Corridor_l-End_l|4|5|1|1|1
+#l:406|Loby-Corridor_c|1|6|1|1|1
+#l:407|Corridor_c-Corridor_e|6|7|1|1|1
+#l:408|Corridor_e-Boss_e|7|10|1|1|1
+#l:409|Corridor_c-Boss_r|6|8|2|1|1
+#l:410|Corridor_c-Boss_l|6|9|3|1|1
 
 
 # ====================================================================

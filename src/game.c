@@ -642,27 +642,27 @@ Status game_print (Game* game)
 	for (int i = 0; i < game->n_numens; i++)
 	{
 		status = numen_print (game->numens[i]);
-		if (status = ERROR) return ERROR;
+		if (status == ERROR) return ERROR;
 	}
 	for (int i = 0; i < game->n_objects; i++)
 	{
 		status = obj_print (game->objects[i]);
-		if (status = ERROR) return ERROR;
+		if (status == ERROR) return ERROR;
 	}
 	for (int i = 0; i < game->n_objects; i++)
 	{
 		obj_print (game->objects[i]);
-		if (status = ERROR) return ERROR;
+		if (status == ERROR) return ERROR;
 	}
 	for (int i = 0; i < game->n_spaces; i++)
 	{
 		space_print (game->spaces[i]);
-		if (status = ERROR) return ERROR;
+		if (status == ERROR) return ERROR;
 	}
 	for (int i = 0; i < game->n_links; i++)
 	{
 		link_print (game->links[i], stdout);
-		if (status = ERROR) return ERROR;
+		if (status == ERROR) return ERROR;
 	}
 
 	fprintf (stdout, " ->Turn: %i;\n", game->turn);
