@@ -290,7 +290,7 @@ Id  game_get_object_location (Game* game, Id obj_id);
  * @param Vision_player the grid (Position) player is looking at
  * @return A pointer to the object if found, NULL otherwise
  */
-Object*	game_get_object_by_vision (Game* game, Position vision_player);
+Object*	game_get_object_by_vision (Game* game, Player* player);
 
 /* ========================================================================= */
 /*                        SEARCH: NUMENS                                 */

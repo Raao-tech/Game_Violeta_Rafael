@@ -404,7 +404,7 @@ player_set_vision (Player* player, int x, int y)
 
 	return OK;
 }
-
+/*En pixeles siempre, hayq eu hacer SCALE para obtener la celda*/
 Position
 player_get_vision (Player* player)
 {

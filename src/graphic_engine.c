@@ -354,9 +354,9 @@ graphic_engine_load_textures (Graphic_engine* ge, Game* game)
 			o = game_get_object_at (game, i);
 			if (!o) continue;
 		
-			snprintf (path, sizeof (path),	"./img_src/sprites/objects/%s.png", obj_get_gdesc (o));
+			snprintf (path, sizeof (path),	"./img_src/sprites/objects/%s.png", obj_get_name (o));
 		
-			strncpy (ge->object_textures[slot].name, obj_get_gdesc (o), 63);
+			strncpy (ge->object_textures[slot].name, obj_get_name (o), 63);
 			ge->object_textures[slot].name[63] = '\0';
 			ge->object_textures[slot].tex = LoadTexture (path);
 			slot++;
@@ -487,18 +487,19 @@ ge_paint_player (Graphic_engine* ge, Player* player)
 static void
 ge_paint_overlay (Game* game, Player* player)
 {
-	Space*       sp;
+	Space*       sp = NULL;
 	Numen*       numen=NULL;
 	Object*      object=NULL;
+	Command*     last_cmd = NULL;
+	char*  		 space_name = NULL;
+	char*  		 cmd_label = NULL;
+	char*  		 status_label = NULL;
+	char*  		 numen_name = NULL;
+	char*  		 object_name = NULL;
 	Id           Id_act_num=NO_ID, Id_act_obj=NO_ID;
-	Command*     last_cmd;
-	int          hp_numen, sp_numen;
 	Color        hp_color, sp_color;
-	char*  space_name;
-	char*  cmd_label;
-	char*  status_label;
-	char*  numen_name;
-	char*  object_name;
+	int          hp_numen, sp_numen;
+
 
 	if (!game || !player) return;
 
@@ -510,7 +511,7 @@ ge_paint_overlay (Game* game, Player* player)
 		DrawRectangle (0, 0, WIDHT_MAP + RIGHT_SIDE_PANEL_W, OVERLAY_H, COLOR_OVERLAY);
 
 		/*Nombre del numen a la izquierda*/
-		numen_name=numen_get_name(numen) != NULL ? "" : numen_get_name(numen);
+		numen_name=numen_get_name(numen) != NULL ?  numen_get_name(numen) : "";
 		DrawText(numen_name, OVERLAY_PAD ,7, MEDIUM_TEXT_SIZE, COLOR_TEXT);
 		/* HP a la izquierda */
 		hp_numen = numen_get_health (numen);
@@ -555,7 +556,7 @@ ge_paint_overlay (Game* game, Player* player)
 	{
 		/*Nombre del object a la izquierda*/
 		object_name=obj_get_name(object);
-		DrawText(object_name, WIDHT_MAP + RIGHT_SIDE_PANEL_W - MeasureText (space_name, MEDIUM_TEXT_SIZE) / 2, 21, MEDIUM_TEXT_SIZE, COLOR_TEXT); 
+		DrawText(object_name, WIDHT_MAP - MeasureText (object_name, MEDIUM_TEXT_SIZE) / 2, 21, MEDIUM_TEXT_SIZE, COLOR_TEXT); 
 	}	
 }
 
@@ -804,7 +805,7 @@ ge_cycle_active_object (Player* player)
     int     n, current_idx, next_idx;
 
     if (!player) return;
-    n = player_get_n_numens (player);
+    n = player_get_n_objects (player);
     if (n <= 1) return;
 
     active_id   = player_get_active_object (player);
@@ -949,15 +950,24 @@ ge_get_numen_texture (Graphic_engine* ge, const char* name)
 static void
 ge_paint_objects (Graphic_engine* ge, Game* game, Player* player)
 {
-	Space*     sp;
-	Object*    obj;
-	Texture2D* tex;
-	Id         space_id;
+	Space*     sp = NULL;
+	Object*    obj = NULL;
+	Texture2D* tex = NULL;
+	Position 	vision;
+	Id         space_id = NO_ID;
 	int        i, n_objs, ox, oy;
+
+	if (!ge || !game || !player) return;
 
 	space_id = player_get_zone (player);
 	sp       = game_get_space (game, space_id);
 	if (!sp) return;
+
+	/*================ DIBUJAR RECUADRO SEMIBLANCO ================*/
+	vision = player_get_vision(player);
+	if (vision.pos_x != NO_POS || vision.pos_y == NO_POS) 
+		DrawRectangle(vision.pos_x, vision.pos_y, SCALE, SCALE, (Color){255,255,255,150});
+	/*================ ==============================================*/
 
 	n_objs = game_get_n_objects (game);
 	for (i = 0; i < n_objs; i++)
@@ -969,10 +979,12 @@ ge_paint_objects (Graphic_engine* ge, Game* game, Player* player)
 		 * Usamos space_contains_object para no asumir nada de la
 		 * implementacion interna. */
 		if (space_contains_object (sp, obj_get_id (obj)) == FALSE) continue;
+		
+
 
 		ox  = obj_get_pos_x (obj);
 		oy  = obj_get_pos_y (obj);
-		if (ox == NO_POS || oy == NO_POS) continue;
+		if (types_position_is_valid (obj, (Position (*)(void *)) obj_get_position, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE) continue;
 
 		tex = ge_get_object_texture (ge, obj_get_name (obj));
 
@@ -1027,16 +1039,16 @@ ge_get_object_texture (Graphic_engine* ge, const char* name)
 static void
 ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 {
-	Numen*     num;
-	Numen*     active_num;
-	Texture2D* tex;
+	Numen*     num = NULL;
+	Numen*     active_num = NULL;
+	Texture2D* tex = NULL;
+	char*      gd = NULL;
 	Id         active_id, num_id, space_id;
 	Position	pos_active, pos_numen;
 	int        n_numens, i;
 	int        dx, dy, dist_sq, range_sq;
 	Bool       is_corrupt, is_errant, in_range;
 	Color      col;
-	char*      gd;
 	int        max_health, max_radio;
 	float      hp_ratio;
 
@@ -1101,25 +1113,20 @@ ge_paint_space_numens (Graphic_engine* ge, Game* game, Player* player)
 			DrawCircleLines (pos_numen.pos_x + SCALE, pos_numen.pos_y + SCALE, SCALE - 2, BLACK);
 
 			gd = numen_get_gdesc (num);
-			if (gd && gd[0])
-				DrawText (TextFormat ("%c", gd[0]),
-				          pos_numen.pos_x + SCALE - 4, pos_numen.pos_y + SCALE - 6, 14, BLACK);
+			if (gd && gd[0])	DrawText (TextFormat ("%c", gd[0]),
+				    											pos_numen.pos_x + SCALE - 4, 
+																pos_numen.pos_y + SCALE - 6, 14, BLACK);
 
 
 		}
 
-		/*	=====BARRAS DE VIDA Y ENERGIA ===== */
+		/*	=====BARRAS DE VIDA Y ENERGIA Del numen ===== */
 			_ge_draw_bars (num); 
 		/*	=================================== */
-
-
-
-
 	}
-		/*	=====BARRAS DE VIDA Y ENERGIA ===== */
-		_ge_draw_bars (active_num);
+		/*	=====BARRAS DE VIDA Y ENERGIA  DEL NUMEN ACTIVE===== */
+			_ge_draw_bars (active_num);
 		/*	=================================== */
-
 }
 
 

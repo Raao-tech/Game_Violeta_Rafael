@@ -315,7 +315,7 @@ numen_print (Numen* numen)
 	fprintf (stdout, "\n--- Numen ---\n");
 	for (i = 0; i < NUM_SKILLS; i++)
 	{
-		if (numen->skills) status = skill_print (numen->skills[i]);
+		status = skill_print (numen->skills[i]);
 	}
 	
 

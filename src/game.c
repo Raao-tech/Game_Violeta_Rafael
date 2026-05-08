@@ -286,7 +286,7 @@ game_get_object_by_name (Game* game, char* name)
 }
 
 Object*
-game_get_object_by_vision (Game* game, Position vision_player)
+game_get_object_by_vision (Game* game, Player* player)
 {
 	Object		*obj	= NULL;
 	Position    pos_obj;
@@ -294,7 +294,10 @@ game_get_object_by_vision (Game* game, Position vision_player)
 	pos_obj.pos_x = NO_POS;
 	pos_obj.pos_y = NO_POS;
 
-	if (!game || vision_player.pos_x == NO_POS || vision_player.pos_y == NO_POS) return NULL;
+	if (!game || !player) return NULL;
+	if (types_position_is_valid (player, (Position (*) (void*)) player_get_vision, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE)
+		return NULL;
+
 
 	for (i = 0; i < game->n_objects; i++)
 		{
@@ -305,9 +308,10 @@ game_get_object_by_vision (Game* game, Position vision_player)
 			pos_obj = obj_get_position (obj);
 			if(pos_obj.pos_x == NO_POS || pos_obj.pos_y == NO_POS) continue;
 
-			/*si las coordenadas coinciden, entonces, devolver el valor id del objeto*/
-			if ( pos_obj.pos_x == vision_player.pos_x && pos_obj.pos_y == vision_player.pos_y)
-				{return game->objects[i];}
+			/*si las coordenadas  EN  PISXELES coinciden, entonces, devolver el valor id del objeto*/
+			if (types_is_watching_it (player, obj, 
+				(Position (*) (void*)) player_get_vision, 
+				(Position (*) (void*)) obj_get_position) == TRUE) {return game->objects[i];}
 			
 		}
 	/* Object might be in a player's inventory — not in any space */

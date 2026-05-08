@@ -30,7 +30,8 @@ types_parse_direction (const char* str)
 Bool    types_is_watching_it 
 (
 	void*  watchful, void*  target,
-	Position (*get_vision) (void*), Position (*get_position) (void*)
+	Position (*get_vision) (void*), 
+	Position (*get_position) (void*)
 )
 {
 	Position    watchful_vision;

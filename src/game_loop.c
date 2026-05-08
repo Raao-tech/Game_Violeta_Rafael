@@ -318,8 +318,8 @@ game_loop_init_user (GameLoop* game_loop)
     	Player* p = game_get_player (game_loop->game);
     	if (p)
     	{
-    	    Numen*   nu;
-    	    Space*   sp;
+    	    Numen*   nu = NULL;
+    	    Space*   sp = NULL;
     	    Position pp;
     	    Position dummy;
 
@@ -336,6 +336,8 @@ game_loop_init_user (GameLoop* game_loop)
     	        pp = player_get_position (p);
     	        if (pp.pos_x != NO_POS && pp.pos_y != NO_POS)
     	        {
+					player_set_vision_x (p, pp.pos_x);
+					player_set_vision_y (p, pp.pos_y -SCALE);
     	            numen_set_pos_x (nu, pp.pos_x - SCALE);
     	            numen_set_pos_y (nu, pp.pos_y);
     	        }

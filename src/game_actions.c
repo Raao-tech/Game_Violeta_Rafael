@@ -35,6 +35,10 @@ static void game_actions_save (Game* game);
 // static void game_actions_load    (Game* game);
 static void game_actions_recruit (Game* game);
 static void game_actions_kick (Game* game);
+Status	ga_player_vision_update (Player* player, Direction dir, Position position);
+Id		ga_player_cycle_inventory_obj (Player* player);
+Id		ga_player_cycle_inventory_numens (Player* player);
+
 
 Status game_actions_apply_effect (Game* game, Object* obj, Effect obj_effect);
 static Status _apply_health_plus (Game* game, Object* obj);
@@ -129,16 +133,16 @@ static void
 game_actions_walk (Game* game)
 {
 	Numen* nu = NULL;
-	Command* lst_cmd;
-	Player* player;
-	Space* space;
-	char* dir_str;
-	int* grid_line;
-	Direction direction;
+	Command* lst_cmd = NULL;
+	Player* player = NULL;
+	Space* space = NULL;
+	char* dir_str = NULL;
+	int* grid_line = NULL;
+	Direction direction = U;
 	Position pos_current;
 	Position pos_original;
+	Position vision;
 	Position cur_orig;
-	Player* p = NULL;
 	Id nu_id = NO_ID;
 	int cell_x, cell_y;
 
@@ -148,29 +152,43 @@ game_actions_walk (Game* game)
 	lst_cmd = game_get_last_command (game);
 	if (!lst_cmd) {game_set_last_cmd_status (game, ERROR_walk);return;}
 
-	/*Dirección en string*/
-	dir_str = command_get_target (lst_cmd);
-	if (!dir_str) {game_set_last_cmd_status (game, ERROR_walk);return;}
+	/*============== Dirección ======================================*/
+		/*Dirección en string*/
+		dir_str = command_get_target (lst_cmd);
+		if (!dir_str) {game_set_last_cmd_status (game, ERROR_walk);return;}
 
-	/*Dirección parseada*/
-	direction = types_parse_direction (dir_str);
-	if (direction == U)	{game_set_last_cmd_status (game, ERROR_walk);return;}
+		/*Dirección parseada*/
+		direction = types_parse_direction (dir_str);
+		if (direction == U)	{game_set_last_cmd_status (game, ERROR_walk);return;}
 
-	/*Obtenemos player*/
-	player = game_get_player_at (game, PLAYER);
-	if (!player) {game_set_last_cmd_status (game, ERROR_walk);return;}
+	/*============== ========= ======================================*/
 
-	pos_current  = player_get_position (player);
-	pos_original = player_get_position (player);
+	/*================== Player ========================================*/
+
+		/*Obtenemos player*/
+		player = game_get_player_at (game, PLAYER);
+		if (!player) {game_set_last_cmd_status (game, ERROR_walk);return;}
+
+		/*Vemos cual es su posición actual*/
+		pos_current  = player_get_position (player);
+		if (types_position_is_valid ((void*)player, (Position (*)(void *)) player_get_position, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE )
+			{game_set_last_cmd_status (game, ERROR_walk);return;}
+		/*Guardamos la posición para usarla comor efernecia depsues*/
+		pos_original = pos_current;
+
+	/*==================================================================*/
+
 	/* Calculamos la posicion DESTINO en pixeles */
 	switch (direction)
 		{
-			case N: pos_current.pos_y -= SCALE; break;
-			case S: pos_current.pos_y += SCALE; break;
-			case W: pos_current.pos_x -= SCALE; break;
+			case N:	pos_current.pos_y -= SCALE; break;
+			case S:	pos_current.pos_y += SCALE; break;
+			case W:	pos_current.pos_x -= SCALE; break;
 			case E: pos_current.pos_x += SCALE; break;
 			default: game_set_last_cmd_status (game, ERROR_walk); return;
 		}
+	
+	ga_player_vision_update (player, direction, pos_current);
 
 	/*convertir a celdas y validar contra el grid */
 	cell_x = pos_current.pos_x / SCALE;
@@ -197,16 +215,52 @@ game_actions_walk (Game* game)
 	if (player_set_position (player, pos_current.pos_x, pos_current.pos_y) == ERROR)	{game_set_last_cmd_status (game, ERROR_walk);return;}
 	space_set_grid_by_position (space, pos_original, 1);
 	space_set_grid_by_position (space, pos_current, 0);
+	
+
+
 	/*Pequeño entorno para actualizar el estado del jeugo*/
 	{
-
 		game_rule_walk_active (game);
 		/*==== MOVIMIENTO del los Numens Enemigos ====*/
 		game_rule_walk_enemy (game);
+		/*Guardamos las coordenadas de la casilla a la que está viendo, (en píxelses)*/
 	}
 
 
 	game_set_last_cmd_status (game, OK);
+}
+
+Status
+ga_player_vision_update (Player* player, Direction dir, Position position)
+{
+	Position vision;
+	if (!player || dir == U) return ERROR;
+
+	vision = position;
+
+
+	/* Calculamos la posicion DESTINO en pixeles */
+	switch (dir)
+		{
+			case N:	vision.pos_y = vision.pos_y - SCALE; break;
+			case S:	vision.pos_y = vision.pos_y + SCALE; break;
+			case W:	vision.pos_x = vision.pos_x - SCALE; break;
+			case E: vision.pos_x = vision.pos_x + SCALE; break;
+			default:					   				 break;
+		}
+	if (player_set_vision (player, vision.pos_x, vision.pos_y) == ERROR) return ERROR;
+
+
+	if (types_position_is_valid ((void*)player,( Position (*)(void *))player_get_vision, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE )
+	{
+		/*Nos aseguramos de que está viendo a un sitio válido*/
+		if(vision.pos_x < 0) 			player_set_vision_x (player, position.pos_x + SCALE);
+		if(vision.pos_x > WIDHT_MAP) 	player_set_vision_x (player, position.pos_x - SCALE);
+		if(vision.pos_y < 0) 			player_set_vision_y (player, position.pos_x + SCALE);
+		if(vision.pos_x > HIGHT_MAP) 	player_set_vision_y (player, position.pos_x - SCALE);
+		vision = player_get_vision (player);
+	}
+	return OK;
 }
 
 /* ========================================================================= */
@@ -218,7 +272,7 @@ game_actions_take (Game* game)
 	Player* player = NULL;
 	Space* space   = NULL;
 	Object* obj    = NULL;
-	Position obj_pos, ply_vision;
+	Position obj_pos;
 	Id space_id, obj_id, dependency_id;
 	Bool movable;
 
@@ -227,52 +281,47 @@ game_actions_take (Game* game)
 	obj_pos.pos_x = NO_POS;
 	obj_pos.pos_y = NO_POS;
 
-	player        = game_get_player_by_turn (game);
-	if (!player)	{game_set_last_cmd_status (game, ERROR_take);return;}
+	/*============= PLAYER ==============================================================*/
+		player        = game_get_player_by_turn (game);
+		if (!player)	{game_set_last_cmd_status (game, ERROR_take);return;}
 
-	ply_vision = player_get_vision (player);
+		if (types_position_is_valid (player, (Position (*) (void*)) player_get_position, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE)
+			{game_set_last_cmd_status (game, ERROR_take);return;}
+	/*=======================================================================================*/
+	/*============= SPACE ==============================================================*/
+		space_id   = player_get_zone (player);
+		if (space_id == NO_ID)	{game_set_last_cmd_status (game, ERROR_take);return;}
 
-	space_id   = player_get_zone (player);
-	if (space_id == NO_ID)	{game_set_last_cmd_status (game, ERROR_take);return;}
-	space = game_get_space (game, space_id);
-	if (!space)
-		{
-			game_set_last_cmd_status (game, ERROR_take);
-			return;
-		}
+		space = game_get_space (game, space_id);
+		if (!space)	{game_set_last_cmd_status (game, ERROR_take);return;}
+	/*=======================================================================================*/
 
-	obj = game_get_object_by_vision (game, ply_vision);
-	if (!obj)
-		{
-			game_set_last_cmd_status (game, ERROR_take);
-			return;
-		}
+	/*============= OBJECTO ==============================================================*/
+		obj = game_get_object_by_vision (game, player);
+		if (!obj) {game_set_last_cmd_status (game, ERROR_take);return;}
 
-	obj_id = obj_get_id (obj);
-	if (obj_id == NO_ID)
-		{
-			game_set_last_cmd_status (game, ERROR_take);
-			return;
-		}
+		obj_id = obj_get_id (obj);
+		if (obj_id == NO_ID) {game_set_last_cmd_status (game, ERROR_take);return;}
 
+		/* Posicion real del objeto: necesaria para restaurar el grid al tomarlo */
+		obj_pos = obj_get_position (obj);
+	/*=======================================================================================*/
+
+	/*============================== MECANICA ===============================================*/
 	if (space_contains_object (space, obj_id) == FALSE)
-		{
-			game_set_last_cmd_status (game, ERROR_take);
-			return;
-		}
+		{game_set_last_cmd_status (game, ERROR_take);return;}
 
 	movable = obj_get_movable (obj);
 	if (movable == FALSE)
 		{
 			dependency_id = obj_get_dependency (obj);
 			if (dependency_id == NO_ID || player_contains_object (player, dependency_id) == FALSE)
-				{
-					game_set_last_cmd_status (game, ERROR_take);
-					return;
-				}
+				{game_set_last_cmd_status (game, ERROR_take);return;}
 		}
 
+	/* Restaura la celda del grid a transitable y elimina del set del space */
 	space_remove_object (space, obj_id, obj_pos);
+
 	if (player_add_object (player, obj_id) != OK)
 		{
 			space_set_object (space, obj_id, obj_pos);
@@ -280,104 +329,143 @@ game_actions_take (Game* game)
 			return;
 		}
 
+	/* Limpia la posicion del objeto: ya no esta en el mundo */
+	obj_set_position (obj, NO_POS, NO_POS);
+
 	game_set_last_cmd_status (game, OK);
 }
 
 /* ========================================================================= */
-/*                                 DROP                                       */
-/*  (UNA SOLA DEFINICION)                                                     */
+/*                                 DROP                                       */ 
 /* ========================================================================= */
 static void
 game_actions_drop (Game* game)
 {
-	Player* player;
-	Space* space;
+	Player* player = NULL;
+	Space* space = NULL;
 	Object* obj = NULL;
-	Command* last_command;
-	char* obj_char;
+	Command* last_command = NULL;
+	char* obj_char = NULL;
 	Id space_id, obj_id;
 	Position ply_vision;
 
 	if (!game) return;
 
-	player = game_get_player_by_turn (game);
-	if (!player)
-		{
-			game_set_last_cmd_status (game, ERROR_drop);
-			return;
-		}
+	/*============= PLAYER ==============================================================*/
+		player = game_get_player_by_turn (game);
+		if (!player) {game_set_last_cmd_status (game, ERROR_drop);return;}
 
-	ply_vision = player_get_vision (player);
-	if (ply_vision.pos_x == NO_POS || ply_vision.pos_y == NO_POS)
-		{
-			game_set_last_cmd_status (game, ERROR_drop);
-			return;
-		}
+		ply_vision = player_get_vision (player);
+		if (types_position_is_valid (player, (Position (*) (void*)) player_get_vision, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE)
+ 			{game_set_last_cmd_status (game, ERROR_drop);return;}
 
-	last_command = game_get_last_command (game);
-	if (!last_command)
-		{
-			game_set_last_cmd_status (game, ERROR_drop);
-			return;
-		}
+	/*=======================================================================================*/
 
-	/* Si el comando lleva nombre de objeto: drop por nombre.
-	 * Si no: drop del active_object actual. */
-	obj_char = command_get_target (last_command);
-	if (obj_char && obj_char[0] != '\0')
-		{
-			obj = game_get_object_by_name (game, obj_char);
-			if (!obj)
-				{
-					game_set_last_cmd_status (game, ERROR_drop);
-					return;
-				}
-			obj_id = obj_get_id (obj);
-		}
-	else
-		{
-			obj_id = player_get_active_object (player);
-			if (obj_id == NO_ID)
-				{
-					game_set_last_cmd_status (game, ERROR_drop);
-					return;
-				}
-			obj = game_get_object_by_id (game, obj_id);
-			if (!obj)
-				{
-					game_set_last_cmd_status (game, ERROR_drop);
-					return;
-				}
-		}
+	/*============= Space ==============================================================*/
 
-	space_id = player_get_zone (player);
-	if (space_id == NO_ID)
-		{
-			game_set_last_cmd_status (game, ERROR_drop);
-			return;
-		}
-	space = game_get_space (game, space_id);
-	if (!space)
-		{
-			game_set_last_cmd_status (game, ERROR_drop);
-			return;
-		}
+		space_id = player_get_zone (player);
+		if (space_id == NO_ID) {game_set_last_cmd_status (game, ERROR_drop);return;}
 
-	if (player_contains_object (player, obj_id) == FALSE)
-		{
-			game_set_last_cmd_status (game, ERROR_drop);
-			return;
+		space = game_get_space (game, space_id);
+		if (!space) {game_set_last_cmd_status (game, ERROR_drop);return;}
+
+	/*=======================================================================================*/
+
+	
+	/*===================== OBTENCIÓN DEL ÚLTIMO COMANDO =====================================*/
+
+		/*Obtenemos el objeto en sí*/
+		last_command = game_get_last_command (game);
+		if (!last_command) {game_set_last_cmd_status (game, ERROR_drop);return;}
+
+		/* Si el comando lleva nombre de objeto: drop por nombre.
+		 * Si no: drop del active_object actual. */
+		obj_char = command_get_target (last_command);
+		if (obj_char && obj_char[0] != '\0')
+			{
+				/* MODO TEST: Si nos han pasado algo como -> promtp: d <object_name>*/
+				obj = game_get_object_by_name (game, obj_char);
+				if (!obj) {game_set_last_cmd_status (game, ERROR_drop);return;}
+				obj_id = obj_get_id (obj);
+				if (obj_id == NO_ID)	{game_set_last_cmd_status (game, ERROR_drop);return;}
+			}
+		else
+			{
+				/* MODO USER: Si se ha activado através deñl keyboard por presionar la Tecla T (KEY_T)*/
+
+				obj_id = player_get_active_object (player);
+				if (obj_id == NO_ID)	{game_set_last_cmd_status (game, ERROR_drop);return;}
+
+				obj = game_get_object_by_id (game, obj_id);
+				if (!obj)	{game_set_last_cmd_status (game, ERROR_drop);return;}
+			}
+	/*=======================================================================================*/
+
+
+
+	/*============= MECANICA ==============================================================*/
+		/*Comprobamos que el objecto esta en el inventario de player*/
+		if (player_contains_object (player, obj_id) == FALSE)
+		{game_set_last_cmd_status (game, ERROR_drop);return;}
+
+		/*Eliminamos el obejcto del inventario de player*/
+		if (player_delete_object (player, obj_id) == OK)
+		{	
+			if (space_set_object (space, obj_id, ply_vision) == ERROR)
+			{
+				player_add_object (player, obj_id);
+				game_set_last_cmd_status (game, ERROR_drop);
+				return;
+			}
+			obj_set_position (obj, ply_vision.pos_x, ply_vision.pos_y);
 		}
+		else {game_set_last_cmd_status (game, ERROR_drop);return;}
 
-	/* Mecanica del drop */
-	player_delete_object (player, obj_id);
-	space_set_object (space, obj_id, ply_vision);
-	obj_set_position (obj, ply_vision.pos_x, ply_vision.pos_y);
+		/* Si era el active_object, lo deseleccionamos y le asignamos el siguiente del inventario que no sea NO_ID */
+		if (player_get_active_object (player) == obj_id) player_set_active_object (player, ga_player_cycle_inventory_obj(player));
+	/*=======================================================================================*/
 
-	/* Si era el active_object, lo deseleccionamos */
-	if (player_get_active_object (player) == obj_id) player_set_active_object (player, NO_ID);
 
 	game_set_last_cmd_status (game, OK);
+}
+
+/**
+ *  @brief Esta fucnion cicla por todo el inventario hasta que encuentre un object que no sea NO_ID, si no lo encuentra, retornar NO_ID
+ */
+Id	
+ga_player_cycle_inventory_obj (Player* player)
+{
+	int	i;
+	int	n_objects;
+	Id	id_object = NO_ID;
+	if (!player) return NO_ID;
+
+	n_objects = player_get_n_objects (player);
+	for (i = 0; i < n_objects; i++)
+	{
+		id_object = player_get_object_at_inventory (player, i);
+		if ( id_object != NO_ID) return id_object;
+	}
+	return NO_ID;
+}
+/**
+ *  @brief Esta fucnion cicla por todo el inventario hasta que encuentre un NUMEN que no sea NO_ID, si no lo encuentra, retornar NO_ID
+ */
+Id	
+ga_player_cycle_inventory_numens (Player* player)
+{
+	int	i;
+	int	n_numens;
+	Id	id_numens = NO_ID;
+	if (!player) return NO_ID;
+
+	n_numens = player_get_n_numens (player);
+	for (i = 0; i < n_numens; i++)
+	{
+		id_numens = player_get_numen_at_inventory (player, i);
+		if ( id_numens != NO_ID) return id_numens;
+	}
+	return NO_ID;
 }
 
 /* ========================================================================= */
@@ -386,12 +474,13 @@ game_actions_drop (Game* game)
 static void
 game_actions_attack (Game* game)
 {
-	Player* player;
-	Space* space;
+	Player* player = NULL;
+	Space* space = NULL;
 	Numen *num = NULL, *enemy_num = NULL;
-	Set* space_numens;
-	char* skill_indx_ch;
+	Set* space_numens = NULL;
+	char* skill_indx_ch = NULL;
 	Skills_id skill = NO_SKILL;
+	Position	enemy_pos, active_pos;
 	Id space_id, num_id;
 	int distance, skill_indx, radio;
 	int active_pos_x, active_pos_y, enemy_pos_x, enemy_pos_y;
@@ -399,64 +488,112 @@ game_actions_attack (Game* game)
 
 	if (!game) return;
 
-	/*Obtenemos Player*/
-	player = game_get_player_at (game, PLAYER);
-	if (!player)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
-	if	(types_position_is_valid (player, (Position (*)(void*)) player_get_position, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE) 
-		{game_set_last_cmd_status (game, ERROR_Attack);return;} /*<----- Comprobamos que el player esté en una posición válida (en pixeles)*/
 
-	/*Obtenemos numen del player*/
-	num_id = player_get_active_numen (player);
-	if (num_id == NO_ID)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
-	num   = game_get_numen_by_id (game, num_id);
-	if	(!num)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
+	/*============= PLAYER ==============================================================*/
+		/*Obtenemos Player*/
+		player = game_get_player_at (game, PLAYER);
+		if (!player)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
+
+		/*Comprobamos que el player esté en una posición válida (en pixeles)*/
+		if	(types_position_is_valid (player, (Position (*)(void*)) player_get_position, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE) 
+			{game_set_last_cmd_status (game, ERROR_Attack);return;} 
+
+	/*=======================================================================================*/
+
+	/*============= NUMEN ACTIVE ==============================================================*/
+
+		/*Obtenemos el ID del nuemn activo*/
+		num_id = player_get_active_numen (player);
+		/*Si el player no tiene un numen activo, intenta buscar uno en el inventario*/
+		if (num_id == NO_ID)	num_id = ga_player_cycle_inventory_numens (player);
+		/*Si no encuentra ningún otro numen, lanza un error*/
+		if(num_id == NO_ID)		{game_set_last_cmd_status (game, ERROR_Attack);return;}
+
+
+		/*Obtenemos el obejcto numen*/
+		num   = game_get_numen_by_id (game, num_id);
+		if	(!num)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
+
+		/*Comprobamos que no esté muerto nuestro Numen*/
+		if	(numen_get_health (num) <= 0) {game_set_last_cmd_status (game, ERROR_Attack);return;} 
+
+		/*Comprobamos que el nuemn esté en una posición válida*/
+		if	(types_position_is_valid (num,(Position (*)(void*))  numen_get_position, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE) 
+			{game_set_last_cmd_status (game, ERROR_Attack);return;}
+		
+		active_pos = numen_get_position (num);
+		
+
+	/*=======================================================================================*/
+
+	/*============= SPACE ==============================================================*/
+
+		/*Obtenemos el space en el que está el player*/
+		space_id = player_get_zone (player);
+		if (space_id == NO_ID)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
+
+		space = game_get_space (game, space_id);
+		if (!space) {game_set_last_cmd_status (game, ERROR_Attack);return;}
+
+		/*Obtenemos todos los numens presentes en el spaces*/
+		space_numens = space_get_numens (space);
+		if (!space_numens)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
+
+		num_enemies = space_get_n_numens (space);
+
+	/*=======================================================================================*/
+
+	/*============= SKILLS ==============================================================*/
+
+		/*Obtenemos ell skill lanzado por el comando del usuario (last_command)*/
+		skill_indx_ch = command_get_target (game_get_last_command (game));
+		if (!skill_indx_ch)		{game_set_last_cmd_status (game, ERROR_Attack);return;}
+		/*Verificamos que dicha posicion de skill sea valida, (posición en el array)*/
+		skill_indx = atoi (skill_indx_ch);
+		if (skill_indx < 0 || skill_indx >= N_SKILLS)
+			{game_set_last_cmd_status (game, ERROR_Attack);return;}
+
+		/*Comprobamos cuál de las 4 skills (0 ... a 3)  de Numen fue llamada y la recibimos*/
+		skill = numen_get_skill_by_index (num, skill_indx);
+		if (skill == NO_SKILL)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
+
+
+		/*Obtenemos todos los datos necesarios para ejecutar el ataque*/
+		radio        = skill_get_radio (skill);
+
+
+	/*=======================================================================================*/
+
+
+	/*============= NUMENS ON SPACES ==========================================================*/
+
+
+
+	/*=======================================================================================*/
 	
-	if	(numen_get_health (num) <= 0)
-		{game_set_last_cmd_status (game, ERROR_Attack);return;} /*<----- Comprobamos que no esté muerto nuestro Numen*/
-	if	(types_position_is_valid (num,(Position (*)(void*))  numen_get_position, 0,0, WIDHT_MAP, HIGHT_MAP) == FALSE) 
-		{game_set_last_cmd_status (game, ERROR_Attack);return;} /*<----- Comprobamos que el nuemn esté en una posición válida*/
 
 
-	/*Obtenemos el space en el que está el player*/
-	space_id = player_get_zone (player);
-	if (space_id == NO_ID)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
-	space = game_get_space (game, space_id);
-	if (!space) {game_set_last_cmd_status (game, ERROR_Attack);return;}
+
+
+
 	
 
-	/*Obtenemos ell skill lanzado por el comando del usuario (last_command)*/
-	skill_indx_ch = command_get_target (game_get_last_command (game));
-	if (!skill_indx_ch)		{game_set_last_cmd_status (game, ERROR_Attack);return;}
-	skill_indx = atoi (skill_indx_ch);
-	if (skill_indx < 0 || skill_indx >= N_SKILLS)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
-
-	/*Comprobamos cuál de las 4 skills (0 ... a 3)  de Numen fue llamada y la recibimos*/
-	skill = numen_get_skill_by_index (num, skill_indx);
-	if (skill == NO_SKILL)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
-
-
-
-	active_pos_x = numen_get_pos_x (num);
-	active_pos_y = numen_get_pos_y (num);
-	radio        = skill_get_radio (skill);
-
-	space_numens = space_get_numens (space);
-	if (!space_numens)	{game_set_last_cmd_status (game, ERROR_Attack);return;}
-
-	num_enemies = space_get_n_numens (space);
-
-	/* Aplicamos el skill a TODOS los enemigos validos en el radio */
+	/* Aplicamos el skill a TODOS los enemigos (o salvajes) validos en el radio */
 	for (i = 0; i < num_enemies; i++)
 		{
+			/*Obtenemos el numen*/
 			enemy_num = game_get_numen_by_id (game, set_get_id_at (space_numens, i));
-			if (!enemy_num) continue;
-			if (numen_get_id (enemy_num) == num_id) continue;
-			if (numen_get_corrupt (enemy_num) == FALSE) continue;
-			if (numen_get_health (enemy_num) <= 0) continue;
 
-			enemy_pos_x = numen_get_pos_x (enemy_num);
-			enemy_pos_y = numen_get_pos_y (enemy_num);
-			distance    = (int)sqrt (pow (active_pos_x - enemy_pos_x, 2) + pow (active_pos_y - enemy_pos_y, 2));
+			/*============ Condiciones para recibir daño del ataque ===============*/
+				if (!enemy_num) 								continue;
+				if (numen_get_id (enemy_num) == num_id) 		continue;
+				if (numen_get_following (enemy_num) != NO_ID) 	continue; 
+				if (numen_get_health (enemy_num) <= 0) 			continue;
+			/*============ ======================================== ===============*/
+
+
+			enemy_pos = numen_get_position (enemy_num);
+			distance    = (int)sqrt (pow (active_pos_x - enemy_pos.pos_x, 2) + pow (active_pos.pos_y - enemy_pos_y, 2));
 
 			if (distance > radio) continue;
 

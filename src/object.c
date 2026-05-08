@@ -353,6 +353,7 @@ obj_print (Object* obj)
     fprintf (stdout, " ->Gdesc: %s;\n", gdesc);
     if (consumable == TRUE) fprintf (stdout, " ->Consumable: TRUE;\n");
     else fprintf (stdout, " ->Consumable: FALSE;\n");
+    fprintf (stdout, " ->Effect: %d;\n", effect);
 
 
 

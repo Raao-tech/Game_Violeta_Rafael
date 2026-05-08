@@ -56,17 +56,25 @@ Bool _command_get_is_command (Command* command);
 /* ----------------------------------------------------------------------
  * command_raylib_get_user_input  (modo visual: traduce teclas a Command)
  *
- * STUB del Bloque 0. Solo capturamos ESC para que el usuario pueda
- * salir limpiamente del modo visual. La traduccion completa de
- * flechas/WASD a WALK + Direction, teclas 1-4 a ATTACK + skill_id,
- * y la deteccion de "tengo input este frame" llegara en el Bloque 1
- * cuando ampliemos Command con direction, skill_id y has_input.
- *
- * Reglas a recordar :
+ * Por si no se han leído la documentación de Raylib, o se les olvida como a mí.
+ * Acá les dejo un míni resúmen del aspecto más importante:
+ * 
+ * 	Raylib Necesita operar 60 frames por segundo, lo que implica que siempre está
+ *  "oyendo" lo que ocurre en el teclado, por tal motivo, usamos las macros KEY_algo 
+ * 	 con la función  Bool isKeyPressed (KEY_algo) para obtener repsues del usuario
+ * 	luego la traducimos para game_actions quien deberá estar preaparado para operar con
+ *  ambos modos, user y test
+ * 
+ *  Regla a recordar :
  *   - IsKeyPressed(KEY_X)  -> evento puntual (al pulsar la tecla una vez)
- *   - IsKeyDown(KEY_X)     -> mientras este pulsada (continuo)
- *   - GetKeyPressed()      -> devuelve int (keycode); util para texto,
- *                             NO para reconocer una tecla concreta.
+ * 
+ * ===================================================
+ * Solo capturamos ESC para que el usuario pueda
+ * salir limpiamente del modo visual. 
+ * La traduccion completa de flechas a WALK + Direction, 
+ * teclas 1-4 a ATTACK + skill_id.
+ * ===========================================
+ *
  * ---------------------------------------------------------------------- */
 void
 command_raylib_get_user_input (Command* command)
@@ -115,6 +123,7 @@ command_raylib_get_user_input (Command* command)
 	/*========== ========== DROP ========== ============*/
 	if (IsKeyPressed (KEY_R))
 		{
+			_command_set_target (command, "");
 			command_set_code (command, DROP);
 			return;
 		}
@@ -123,6 +132,7 @@ command_raylib_get_user_input (Command* command)
 	* condiciones (vivo, debil, NO corrupto, errante, no en mochila). */
 	if (IsKeyPressed (KEY_C))
 		{
+			_command_set_target (command, "");
 			command_set_code (command, RECRUIT);
 			return;
 		}

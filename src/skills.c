@@ -94,7 +94,7 @@ skill_active (Numen* sender, Numen* receiver, Skills_id id_skill, int distance)
     if (numen_set_energy (sender, energy - coste) == ERROR) return ERROR;
 
     /* 3. Aplicamos el efecto. Para todas las skills basicas el efecto
-     *    es daño plano; las que necesiten algo mas (FIRE_BALL en area)
+     *    es daño plano. Las que necesiten algo mas (FIRE_BALL en area)
      *    se manejan desde game_actions_attack. */
     return apply_basic_damage (receiver, sender,id_skill, distance);
 }
@@ -130,7 +130,7 @@ skill_get_coste (Skills_id id)
 Status
 skill_print (Skills_id id)
 {
-    char* name;
+    char* name = NULL;
     strcpy (name, skill_get_name(id));
     int radio = skill_get_radio(id);
     int damage = skill_get_damage(id);
