@@ -337,7 +337,7 @@ graphic_engine_load_textures (Graphic_engine* ge, Game* game)
 			nu = game_get_numen_at (game, i);
 			if (!nu) continue;
 			snprintf (path, sizeof (path),
-					  "./img_src/sprites/numens/%s.png", numen_get_name (nu));
+					  "./img_src/sprites/numens/%s.png", numen_get_gdesc (nu));
 			strncpy (ge->numen_textures[slot].name,
 					 numen_get_name (nu), 63);
 			ge->numen_textures[slot].name[63] = '\0';
@@ -356,7 +356,7 @@ graphic_engine_load_textures (Graphic_engine* ge, Game* game)
 		
 			snprintf (path, sizeof (path),	"./img_src/sprites/objects/%s.png", obj_get_gdesc (o));
 		
-			strncpy (ge->object_textures[slot].name, obj_get_name (o), 63);
+			strncpy (ge->object_textures[slot].name, obj_get_gdesc (o), 63);
 			ge->object_textures[slot].name[63] = '\0';
 			ge->object_textures[slot].tex = LoadTexture (path);
 			slot++;
@@ -576,7 +576,9 @@ static void ge_paint_right_side_panel (Graphic_engine* ge, Game* game)
     n_nums = player_get_n_numens(player);
     n_objs = player_get_n_objects(player);
 
-    DrawRectangle(WIDHT_MAP, 0, WIDTH_SCREEN, HIGHT_SCREEN, COLOR_OVERLAY);
+
+	/* Franja semi-transparente arriba */
+	DrawRectangle (WIDHT_MAP, 0, WIDTH_SCREEN, HIGHT_SCREEN, DARKGRAY);
 
     for (n = 0; n < n_nums; n++)
     {
@@ -659,16 +661,19 @@ ge_paint_object_right_panel(Graphic_engine*ge, Object* object, int n_painted)
 /* ====================================================================== */
 /*                       PRIVATE: NUMEN (RIGHT PANEL)                     */
 /* ====================================================================== */
+/*Hay que cambiar la codnicion del numen   if (Existe numen haz) si no continua*/
 static void
 ge_paint_skill_panel(Game* game, Player* player)
 {
-    Numen*    numen;
-    Id        id_numen;
-    Skills_id id_skill[N_SKILLS];
-    char*     names[N_SKILLS];
-    int       i, j;
-
-    if (!game || !player) return;
+	if (!game || !player) return;
+	Numen* numen;
+	Id id_numen;
+	Skills_id id_skill[3];
+	char* names[3];
+	int i;
+	int j;
+	int pos_x;
+	int pos_y;
 
     id_numen = player_get_active_numen(player);
     numen    = game_get_numen_by_id(game, id_numen);
