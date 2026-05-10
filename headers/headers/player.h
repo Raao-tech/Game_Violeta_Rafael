@@ -426,51 +426,11 @@ Bool player_get_loading (Player* player);
 
 /**
  * @brief It prints all the player information for debugging
- * @author Javier Jarque
+ * @author Violeta y Rafa
  *
  * @param player a pointer to the player
  * @return OK, if everything goes well, or ERROR if player is NULL
  */
 Status player_print (Player* player);
-
-/* =========== Speed ======================= */
-/**
- * @brief It sets the speed of the player
- * @author Rafael
- * 
- * @param player a pointer to the player
- * @param speed speed to be set
- * @return OK if speed set properly, ERROR otherwise
- */
-Status player_set_speed (Player* player, int speed);
-/**
- * @brief It gets the speed of the player
- * @author Rafael
- * 
- * @param player a pointer to the player
- * @return speed of the player, but, if there is ERROR return 0
- */
-int player_get_speed (Player* player);
-
-/* =========== Show Message (Set / Get) ========== */
-
-/**
- * @brief It sets the show_message flag of the player
- * @author Salvador
- *
- * @param player a pointer to the player
- * @param show the flag value
- * @return OK if successful, ERROR if player is NULL
- */
-Status player_set_show_message (Player* player, Bool show);
-
-/**
- * @brief It gets the show_message flag of the player
- * @author Salvador
- *
- * @param player a pointer to the player
- * @return the flag value, or FALSE if player is NULL
- */
-Bool player_get_show_message (Player* player);
 
 #endif

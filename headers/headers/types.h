@@ -16,16 +16,15 @@
 #include <string.h>
 
 /*Dimensiones de la pantalla del graphic Engine*/
+#define WIDHT_MAP 512
+#define HIGHT_MAP 512
 #define SCALE 40
 #define WIDHT 12
 #define HIGHT 12
-#define WIDHT_MAP (WIDHT * SCALE)
-#define HIGHT_MAP (HIGHT * SCALE)
 
 
 /* Consts to numbers */
 #define WORD_SIZE 1000
-#define MAX_STRING 256
 #define NO_ID -1
 #define ERROR_MAIN -1
 #define ERROR_GAME -1
@@ -35,15 +34,15 @@
 
 
 /*file of data for default*/
-#define F_DATA_N "./new_game.dat"
+#define F_DATA_N "new_game.dat"
 #define F_DATA_S_1 "./Save_old_games/game_1.dat"
-#define F_DATA_S_2 "./Save_old_games/game_2.dat"
+#define F_DATA_S_2 "./Save_old_games/game_3.dat"
 
 /*Los Ids de los numens serán impuestos, en pokemon Bulbasaur siempre es el #1 de la pokedex incluso pasando a otro juego*/
 /*Id de los Numens inciales*/
-#define First_numen 20
-#define Second_numen 21
-#define third_numen 22
+#define First_numen 1
+#define Second_numen 2
+#define third_numen 3
 
 /*Name of game*/
 #define TITLE "Atlantic Quest"
@@ -127,12 +126,7 @@ typedef enum
     HEALTH_LESS,
     SPEED_PLUS,
     SPEED_LESS,
-    ATTACK_PLUS,
-    ATTACK_LESS,
-    ENERGY_PLUS,
-    ENERGY_LESS,
     OPEN,
-    MULTI_EFFECT,
     MAX_EFFECT
 }Effect;
 
@@ -142,20 +136,9 @@ typedef enum
 #define MAX_LIFE 10
 #define MAX_LIFE_CORRUPT 20
 #define MAX_ENGY 100
-#define MAX_ENGY_CORRUPT 200
 #define MAX_ATTACK 10
 #define ERROR_LIFE -1
 #define ERROR_ATTACK -1
 #define ERROR_ENGY -1
-
-
-
-/*================== FUNTIONS UTILITIES ===================*/
-Direction   types_parse_direction (const char* str);
-Bool        types_position_is_valid( void*  generic,Position (*get_position) (void*), int min_x, int min_y,  int max_x, int max_y);
-Bool        types_is_watching_it (void*  watchful, void*  target,Position (*get_vision) (void*), Position (*get_position) (void*));
-
-
-
 
 #endif
