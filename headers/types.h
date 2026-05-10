@@ -131,6 +131,7 @@ typedef enum
     ENERGY_PLUS,
     ENERGY_LESS,
     OPEN,
+    MULTI_EFFECT,
     MAX_EFFECT
 }Effect;
 
