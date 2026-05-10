@@ -173,11 +173,11 @@ RAYLIB_A    = $(LIB_DIR)/libraylib.a
 
 
 # =============== POSIBLES DEPENDENCIAS PARA LINUX ===============
-GL_LIB  = /usr/lib64/libGL.so.1
-X11_LIB = /usr/lib64/libX11.so
-DL_LIB  = /usr/lib64/libdl.so.2
-RT_LIB  = /usr/lib64/librt.so.1
-M_LIB   = /usr/lib64/libm.so
+GL_LIB  = /usr/lib/x86_64-linux-gnu/libGL.so.1
+X11_LIB = /usr/lib/x86_64-linux-gnu/libX11.so.6
+DL_LIB  = /usr/lib/x86_64-linux-gnu/libdl.so.2
+RT_LIB  = /usr/lib/x86_64-linux-gnu/librt.so.1
+M_LIB   = /usr/lib/x86_64-linux-gnu/libm.so
 
 RAYLIB_SYS_LIBS = $(GL_LIB) $(X11_LIB) $(DL_LIB) $(RT_LIB) $(M_LIB) -pthread
 

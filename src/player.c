@@ -26,6 +26,7 @@ struct _Player
 	Id active_numen; /*!< Id of the active numen */
 	Id active_object; /*!< Id of the active numen */
 	Bool loading;       /*!< Flag to indicate if a player function is being called while loading the game (for now only used in set active object and numen) */
+	Bool show_message;  /*!< Flag to indicate if the message box should be displayed */
 };
 
 /* ========== Create / Destroy ========== */
@@ -42,6 +43,7 @@ player_create ()
 	newPlayer->active_numen = NO_ID;
 	newPlayer->active_object = NO_ID;
 	newPlayer->loading = FALSE;
+	newPlayer->show_message = FALSE;
 	newPlayer->e_player     = entity_create ();
 	if (!newPlayer->e_player)
 		{
@@ -445,6 +447,23 @@ player_set_vision_y (Player* player, int y)
 		}
 	player->vision.pos_y = y;
 	return OK;
+}
+
+/* =========== Show Message (Set / Get) ========== */
+
+Status
+player_set_show_message (Player* player, Bool show)
+{
+	if (!player) return ERROR;
+	player->show_message = show;
+	return OK;
+}
+
+Bool
+player_get_show_message (Player* player)
+{
+	if (!player) return FALSE;
+	return player->show_message;
 }
 
 int

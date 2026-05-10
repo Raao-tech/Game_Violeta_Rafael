@@ -211,7 +211,7 @@ main (int argc, char* argv[])
 	    {
 
 	        command_get_user_input (game_loop->last_cmd);
-	        game_actions_update    (game_loop->game, game_loop->last_cmd);
+	        game_actions_update    (&game_loop->game, game_loop->last_cmd);
 	        if (log_enabled) game_loop_print_log (game_loop->game, game_loop->last_cmd, log_file);
 	    }
 	}
@@ -236,7 +236,7 @@ main (int argc, char* argv[])
 	        if (command_get_code (game_loop->last_cmd) != NO_CMD
 	         && command_get_code (game_loop->last_cmd) != UNKNOWN)
 	        {
-	            game_actions_update (game_loop->game, game_loop->last_cmd);
+	            game_actions_update (&game_loop->game, game_loop->last_cmd);
 				if (log_enabled)	game_loop_print_log (game_loop->game, game_loop->last_cmd, log_file);
 			
 	            /* Tras procesar, devolvemos el code a NO_CMD para que el
@@ -371,6 +371,7 @@ game_loop_cleanup (GameLoop* gameloop, FILE* log_file)
 {
 	if (gameloop)
 		{
+			system (""); /* Para poder cerrar la ventana cómodamente*/
 			if (gameloop->game) game_destroy (gameloop->game);
 			if (gameloop->gp_raylib) graphic_engine_destroy (gameloop->gp_raylib);
 			free (gameloop);

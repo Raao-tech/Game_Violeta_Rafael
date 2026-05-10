@@ -150,15 +150,21 @@ command_raylib_get_user_input (Command* command)
 			return;
 		}
 	/*========== ========== Inspect ========== ============*/
-	if (IsKeyPressed (KEY_F))
+	if (IsKeyPressed (KEY_S))
 		{
-			command_set_code (command, CHAT);
+			command_set_code (command, INSPECT);
 			return;
 		}
 	/*========== ========== Use ========== ============*/
 	if (IsKeyPressed (KEY_SPACE))
 		{
-			command_set_code (command, CHAT);
+			command_set_code (command, USE);
+			return;
+		}
+	/*========== ========== Use ========== ============*/
+	if (IsKeyPressed (KEY_P))
+		{
+			command_set_code (command, SAVE);
 			return;
 		}
 	/*========== ========== ATTACK con skill 0..3 ========== ============*/

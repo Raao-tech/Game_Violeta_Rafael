@@ -122,7 +122,7 @@ static void ge_paint_active_numen		(Graphic_engine* ge, Game* game, Player* play
 static void ge_paint_objects			(Graphic_engine* ge, Game* game, Player* player);
 static void ge_paint_space_numens		(Graphic_engine* ge, Game* game, Player* player, float* opacity);
 static void ge_paint_skill_panel     	(Game* game, Player* player);
-
+static void ge_paint_message_box 		(Game*game);
 
 
 
@@ -253,21 +253,21 @@ graphic_engine_init (Graphic_engine* ge)
 
 			if (GuiButton ((Rectangle){ (int)(WIDHT_MAP * (6.0 / 8.0)), 10, 100, 30 }, "BACK"))
 				result.menu_out = OUT_ERR;
-			if (GuiButton ((Rectangle){ (int)(WIDHT_MAP * (2.0 / 8.0)), 150, 200, 50 }, "BROCOCHACHO"))
+			if (GuiButton ((Rectangle){ (int)(WIDHT_MAP * (2.0 / 8.0)), 150, 200, 50 }, "HYDROLIZARD"))
 			{
 				strncpy (result.data_name, F_DATA_N, WORD_SIZE);
 				result.data_name[WORD_SIZE] = '\0';
 				result.init_numen           = First_numen;
 				exit_on                     = TRUE;
 			}
-			if (GuiButton ((Rectangle){ (int)(WIDHT_MAP * (2.0 / 8.0)), 220, 200, 50 }, "SQUIRTLE"))
+			if (GuiButton ((Rectangle){ (int)(WIDHT_MAP * (2.0 / 8.0)), 220, 200, 50 }, "FAIGREEN"))
 			{
 				strncpy (result.data_name, F_DATA_N, WORD_SIZE);
 				result.data_name[WORD_SIZE] = '\0';
 				result.init_numen           = Second_numen;
 				exit_on                     = TRUE;
 			}
-			if (GuiButton ((Rectangle){ (int)(WIDHT_MAP * (2.0 / 8.0)), 290, 200, 50 }, "CHARMANDER"))
+			if (GuiButton ((Rectangle){ (int)(WIDHT_MAP * (2.0 / 8.0)), 290, 200, 50 }, "FLUFFIRE"))
 			{
 				strncpy (result.data_name, F_DATA_N, WORD_SIZE);
 				result.data_name[WORD_SIZE] = '\0';
@@ -476,7 +476,7 @@ graphic_engine_paint_game (Graphic_engine* ge, Game* game)
 	ge_paint_overlay     (game, player);
 	ge_paint_right_side_panel(ge, game);
 	ge_paint_skill_panel     	(game, player);
-
+	ge_paint_message_box (game);
 }
 
 /* ====================================================================== */
@@ -643,7 +643,7 @@ ge_paint_overlay (Game* game, Player* player)
 	{
 		/*Nombre del object a la izquierda*/
 		object_name=obj_get_name(object);
-		DrawText(object_name, WIDHT_MAP - MeasureText (object_name, MEDIUM_TEXT_SIZE) / 2, 21, MEDIUM_TEXT_SIZE, COLOR_TEXT); 
+		DrawText(object_name, WIDHT_MAP - MeasureText (object_name, MEDIUM_TEXT_SIZE), 21, MEDIUM_TEXT_SIZE, COLOR_TEXT); 
 	}	
 }
 
@@ -814,6 +814,54 @@ ge_paint_skill_panel (Game* game, Player* player)
 			          (Color){ 80, 80, 80, 180 });
 	}
 }
+
+/* ====================================================================== */
+/*                   PRIVATE: CHAT PANEL (SOBRE EL SKILL PANEL)           */
+/*                                                                        */
+/* Dibuja el mensaje de chat guardado en player sobre el skill panel      */
+/* ====================================================================== */
+static void
+ge_paint_message_box (Game *game)
+{
+    Player* player = NULL;
+    char* msg = NULL, line[MAX_STRING];;
+    int n_lines = 1;
+    int max_line_len = 50; // Longitud máxima por línea
+	int len;
+	int offset = 0;
+    int msg_len;
+    if (!game) return;
+    player = game_get_player_at(game, PLAYER);
+    if (!player) return;
+	if(player_get_show_message(player) == FALSE) return;
+    msg = player_get_message(player);
+
+    if (msg)
+    {
+        DrawRectangle(0, HIGHT_MAP, WIDHT_MAP, SKILL_PANEL_H, DARKGRAY);
+        offset = 0;
+        msg_len = strlen(msg);
+        while (offset < msg_len)
+        {
+            if (HIGHT_MAP + 5 + n_lines * SMALL_TEXT_SIZE > HIGHT_MAP + SKILL_PANEL_H) break;
+            len = msg_len - offset;
+            if (len > max_line_len) len = max_line_len;
+            strncpy(line, msg + offset, len);
+            line[len] = '\0';
+            DrawText(line, 5, HIGHT_MAP + 5 + (n_lines - 1) * SMALL_TEXT_SIZE, SMALL_TEXT_SIZE, COLOR_TEXT);
+            n_lines++;
+            offset += len;
+        }
+        free(msg);
+    }
+    else
+    {
+        ge_paint_skill_panel(game, player);
+    }
+
+    return;
+}
+
 /* ====================================================================== */
 /*                       PRIVATE: TEXTURE LOOKUP                           */
 /* ====================================================================== */
@@ -1438,7 +1486,7 @@ graphic_engine_game_over (Graphic_engine* ge, Game* game)
 
 	headline       = won ? "VICTORIA"   : "GAME OVER";
 	sub            = won ? "Pulsa ENTER para salir"
-	                     : "Pulsa ENTER para salir";
+	                     : "Pulsa ESC para salir";
 	headline_color = won ? GOLD : RED;
 
 	/* Música del game-over
