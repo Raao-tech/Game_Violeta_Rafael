@@ -39,12 +39,15 @@ void test2_obj_has_name();
 void test3_obj_has_name();
 void test4_obj_has_name();
 
-/* obj_set_description / obj_get_description */
+/* obj_set_description / obj_get_description / obj_has_description */
 void test1_obj_set_description();
 void test2_obj_set_description();
 void test3_obj_set_description();
 void test1_obj_get_description();
 void test2_obj_get_description();
+void test1_obj_has_description();
+void test2_obj_has_description();
+void test3_obj_has_description();
 
 /* obj_set_gdesc / obj_get_gdesc */
 void test1_obj_set_gdesc();

@@ -701,3 +701,42 @@ game_add_character (Game* game, Character* character)
 	if (!game) return ERROR;
 	return OK;
 }
+
+Character*
+game_get_character_at (Game* game, int position)
+{
+	(void)position;
+	if (!game) return NULL;
+	return NULL;
+}
+
+int
+game_get_n_characters (Game* game)
+{
+	if (!game) return -1;
+	return 0;
+}
+
+Character*
+game_get_character_by_id (Game* game, Id id)
+{
+	(void)id;
+	if (!game) return NULL;
+	return NULL;
+}
+
+Character*
+game_get_character_by_name (Game* game, char* name)
+{
+	(void)name;
+	if (!game) return NULL;
+	return NULL;
+}
+
+Id
+game_get_character_location (Game* game, Id id)
+{
+	(void)id;
+	if (!game) return NO_ID;
+	return NO_ID;
+}

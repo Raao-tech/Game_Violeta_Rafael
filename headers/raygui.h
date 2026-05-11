@@ -839,7 +839,7 @@ extern "C"
                                   float maxValue);                                                              // Progress Bar control
     RAYGUIAPI int GuiStatusBar (Rectangle bounds, const char* text);                                            // Status Bar control, shows info text
     RAYGUIAPI int GuiDummyRec (Rectangle bounds, const char* text);                                             // Dummy control for placeholders
-    RAYGUIAPI int GuiGrid (Rectangle bounds, const char* text, float spacing, int subdivs, Vector2* mouseCell); // Grid control
+    RAYGUIAPI int GuiGrid (Rectangle bounds, float spacing, int subdivs, Vector2* mouseCell); // Grid control
 
     // Advance controls set
     RAYGUIAPI int GuiListView (Rectangle bounds, const char* text, int* scrollIndex, int* active); // List View control
@@ -849,14 +849,14 @@ extern "C"
                                  const char* buttons); // Message Box control, displays a message
     RAYGUIAPI int GuiTextInputBox (Rectangle bounds, const char* title, const char* message, const char* buttons, char* text, int textMaxSize,
                                    bool* secretViewActive);                            // Text Input Box control, ask for text, supports secret
-    RAYGUIAPI int GuiColorPicker (Rectangle bounds, const char* text, Color* color);   // Color Picker control (multiple color controls)
-    RAYGUIAPI int GuiColorPanel (Rectangle bounds, const char* text, Color* color);    // Color Panel control
-    RAYGUIAPI int GuiColorBarAlpha (Rectangle bounds, const char* text, float* alpha); // Color Bar Alpha control
-    RAYGUIAPI int GuiColorBarHue (Rectangle bounds, const char* text, float* value);   // Color Bar Hue control
-    RAYGUIAPI int GuiColorPickerHSV (Rectangle bounds, const char* text,
+    RAYGUIAPI int GuiColorPicker (Rectangle bounds, Color* color);   // Color Picker control (multiple color controls)
+    RAYGUIAPI int GuiColorPanel (Rectangle bounds, Color* color);    // Color Panel control
+    RAYGUIAPI int GuiColorBarAlpha (Rectangle bounds,  float* alpha); // Color Bar Alpha control
+    RAYGUIAPI int GuiColorBarHue (Rectangle bounds,  float* value);   // Color Bar Hue control
+    RAYGUIAPI int GuiColorPickerHSV (Rectangle bounds,
                                      Vector3* colorHsv); // Color Picker control that avoids conversion to RGB on each call (multiple color controls)
     RAYGUIAPI int
-    GuiColorPanelHSV (Rectangle bounds, const char* text,
+    GuiColorPanelHSV (Rectangle bounds,
                       Vector3* colorHsv); // Color Panel control that updates Hue-Saturation-Value color value, used by GuiColorPickerHSV()
     //----------------------------------------------------------------------------------------------------------
 
@@ -1598,7 +1598,7 @@ static void DrawRectangleGradientV (int posX, int posY, int width, int height, C
 //----------------------------------------------------------------------------------
 // Module Internal Functions Declaration
 //----------------------------------------------------------------------------------
-static void GuiLoadStyleFromMemory (const unsigned char* fileData, int dataSize); // Load style from memory (binary only)
+static void GuiLoadStyleFromMemory (unsigned char* fileData); // Load style from memory (binary only)
 
 static Rectangle GetTextBounds (int control, Rectangle bounds); // Get text bounds considering control bounds
 static const char* GetTextIcon (const char* text, int* iconId); // Get text icon if provided and move text cursor
@@ -4007,7 +4007,7 @@ GuiListViewEx (Rectangle bounds, char** text, int count, int* scrollIndex, int* 
 
 // Color Panel control - Color (RGBA) variant
 int
-GuiColorPanel (Rectangle bounds, const char* text, Color* color)
+GuiColorPanel (Rectangle bounds,  Color* color)
 {
     int result      = 0;
 
@@ -4015,7 +4015,7 @@ GuiColorPanel (Rectangle bounds, const char* text, Color* color)
     Vector3 hsv     = ConvertRGBtoHSV (vcolor);
     Vector3 prevHsv = hsv; // workaround to see if GuiColorPanelHSV modifies the hsv
 
-    GuiColorPanelHSV (bounds, text, &hsv);
+    GuiColorPanelHSV (bounds,  &hsv);
 
     // Check if the hsv was changed, only then change the color
     // This is required, because the Color->HSV->Color conversion has precision errors
@@ -4036,7 +4036,7 @@ GuiColorPanel (Rectangle bounds, const char* text, Color* color)
 // Color Bar Alpha control
 // NOTE: Returns alpha value normalized [0..1]
 int
-GuiColorBarAlpha (Rectangle bounds, const char* text, float* alpha)
+GuiColorBarAlpha (Rectangle bounds,  float* alpha)
 {
 #if !defined(RAYGUI_COLORBARALPHA_CHECKED_SIZE)
 #define RAYGUI_COLORBARALPHA_CHECKED_SIZE 10
@@ -4139,7 +4139,7 @@ GuiColorBarAlpha (Rectangle bounds, const char* text, float* alpha)
 //      Color GuiColorBarValue() [BLACK->color], HSV/HSL
 //      float GuiColorBarLuminance() [BLACK->WHITE]
 int
-GuiColorBarHue (Rectangle bounds, const char* text, float* hue)
+GuiColorBarHue (Rectangle bounds,  float* hue)
 {
     int result     = 0;
     GuiState state = guiState;
@@ -4248,14 +4248,14 @@ GuiColorBarHue (Rectangle bounds, const char* text, float* hue)
 // NOTE: bounds define GuiColorPanel() size
 // NOTE: this picker converts RGB to HSV, which can cause the Hue control to jump. If you have this problem, consider using the HSV variant instead
 int
-GuiColorPicker (Rectangle bounds, const char* text, Color* color)
+GuiColorPicker (Rectangle bounds, Color* color)
 {
     int result = 0;
 
     Color temp = { 200, 0, 0, 255 };
     if (color == NULL) color = &temp;
 
-    GuiColorPanel (bounds, NULL, color);
+    GuiColorPanel (bounds, color);
 
     Rectangle boundsHue = { (float)bounds.x + bounds.width + GuiGetStyle (COLORPICKER, HUEBAR_PADDING), (float)bounds.y,
                             (float)GuiGetStyle (COLORPICKER, HUEBAR_WIDTH), (float)bounds.height };
@@ -4266,7 +4266,7 @@ GuiColorPicker (Rectangle bounds, const char* text, Color* color)
     // only the GuiColorPanel is used
     Vector3 hsv = ConvertRGBtoHSV (RAYGUI_CLITERAL (Vector3){ (*color).r / 255.0f, (*color).g / 255.0f, (*color).b / 255.0f });
 
-    GuiColorBarHue (boundsHue, NULL, &hsv.x);
+    GuiColorBarHue (boundsHue, &hsv.x);
 
     // color.a = (unsigned char)(GuiColorBarAlpha(boundsAlpha, (float)color.a/255.0f)*255.0f);
     Vector3 rgb = ConvertHSVtoRGB (hsv);
@@ -4285,7 +4285,7 @@ GuiColorPicker (Rectangle bounds, const char* text, Color* color)
 //      float GuiColorBarHue(Rectangle bounds, float value)
 // NOTE: bounds define GuiColorPanelHSV() size
 int
-GuiColorPickerHSV (Rectangle bounds, const char* text, Vector3* colorHsv)
+GuiColorPickerHSV (Rectangle bounds, Vector3* colorHsv)
 {
     int result      = 0;
 
@@ -4298,19 +4298,19 @@ GuiColorPickerHSV (Rectangle bounds, const char* text, Vector3* colorHsv)
             colorHsv                = &tempHsv;
         }
 
-    GuiColorPanelHSV (bounds, NULL, colorHsv);
+    GuiColorPanelHSV (bounds, NULL);
 
     const Rectangle boundsHue = { (float)bounds.x + bounds.width + GuiGetStyle (COLORPICKER, HUEBAR_PADDING), (float)bounds.y,
                                   (float)GuiGetStyle (COLORPICKER, HUEBAR_WIDTH), (float)bounds.height };
 
-    GuiColorBarHue (boundsHue, NULL, &colorHsv->x);
+    GuiColorBarHue (boundsHue, &colorHsv->x);
 
     return result;
 }
 
 // Color Panel control - HSV variant
 int
-GuiColorPanelHSV (Rectangle bounds, const char* text, Vector3* colorHsv)
+GuiColorPanelHSV (Rectangle bounds,  Vector3* colorHsv)
 {
     int result             = 0;
     GuiState state         = guiState;
@@ -4571,7 +4571,7 @@ GuiTextInputBox (Rectangle bounds, const char* title, const char* message, const
 // About drawing lines at subpixel spacing, simple put, not easy solution:
 // REF: https://stackoverflow.com/questions/4435450/2d-opengl-drawing-lines-that-dont-exactly-fit-pixel-raster
 int
-GuiGrid (Rectangle bounds, const char* text, float spacing, int subdivs, Vector2* mouseCell)
+GuiGrid (Rectangle bounds, float spacing, int subdivs, Vector2* mouseCell)
 {
 // Grid lines alpha amount
 #if !defined(RAYGUI_GRID_ALPHA)
@@ -4769,7 +4769,7 @@ GuiLoadStyle (const char* fileName)
                                 {
                                     fread (fileData, sizeof (unsigned char), fileDataSize, rgsFile);
 
-                                    GuiLoadStyleFromMemory (fileData, fileDataSize);
+                                    GuiLoadStyleFromMemory (fileData);
 
                                     RAYGUI_FREE (fileData);
                                 }
@@ -5000,7 +5000,7 @@ GuiLoadIcons (const char* fileName, bool loadIconsName)
 // Load icons from memory
 // WARNING: Binary files only
 char**
-GuiLoadIconsFromMemory (const unsigned char* fileData, int dataSize, bool loadIconsName)
+GuiLoadIconsFromMemory (unsigned char* fileData, bool loadIconsName)
 {
     unsigned char* fileDataPtr = (unsigned char*)fileData;
     char** guiIconsName        = NULL;
@@ -5147,7 +5147,7 @@ GuiGetTextWidth (const char* text)
 // Load style from memory
 // WARNING: Binary files only
 static void
-GuiLoadStyleFromMemory (const unsigned char* fileData, int dataSize)
+GuiLoadStyleFromMemory (unsigned char* fileData)
 {
     unsigned char* fileDataPtr = (unsigned char*)fileData;
 

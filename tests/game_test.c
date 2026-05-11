@@ -217,7 +217,8 @@ void test1_game_get_object_location() {
   obj_set_id(o, 21);
   game_add_space(g, s);
   game_add_object(g, o);
-  space_set_object(s, 21);
+  Position dummy = {0, 0};
+  space_set_object(s, 21, dummy);
   PRINT_TEST_RESULT(game_get_object_location(g, 21) == 11);
   game_destroy(g);
 }

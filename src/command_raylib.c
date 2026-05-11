@@ -85,6 +85,7 @@ command_raylib_get_user_input (Command* command)
 	/*========== ========== EXIT ========== ============*/
 	if (IsKeyPressed (KEY_ESCAPE))
 		{
+			_command_set_target (command, "");
 			command_set_code (command, EXIT);
 			return;
 		}
@@ -117,6 +118,7 @@ command_raylib_get_user_input (Command* command)
 	/*========== ========== TAKE ========== ============*/
 	if (IsKeyPressed (KEY_T))
 		{
+			_command_set_target (command, "");
 			command_set_code (command, TAKE);
 			return;
 		}
@@ -140,30 +142,35 @@ command_raylib_get_user_input (Command* command)
 	/* Tecla X: Libera al Numen Active destruyéndolo de forma "gentil" :)*/
 	if (IsKeyPressed (KEY_X))
 		{
+			_command_set_target (command, "");
 			command_set_code (command, KICK);
 			return;
 		}
 	/*========== ========== Chat ========== ============*/
 	if (IsKeyPressed (KEY_A))
 		{
+			_command_set_target (command, "");
 			command_set_code (command, CHAT);
 			return;
 		}
 	/*========== ========== Inspect ========== ============*/
 	if (IsKeyPressed (KEY_S))
 		{
+			_command_set_target (command, "");
 			command_set_code (command, INSPECT);
 			return;
 		}
 	/*========== ========== Use ========== ============*/
 	if (IsKeyPressed (KEY_SPACE))
 		{
+			_command_set_target (command, "");
 			command_set_code (command, USE);
 			return;
 		}
 	/*========== ========== Use ========== ============*/
 	if (IsKeyPressed (KEY_P))
 		{
+			_command_set_target (command, "");
 			command_set_code (command, SAVE);
 			return;
 		}

@@ -86,4 +86,11 @@ void test2_player_set_message();
 void test1_player_get_message();
 void test2_player_get_message();
 
+/* player_set_zone / get_zone */
+void test1_player_set_zone();
+void test2_player_set_zone();
+void test3_player_set_zone();
+void test1_player_get_zone();
+void test2_player_get_zone();
+
 #endif

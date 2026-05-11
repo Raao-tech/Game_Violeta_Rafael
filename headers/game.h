@@ -200,6 +200,9 @@ Status game_add_object (Game* game, Object* obj);
  * @return OK if added, ERROR if NULL or array full
  */
 Status game_add_character (Game* game, Character* character);
+Character* game_get_character_by_id (Game* game, Id id);
+Character* game_get_character_by_name (Game* game, char* name);
+Id game_get_character_location (Game* game, Id id);
 
 /**
  * @brief It adds a player to the game

@@ -35,7 +35,7 @@ $(PLY_BIN): player_test.o ../player.o ../entity.o ../inventory.o ../set.o
 $(CHR_BIN): character_test.o ../character.o ../entity.o ../set.o
 	$(CC) $(FLAGS) $^ -o $@
 
-$(GAM_BIN): game_test.o ../game.o ../player.o ../character.o ../object.o ../space.o ../entity.o ../inventory.o ../set.o ../command.o ../links.o
+$(GAM_BIN): game_test.o ../game.o ../player.o ../character.o ../object.o ../space.o ../entity.o ../inventory.o ../set.o ../command.o ../links.o ../numen.o ../types.o ../skills.o
 	$(CC) $(FLAGS) $^ -o $@
 
 $(CMD_BIN): command_test.o ../command.o
@@ -44,7 +44,7 @@ $(CMD_BIN): command_test.o ../command.o
 $(LNK_BIN): links_test.o ../links.o
 	$(CC) $(FLAGS) $^ -o $@
 
-$(OBJ_BIN): object_test.o ../object.o
+$(OBJ_BIN): object_test.o ../object.o ../entity.o ../set.o
 	$(CC) $(FLAGS) $^ -o $@
 
 %.o: %.c

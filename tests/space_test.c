@@ -180,17 +180,20 @@ void test2_space_get_name() {
 
 void test1_space_set_object() {
   Space *s = space_create();
-  PRINT_TEST_RESULT(space_set_object(s, 21) == OK);
+  Position dummy = {0, 0};
+  PRINT_TEST_RESULT(space_set_object(s, 21, dummy) == OK);
   space_destroy(s);
 }
 
 void test2_space_set_object() {
-  PRINT_TEST_RESULT(space_set_object(NULL, 21) == ERROR);
+  Position dummy = {0, 0};
+  PRINT_TEST_RESULT(space_set_object(NULL, 21, dummy) == ERROR);
 }
 
 void test1_space_contains_object() {
   Space *s = space_create();
-  space_set_object(s, 21);
+  Position dummy = {0, 0};
+  space_set_object(s, 21, dummy);
   PRINT_TEST_RESULT(space_contains_object(s, 21) == TRUE);
   space_destroy(s);
 }
@@ -207,21 +210,25 @@ void test3_space_contains_object() {
 
 void test1_space_remove_object() {
   Space *s = space_create();
-  space_set_object(s, 21);
-  PRINT_TEST_RESULT(space_remove_object(s, 21) == OK && space_contains_object(s, 21) == FALSE);
+  Position dummy = {0, 0};
+  space_set_object(s, 21, dummy);
+  PRINT_TEST_RESULT(space_remove_object(s, 21, dummy) == OK && space_contains_object(s, 21) == FALSE);
   space_destroy(s);
 }
 
 void test2_space_remove_object() {
   Space *s = space_create();
-  PRINT_TEST_RESULT(space_remove_object(s, 999) == ERROR);
+  Position dummy = {0, 0};
+  PRINT_TEST_RESULT(space_remove_object(s, 999, dummy) == ERROR);
   space_destroy(s);
 }
 
 void test1_space_get_n_objects() {
   Space *s = space_create();
-  space_set_object(s, 21);
-  space_set_object(s, 22);
+  Position dummy1 = {0, 0};
+  Position dummy2 = {1, 0};
+  space_set_object(s, 21, dummy1);
+  space_set_object(s, 22, dummy2);
   PRINT_TEST_RESULT(space_get_n_objects(s) == 2);
   space_destroy(s);
 }
@@ -320,28 +327,28 @@ void test2_space_get_discovered() {
 
 void test1_space_set_gdesc_line() {
   Space *s = space_create();
-  PRINT_TEST_RESULT(space_set_gdesc_line(s, 0, "  _ !#") == OK);
+  PRINT_TEST_RESULT(space_set_gdesc(s, "  _ !#") == OK);
   space_destroy(s);
 }
 
 void test2_space_set_gdesc_line() {
-  PRINT_TEST_RESULT(space_set_gdesc_line(NULL, 0, "  _ !#") == ERROR);
+  PRINT_TEST_RESULT(space_set_gdesc(NULL, "  _ !#") == ERROR);
 }
 
-/* Line out of range */
+/* NULL desc */
 void test3_space_set_gdesc_line() {
   Space *s = space_create();
-  PRINT_TEST_RESULT(space_set_gdesc_line(s, MAX_LINE, "test") == ERROR);
+  PRINT_TEST_RESULT(space_set_gdesc(s, NULL) == ERROR);
   space_destroy(s);
 }
 
 void test1_space_get_gdesc() {
   Space *s = space_create();
-  space_set_gdesc_line(s, 0, "  _ !#");
-  PRINT_TEST_RESULT(space_get_gdesc(s, 0) != NULL && strcmp(space_get_gdesc(s, 0), "  _ !#") == 0);
+  space_set_gdesc(s, "  _ !#");
+  PRINT_TEST_RESULT(space_get_gdesc(s) != NULL && strcmp(space_get_gdesc(s), "  _ !#") == 0);
   space_destroy(s);
 }
 
 void test2_space_get_gdesc() {
-  PRINT_TEST_RESULT(space_get_gdesc(NULL, 0) == NULL);
+  PRINT_TEST_RESULT(space_get_gdesc(NULL) == NULL);
 }

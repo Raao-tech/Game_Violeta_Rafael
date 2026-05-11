@@ -907,69 +907,49 @@ game_actions_inspect (Game* game)
 static void
 game_actions_use (Game* game)
 {
-    Player* player;
-    Object* obj;
-    Command* last_command;
-    char* obj_name;
-    Id obj_id;
+    Player* player = NULL;
+    Object* obj = NULL;
+    Command* last_command = NULL;
+    char* obj_name = NULL;
+    Id obj_id = NO_ID;
     Effect obj_effect;
     Status result_effect;
 
     if (!game) return;
 
-    player = game_get_player_by_turn (game);
-    if (!player)
-        {
-            game_set_last_cmd_status (game, ERROR_use);
-            return;
-        }
+    /*=========== PLAYER ======================*/
+        player = game_get_player_by_turn (game);
+        if (!player){game_set_last_cmd_status (game, ERROR_use);return;}
+    /*=========================================*/
 
     last_command = game_get_last_command (game);
-    if (!last_command)
-        {
-            game_set_last_cmd_status (game, ERROR_use);
-            return;
-        }
+    if (!last_command) {game_set_last_cmd_status (game, ERROR_use);return;}
 
     obj_name = command_get_target (last_command);
     if (obj_name && obj_name[0] != '\0')
         {
             /* MODO TEST: uso por nombre -> use <object_name> */
             obj = game_get_object_by_name (game, obj_name);
-            if (!obj)
-                {
-                    game_set_last_cmd_status (game, ERROR_use);
-                    return;
-                }
+            if (!obj) {game_set_last_cmd_status (game, ERROR_use);return;}
+
             obj_id = obj_get_id (obj);
         }
     else
         {
             /* MODO USER: usa el objeto activo seleccionado con el teclado */
             obj_id = player_get_active_object (player);
-            if (obj_id == NO_ID)
-                {
-                    game_set_last_cmd_status (game, ERROR_use);
-                    return;
-                }
+            if (obj_id == NO_ID) {game_set_last_cmd_status (game, ERROR_use);return;}
+
             obj = game_get_object_by_id (game, obj_id);
-            if (!obj)
-                {
-                    game_set_last_cmd_status (game, ERROR_use);
-                    return;
-                }
+            if (!obj){game_set_last_cmd_status (game, ERROR_use);return;}
         }
 
-    if (player_contains_object (player, obj_id) == FALSE)
-        {
-            game_set_last_cmd_status (game, ERROR_use);
-            return;
-        }
+    if (player_contains_object (player, obj_id) == FALSE) {game_set_last_cmd_status (game, ERROR_use);return;}
 
     obj_effect    = obj_get_effect (obj);
     result_effect = game_actions_apply_effect (game, obj, obj_effect);
 
-    /* apply_effect marca el objeto con NO_ID si era consumible */
+    /* apply_effect llama a obj_set_id(obj, NO_ID) si el objeto es consumible */
     if (obj_get_id (obj) == NO_ID)
         {
             player_delete_object (player, obj_id);
@@ -1259,7 +1239,6 @@ Status
 game_actions_apply_effect (Game* game, Object* obj, Effect obj_effect)
 {
     Status result = OK;
-	printf("/n debugg /n");
     if (!game || !obj) return ERROR;
     if (obj_effect == NO_EFECT) return OK;
 

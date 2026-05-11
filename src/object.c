@@ -56,8 +56,9 @@ obj_create ()
 Status
 obj_destroy (Object* obj)
 {
+    if (!obj) return ERROR;
     if (obj->e_obj) free (obj->e_obj);
-    if (obj) free (obj);
+    free (obj);
     return OK;
 }
 
@@ -115,6 +116,16 @@ obj_get_description (Object* obj)
     if (!obj) return NULL;
     return entity_get_message (obj->e_obj);
 }
+Bool
+obj_has_description (Object* obj, char* description)
+{
+    char* desc;
+    if (!obj || !description) return FALSE;
+    desc = entity_get_message (obj->e_obj);
+    if (!desc) return FALSE;
+    return (strcmp (desc, description) == 0) ? TRUE : FALSE;
+}
+
 /* ========== Gdesc ========== */
 
 Status

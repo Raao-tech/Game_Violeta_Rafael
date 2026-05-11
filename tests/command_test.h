@@ -19,7 +19,7 @@ void test1_command_set_code();
 void test2_command_set_code();
 void test1_command_get_code();
 void test2_command_get_code();
-void test1_command_get_obj();
-void test2_command_get_obj();
+void test1_command_get_target();
+void test2_command_get_target();
 
 #endif

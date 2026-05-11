@@ -730,7 +730,7 @@ game_rules_loose_condition (Game* game) /*in this game, you loose when you run o
     Player* player = NULL;
     int n_players, i, j, n_numens;
     Numen* numen = NULL;
-    Id     numen_id = NULL;
+    Id     numen_id = NO_ID;
     Bool defeat = TRUE;
 
     n_players   = game_get_n_players (game);
@@ -770,14 +770,25 @@ Bool
 game_rules_win_condition (Game* game) /*in this game, you win when you defeat the final boss*/
 {
     Numen* boss;
+    int n_numens, i, n_boss, n_death_boss;
     if (!game) { return FALSE; }
-    boss = game_get_numen_by_id (game, 29); /* LavaBall — boss final */
-    if (!boss) return FALSE;
-    if (numen_get_health (boss) <= 0)
+
+    /*Numenro de boses corruptos*/
+    n_boss = 0;
+    /*Numenro de boses muertos*/
+    n_death_boss = 0;
+    /*Numenro de numenes en total en todo el jeugo*/
+    n_numens = game_get_n_numens (game);
+    for ( i = 0; i < n_numens; i++)
     {
-        game_set_finished (game, TRUE);
-        return TRUE;
+        boss = game_get_numen_at (game, i);
+        if (!boss) continue;
+        if(numen_get_corrupt (boss) == FALSE) continue; /*Si es un boss corruptos*/
+        n_boss++; /*sumas*/
+        if(numen_get_health (boss) <= MIN_LIFE) n_death_boss++; /*Si el boss está  muerto, se suma uno a los boses muertos*/
     }
+
+    if(n_death_boss == n_boss)    {game_set_finished (game, TRUE);return TRUE;}
     return FALSE;
 }
 

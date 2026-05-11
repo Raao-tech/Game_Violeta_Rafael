@@ -40,8 +40,8 @@ int main(int argc, char **argv) {
   if (all || test == 6) test2_command_set_code();
   if (all || test == 7) test1_command_get_code();
   if (all || test == 8) test2_command_get_code();
-  if (all || test == 9) test1_command_get_obj();
-  if (all || test == 10) test2_command_get_obj();
+  if (all || test == 9) test1_command_get_target();
+  if (all || test == 10) test2_command_get_target();
 
   PRINT_PASSED_PERCENTAGE;
 
@@ -90,13 +90,13 @@ void test2_command_get_code() {
   PRINT_TEST_RESULT(command_get_code(NULL) == NO_CMD);
 }
 
-/* command_get_obj: without user input, obj is NULL */
-void test1_command_get_obj() {
+/* command_get_target: without user input, obj is NULL */
+void test1_command_get_target() {
   Command *c = command_create();
-  PRINT_TEST_RESULT(command_get_obj(c) == NULL);
+  PRINT_TEST_RESULT(command_get_target(c) == NULL);
   command_destroy(c);
 }
 
-void test2_command_get_obj() {
-  PRINT_TEST_RESULT(command_get_obj(NULL) == NULL);
+void test2_command_get_target() {
+  PRINT_TEST_RESULT(command_get_target(NULL) == NULL);
 }
